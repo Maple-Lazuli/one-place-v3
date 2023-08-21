@@ -2,7 +2,7 @@ import src.postgres_defaults as pod
 
 
 def test_defaults():
-    assert pod.db_name == 'inventory_db'
+    assert pod.db_name == 'one_place_db'
     assert pod.db_user == 'postgres'
     assert pod.db_pass == 'postgres'
     assert pod.db_host == '0.0.0.0'

@@ -3,7 +3,7 @@ import random
 from datetime import datetime
 import hashlib
 
-db_name = 'inventory_db'
+db_name = 'one_place_db'
 db_user = 'postgres'
 db_pass = 'postgres'
 db_host = '0.0.0.0'  # postgres
