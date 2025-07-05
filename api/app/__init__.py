@@ -19,10 +19,13 @@ def create_app():
     # Register blueprints
     from .auth import auth_bp
     from .analytics import analytics_bp
+    from .demo import demo_bp
     from .main import main_bp
 
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(analytics_bp, url_prefix='/analytics')
+    app.register_blueprint(demo_bp, url_prefix='/demo')
+
     app.register_blueprint(main_bp)
 
     return app
