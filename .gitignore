@@ -1,5 +1,4 @@
-backend/venv/*
-backend/src/__pycache__/*
-backend/tests/__pycache__/*
-backend/.idea/*
-backend/src/interactions/__pycache__/*
+*__pycache__/*
+*.idea/*
+*.venv/*
+dev_notes/*
