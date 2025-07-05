@@ -1,0 +1,9 @@
+CREATE TABLE todos (
+  id SERIAL PRIMARY KEY,
+  task TEXT NOT NULL,
+  completed BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO todos (task) VALUES ('Sample task');
+
