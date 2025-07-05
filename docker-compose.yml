@@ -12,7 +12,7 @@ services:
       - backend
 
   backend:
-    build: ./backend
+    build: ./api
     ports:
       - "3001:3001"
     depends_on:
@@ -22,7 +22,7 @@ services:
       - frontend
 
   frontend:
-    build: ./frontend
+    build: ./ui
     ports:
       - "3000:3000"
     networks:

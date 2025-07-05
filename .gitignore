@@ -2,3 +2,4 @@
 *.idea/*
 *.venv/*
 dev_notes/*
+*__pycache__*

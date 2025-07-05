@@ -1,22 +1,26 @@
 FROM python:3.11-slim
 
-# Install uv (fast Rust-based Python installer)
+# Install system build dependencies first
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    libpq-dev \
+ && rm -rf /var/lib/apt/lists/*
+
+# Install uv package manager
 RUN pip install --upgrade pip && pip install uv
 
-# Set working dir inside the container
 WORKDIR /app
 
-# Copy dependency files first to use Docker cache
 COPY pyproject.toml uv.lock ./
 
-# Install project dependencies
-RUN uv pip install --system --no-deps . && uv pip install --system --dev
+# Install project and dependencies (no --no-deps)
+RUN uv pip install --system .
 
-# Copy the full project code
 COPY . .
 
-# Expose port 3001 for Flask
+RUN uv sync
+
 EXPOSE 3001
 
-# Run your app
-CMD ["python", "run.py"]
+# Use uv to run your app
+CMD ["uv", "run", "run.py"]

@@ -5,13 +5,13 @@ export default function Todo() {
   const [task, setTask] = useState("");
 
   const fetchTodos = async () => {
-    const res = await fetch("http://localhost:3001/todos");
+    const res = await fetch("http://localhost:3001/demo/todos");
     const data = await res.json();
     setItems(data);
   };
 
   const addTodo = async () => {
-    const res = await fetch("http://localhost:3001/todos", {
+    const res = await fetch("http://localhost:3001/demo/todos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ task }),
