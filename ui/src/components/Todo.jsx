@@ -1,30 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Todo() {
   const [items, setItems] = useState([]);
-  const [text, setText] = useState("");
+  const [task, setTask] = useState("");
 
-  const addItem = () => {
-    if (text.trim()) {
-      setItems([...items, text]);
-      setText("");
+  const fetchTodos = async () => {
+    const res = await fetch("http://localhost:3001/todos");
+    const data = await res.json();
+    setItems(data);
+  };
+
+  const addTodo = async () => {
+    const res = await fetch("http://localhost:3001/todos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ task }),
+    });
+    if (res.ok) {
+      setTask("");
+      fetchTodos();
     }
   };
 
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
   return (
-    <div className="p-6">
-      <h2 className="text-xl font-bold mb-2">📝 To-Do List</h2>
-      <input
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-        className="border p-1 mr-2"
-      />
-      <button onClick={addItem} className="bg-blue-600 text-white px-2 py-1 rounded">
-        Add
-      </button>
-      <ul className="mt-4 list-disc list-inside">
-        {items.map((item, i) => (
-          <li key={i}>{item}</li>
+    <div style={{ padding: "2rem" }}>
+      <h2>To-Do List</h2>
+      <input value={task} onChange={(e) => setTask(e.target.value)} />
+      <button onClick={addTodo}>Add</button>
+      <ul>
+        {items.map((t) => (
+          <li key={t.id}>{t.task}</li>
         ))}
       </ul>
     </div>
