@@ -1,9 +1,9 @@
 
 CREATE TABLE users (
     UserID SERIAL PRIMARY KEY,
-    name VARCHAR(25) NOT NULL,
-    hash VARCHAR(64) NOT NULL,
-    salt INTEGER NOT NULL,
+    name VARCHAR(25) UNIQUE NOT NULL,
+    hash VARCHAR(128) NOT NULL,
+    salt BYTEA NOT NULL,
     lastFailedLogin TIMESTAMP,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     preferences TEXT
@@ -80,7 +80,7 @@ CREATE TABLE projectRequests (
     accessTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     accessGranted BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE,
-    FOREIGN KEY (SessionID) REFERENCES sessions(SessionID) ON DELETE CASCADE,
+    FOREIGN KEY (SessionID) REFERENCES sessions(SessionID) ON DELETE CASCADE
 );
 
 
@@ -101,7 +101,7 @@ CREATE TABLE pageRequests (
     accessTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     accessGranted BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (PageID) REFERENCES pages(PageID) ON DELETE CASCADE,
-    FOREIGN KEY (SessionID) REFERENCES sessions(SessionID) ON DELETE CASCADE,
+    FOREIGN KEY (SessionID) REFERENCES sessions(SessionID) ON DELETE CASCADE
 );
 
 CREATE TABLE equations (
