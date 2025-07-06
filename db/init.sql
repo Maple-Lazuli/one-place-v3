@@ -1,10 +1,14 @@
+
+
+
+
 -- Create the users table
 CREATE TABLE users (
     UserID SERIAL PRIMARY KEY,
     name VARCHAR(25) NOT NULL,
     hash VARCHAR(64) NOT NULL,
     salt INTEGER NOT NULL,
-    lastfailedlogin TIMESTAMP,
+    lastFailedLogin TIMESTAMP,
     preferences TEXT
 );
 
@@ -14,6 +18,26 @@ CREATE TABLE projects (
     UserID INTEGER NOT NULL,
     name VARCHAR(64) NOT NULL,
     description VARCHAR(255) NOT NULL,
-    created TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE CASCADE
 );
+
+CREATE TABLE sessions (
+    SessionID SERIAL PRIMARY KEY,
+    UserID INTEGER NOT NULL,
+    startTime TIMESTAMP NOT NULL,
+    endTime TIMESTAMP NOT NULL,
+    token VARCHAR(255) NOT NULL,
+    ip_address INET NOT NULL,
+    is_active BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE CASCADE
+)
+
+CREATE TABLE events (
+    EventID SERIAL PRIMARY KEY,
+    ProjectID INTEGER NOT NULL,
+    name VARCHAR (64) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
+)
