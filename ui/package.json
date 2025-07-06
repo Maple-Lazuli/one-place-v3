@@ -10,6 +10,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/material": "^7.2.0",
+    "framer-motion": "^12.23.0",
     "highlight.js": "^11.9.0",
     "katex": "^0.16.22",
     "react": "^19.1.0",
