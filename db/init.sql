@@ -31,7 +31,7 @@ CREATE TABLE sessions (
     ip_address INET NOT NULL,
     is_active BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE CASCADE
-)
+);
 
 CREATE TABLE events (
     EventID SERIAL PRIMARY KEY,
@@ -39,5 +39,17 @@ CREATE TABLE events (
     name VARCHAR (64) NOT NULL,
     description VARCHAR(255) NOT NULL,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    eventTime TIMESTAMP NOT NULL,
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
-)
+);
+
+CREATE TABLE todo (
+    TodoID SERIAL PRIMARY KEY,
+    ProjectID INTEGER NOT NULL,
+    name VARCHAR (64) NOT NULL,
+    description VARCHAR(255) NOT NULL,
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    dueTime TIMESTAMP,
+    completed BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
+);
