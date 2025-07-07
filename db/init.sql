@@ -32,9 +32,9 @@ CREATE TABLE sessions (
     UserID INTEGER NOT NULL,
     startTime TIMESTAMP NOT NULL,
     endTime TIMESTAMP NOT NULL,
-    token VARCHAR(255) NOT NULL,
-    ip_address INET NOT NULL,
-    is_active BOOLEAN DEFAULT FALSE,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    ipAddress INET NOT NULL,
+    isActive BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE CASCADE
 );
 
@@ -61,7 +61,7 @@ CREATE TABLE todo (
 
 CREATE TABLE tags (
     TagID SERIAL PRIMARY KEY,
-    tag VARCHAR (64) NOT NULL
+    tag VARCHAR (64) UNIQUE NOT NULL
 );
 
 CREATE TABLE tagmappings (
@@ -143,7 +143,6 @@ CREATE TABLE files (
     name VARCHAR (64) NOT NULL,
     hash VARCHAR (64) NOT NULL,
     filename VARCHAR (128) NOT NULL,
-    extension VARCHAR (64) NOT NULL,
     description VARCHAR (255) NOT NULL,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (PageID) REFERENCES pages(PageID) ON DELETE CASCADE
