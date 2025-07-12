@@ -45,6 +45,7 @@ CREATE TABLE events (
     description VARCHAR(255) NOT NULL,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     eventTime TIMESTAMP NOT NULL,
+    duration FLOAT8 DEFAULT 0.0, -- seconds
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
 );
 
@@ -56,6 +57,7 @@ CREATE TABLE todo (
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     dueTime TIMESTAMP,
     completed BOOLEAN DEFAULT FALSE,
+    duration FLOAT8 DEFAULT 0.0, -- seconds
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
 );
 
@@ -91,6 +93,7 @@ CREATE TABLE pages (
     content TEXT NOT NULL,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     lastEditTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    timeInvestment FLOAT8 DEFAULT 0.0, -- seconds
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
 );
 
@@ -141,9 +144,21 @@ CREATE TABLE files (
     FileID SERIAL PRIMARY KEY,
     PageID INTEGER NOT NULL,
     name VARCHAR (64) NOT NULL,
-    hash VARCHAR (64) NOT NULL,
+    hash VARCHAR (128) NOT NULL,
     filename VARCHAR (128) NOT NULL,
     description VARCHAR (255) NOT NULL,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    content BYTEA NOT NULL,
+    FOREIGN KEY (PageID) REFERENCES pages(PageID) ON DELETE CASCADE
+);
+
+CREATE TABLE canvas (
+    CanvasID SERIAL PRIMARY KEY,
+    PageID INTEGER NOT NULL,
+    name VARCHAR (64) NOT NULL,
+    description VARCHAR (255) NOT NULL,
+    content TEXT NOT NULL,
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lastEditTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (PageID) REFERENCES pages(PageID) ON DELETE CASCADE
 );
