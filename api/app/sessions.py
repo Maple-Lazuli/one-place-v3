@@ -32,13 +32,13 @@ def create_session(user_id, ip):
     cursor.close()
     conn.close()
 
-    if verify_session(token):
+    if verify_session(token, user_id):
         return token
     else:
         return None
 
 
-def verify_session(token):
+def verify_session(token, user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM sessions where token = %s;", (token,))
@@ -51,6 +51,9 @@ def verify_session(token):
 
     session = {k: v for k, v in zip(sessions_fields, session)}
 
+    if session['UserID'] != user_id:
+        return False
+
     if (session['endTime'] >= datetime.now()) and (session['isActive']):
         return True
     else:
@@ -60,5 +63,3 @@ def verify_session(token):
 @sessions_bp.route('/test', methods=['GET'])
 def test_ep():
     return jsonify({"test": "Sessions  Endpoint Reached."})
-
-

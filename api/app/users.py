@@ -1,12 +1,12 @@
 from flask import Blueprint, jsonify, request, make_response
-from http import HTTPStatus as status
+from http import HTTPStatus as STATUS
 import hashlib
 import secrets
 import json
 
 from .configuration import load_config
 from .db import get_db_connection
-from .sessions import create_session
+from .sessions import create_session, verify_session
 
 config = load_config()
 users_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -44,6 +44,18 @@ def get_user_by_name(user_name):
     return user
 
 
+def get_user_by_id(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM users where UserID = %s", (user_id,))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    if user is not None:
+        user = {k: v for k, v in zip(users_fields, user)}
+    return user
+
+
 def create_user(name, password, prefs):
     if type(prefs) == dict:
         prefs = json.dumps(prefs)
@@ -73,6 +85,15 @@ def authenticate_user(name, password):
     return -1
 
 
+def delete_user_by_id(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM users where UserID = (%s)", (user_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
 @users_bp.route('/test', methods=['GET'])
 def test_ep():
     return jsonify({"test": "Users Endpoint Reached."})
@@ -86,17 +107,17 @@ def create_user_ep():
     preferences = data.get("preferences", "{}")
 
     if len(password) < 8:
-        return jsonify({"error": "Password Too Short"}), status.BAD_REQUEST
+        return make_response("Password Too Short. Needs more than 8 characters.", STATUS.BAD_REQUEST)
 
     if get_user_by_name(username) is not None:
-        return jsonify({"error": "Username Taken"}), status.BAD_REQUEST
+        return make_response("Username Unavailable", STATUS.BAD_REQUEST)
 
     create_user(username, password, preferences)
 
     if get_user_by_name(username) is None:
-        return jsonify({"error": "Error Creating Account"}), status.BAD_REQUEST
+        return make_response("Error Creating Account", STATUS.INTERNAL_SERVER_ERROR)
 
-    return jsonify({"success": f"Created: {username}"}), status.OK
+    return jsonify({"success": f"Created: {username}"}), STATUS.OK
 
 
 @users_bp.route('/login', methods=['POST'])
@@ -107,13 +128,43 @@ def login_ep():
 
     result = authenticate_user(username, password)
     if result == -1:
-        return jsonify({"error": "Failed To Authenticate"}), status.FORBIDDEN
+        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
 
     token = create_session(result, request.remote_addr)
 
     if token is None:
-        return jsonify({"error": "Failed To Create Session"}), status.INTERNAL_SERVER_ERROR
+        return make_response("Failed To Create Session", STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(jsonify({"success": f"Created: {username}"}), status.CREATED)
-    response.set_cookie("token", username, max_age=config['app']['session_life_seconds'], httponly=True)
+    response = make_response(f"Authenticated: {username}", STATUS.CREATED)
+
+    response.set_cookie("token", token, max_age=config['app']['session_life_seconds'], httponly=True)
+
     return response
+
+
+@users_bp.route('/delete', methods=['DELETE'])
+def delete_user_ep():
+    data = request.get_json()
+    username = data.get("username").strip()
+    password = data.get("password").strip()
+
+    user_id = authenticate_user(username, password)
+    if user_id == -1:
+        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
+
+    token = request.cookies.get("token")
+
+    if not verify_session(token, user_id):
+        return make_response("Invalid Session", STATUS.FORBIDDEN)
+
+    delete_user_by_id(user_id)
+    if get_user_by_id(user_id) is not None:
+        return make_response("Error Deleting Account", STATUS.INTERNAL_SERVER_ERROR)
+
+    response = make_response(f"Deleted {username}", STATUS.OK)
+    response.delete_cookie("token")
+
+    return response
+
+
+
