@@ -13,15 +13,15 @@ services:
     networks:
       - backend
 
-  backend:
-    build: ./api
-    ports:
-      - "3001:3001"
-    depends_on:
-      - db
-    networks:
-      - backend
-      - frontend
+  # backend:
+  #   build: ./api
+  #   ports:
+  #     - "3001:3001"
+  #   depends_on:
+  #     - db
+  #   networks:
+  #     - backend
+  #     - frontend
 
   frontend:
     build: ./ui
