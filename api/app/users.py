@@ -70,9 +70,13 @@ def create_user(name, password, prefs):
         VALUES (%s, %s, %s, %s)
         ON CONFLICT (name) DO NOTHING;
     """, (name, pwd_hash, salt, prefs))
+    new_user = cursor.fetchone()
     conn.commit()
     cursor.close()
     conn.close()
+    if new_user is not None:
+        new_user = {k: v for k, v in zip(users_fields, new_user)}
+    return new_user
 
 
 def authenticate_user(name, password):
@@ -112,12 +116,18 @@ def create_user_ep():
     if get_user_by_name(username) is not None:
         return make_response("Username Unavailable", STATUS.BAD_REQUEST)
 
-    create_user(username, password, preferences)
+    response = create_user(username, password, preferences)
 
-    if get_user_by_name(username) is None:
+    if response is None:
         return make_response("Error Creating Account", STATUS.INTERNAL_SERVER_ERROR)
 
     return jsonify({"success": f"Created: {username}"}), STATUS.OK
+
+
+@users_bp.route('/update_user', methods=['PATCH'])
+def update_user_ep():
+    # TODO: Flesh this out.
+    pass
 
 
 @users_bp.route('/login', methods=['POST'])
@@ -126,11 +136,11 @@ def login_ep():
     username = data.get("username").strip()
     password = data.get("password").strip()
 
-    result = authenticate_user(username, password)
-    if result == -1:
+    user_id = authenticate_user(username, password)
+    if user_id == -1:
         return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
 
-    token = create_session(result, request.remote_addr)
+    token = create_session(user_id, request.remote_addr)
 
     if token is None:
         return make_response("Failed To Create Session", STATUS.INTERNAL_SERVER_ERROR)
@@ -138,6 +148,7 @@ def login_ep():
     response = make_response(f"Authenticated: {username}", STATUS.CREATED)
 
     response.set_cookie("token", token, max_age=config['app']['session_life_seconds'], httponly=True)
+    # will need to set the user preferences cookie here too.
 
     return response
 

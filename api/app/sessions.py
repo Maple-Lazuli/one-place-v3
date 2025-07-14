@@ -60,6 +60,25 @@ def verify_session(token, user_id):
         return False
 
 
+def verify_session_for_access(token):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM sessions where token = %s;", (token,))
+    session = cursor.fetchone()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if session is None:
+        return False, None
+
+    session = {k: v for k, v in zip(sessions_fields, session)}
+
+    if (session['endTime'] >= datetime.now()) and (session['isActive']):
+        return True, session
+    else:
+        return False, None
+
+
 def deactivate_session(token):
     conn = get_db_connection()
     cursor = conn.cursor()
