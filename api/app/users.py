@@ -56,6 +56,50 @@ def get_user_by_id(user_id):
     return user
 
 
+def update_user_name(user_id, new_username):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET name = %s where UserID = %s RETURNING *", (new_username, user_id,))
+    modified_user = cursor.fetchone()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if modified_user is not None:
+        modified_user = {k: v for k, v in zip(users_fields, modified_user)}
+    return modified_user
+
+
+def update_user_preferences(user_id, preferences):
+    if type(preferences) == dict:
+        preferences = json.dumps(preferences)
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET preferences = %s where UserID = %s RETURNING *", (preferences, user_id,))
+    modified_user = cursor.fetchone()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if modified_user is not None:
+        modified_user = {k: v for k, v in zip(users_fields, modified_user)}
+    return modified_user
+
+
+def update_user_password(user_id, new_password):
+    account = get_user_by_id(user_id)
+    new_hash = get_hash(new_password, account['salt'])
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE users SET hash = %s where UserID = %s RETURNING *", (new_hash, user_id,))
+    modified_user = cursor.fetchone()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if modified_user is not None:
+        modified_user = {k: v for k, v in zip(users_fields, modified_user)}
+    return modified_user
+
+
 def create_user(name, password, prefs):
     if type(prefs) == dict:
         prefs = json.dumps(prefs)
@@ -125,10 +169,86 @@ def create_user_ep():
     return jsonify({"success": f"Created: {username}"}), STATUS.OK
 
 
-@users_bp.route('/update_user', methods=['PATCH'])
-def update_user_ep():
-    # TODO: Flesh this out.
-    pass
+@users_bp.route('/update_user_name', methods=['PATCH'])
+def update_user_name_ep():
+    data = request.get_json()
+
+    username = data.get("username").strip()
+    new_username = data.get("new_username").strip()
+    password = data.get("password").strip()
+    token = request.cookies.get("token")
+
+    user_id = authenticate_user(username, password)
+
+    if user_id == -1:
+        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
+
+    if not verify_session(token, user_id):
+        return make_response("Invalid Session", STATUS.FORBIDDEN)
+
+    if get_user_by_name(new_username) is not None:
+        return make_response("Username Unavailable", STATUS.BAD_REQUEST)
+
+    modified_account = update_user_name(user_id, new_username)
+
+    if (modified_account is None) or (modified_account['name'] == username):
+        return make_response("Failed To Mutate Account", STATUS.INTERNAL_SERVER_ERROR)
+
+    response = make_response(f"Changed username to: {new_username}", STATUS.OK)
+    return response
+
+
+@users_bp.route('/update_user_password', methods=['PATCH'])
+def update_user_password_ep():
+    data = request.get_json()
+
+    username = data.get("username").strip()
+    new_password = data.get("new_password").strip()
+    password = data.get("password").strip()
+    token = request.cookies.get("token")
+
+    user_id = authenticate_user(username, password)
+
+    if user_id == -1:
+        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
+
+    if not verify_session(token, user_id):
+        return make_response("Invalid Session", STATUS.FORBIDDEN)
+
+    modified_account = update_user_password(user_id, new_password)
+
+    if modified_account is None:
+        return make_response("Failed To Mutate Account", STATUS.INTERNAL_SERVER_ERROR)
+
+    response = make_response(f"Updated Password Successfully", STATUS.OK)
+    return response
+
+
+@users_bp.route('/update_user_preferences', methods=['PATCH'])
+def update_user_preferences_ep():
+    data = request.get_json()
+
+    username = data.get("username").strip()
+    preferences = data.get("preferences").strip()
+    password = data.get("password").strip()
+    token = request.cookies.get("token")
+
+    user_id = authenticate_user(username, password)
+
+    if user_id == -1:
+        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
+
+    if not verify_session(token, user_id):
+        return make_response("Invalid Session", STATUS.FORBIDDEN)
+
+    modified_account = update_user_preferences(user_id, preferences)
+
+    if modified_account is None:
+        return make_response("Failed To Mutate Account", STATUS.INTERNAL_SERVER_ERROR)
+
+    response = make_response(f"Updated Password Successfully", STATUS.OK)
+    response.set_cookie("preferences", modified_account['preferences'], max_age=config['app']['session_life_seconds'], httponly=False)
+    return response
 
 
 @users_bp.route('/login', methods=['POST'])
@@ -146,10 +266,11 @@ def login_ep():
     if token is None:
         return make_response("Failed To Create Session", STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Authenticated: {username}", STATUS.CREATED)
+    preferences = get_user_by_id(user_id)['preferences']
 
+    response = make_response(f"Authenticated: {username}", STATUS.CREATED)
     response.set_cookie("token", token, max_age=config['app']['session_life_seconds'], httponly=True)
-    # will need to set the user preferences cookie here too.
+    response.set_cookie("preferences", preferences, max_age=config['app']['session_life_seconds'], httponly=False)
 
     return response
 
