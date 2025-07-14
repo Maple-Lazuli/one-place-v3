@@ -5,4 +5,4 @@ todo_bp = Blueprint('todo', __name__)
 
 @todo_bp.route('/test',  methods=['GET'])
 def report():
-    return jsonify({"test": "Todo Reached."})
+    return jsonify({"test": "Todo  Endpoint Reached."})

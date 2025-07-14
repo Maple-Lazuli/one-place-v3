@@ -5,4 +5,4 @@ users_bp = Blueprint('users', __name__)
 
 @users_bp.route('/test',  methods=['GET'])
 def report():
-    return jsonify({"test": "Users Reached."})
+    return jsonify({"test": "Users Endpoint Reached."})

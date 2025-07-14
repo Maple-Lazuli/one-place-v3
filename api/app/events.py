@@ -5,4 +5,4 @@ events_bp = Blueprint('events', __name__)
 
 @events_bp.route('/test',  methods=['GET'])
 def report():
-    return jsonify({"test": "Events Reached."})
+    return jsonify({"test": "Events  Endpoint Reached."})
