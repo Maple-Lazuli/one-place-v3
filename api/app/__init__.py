@@ -34,8 +34,19 @@ def create_app():
     from .users import users_bp
 
     app.register_blueprint(analytics_bp)
-    app.register_blueprint(users_bp)
-
+    app.register_blueprint(canvas_bp)
+    app.register_blueprint(code_snippets_bp)
+    app.register_blueprint(equation_bp)
+    app.register_blueprint(events_bp)
+    app.register_blueprint(files_bp)
+    app.register_blueprint(images_bp)
     app.register_blueprint(main_bp)
+    app.register_blueprint(pages_bp)
+    app.register_blueprint(projects_bp)
+    app.register_blueprint(sessions_bp)
+    app.register_blueprint(tags_bp)
+    app.register_blueprint(todo_bp)
+    app.register_blueprint(translations_bp)
+    app.register_blueprint(users_bp)
 
     return app
