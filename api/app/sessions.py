@@ -60,6 +60,16 @@ def verify_session(token, user_id):
         return False
 
 
+def deactivate_session(token):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE sessions SET isActive = FALSE where token = %s;", (token,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return
+
+
 @sessions_bp.route('/test', methods=['GET'])
 def test_ep():
     return jsonify({"test": "Sessions  Endpoint Reached."})

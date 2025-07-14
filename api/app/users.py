@@ -6,7 +6,7 @@ import json
 
 from .configuration import load_config
 from .db import get_db_connection
-from .sessions import create_session, verify_session
+from .sessions import create_session, verify_session, deactivate_session
 
 config = load_config()
 users_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -163,8 +163,26 @@ def delete_user_ep():
 
     response = make_response(f"Deleted {username}", STATUS.OK)
     response.delete_cookie("token")
-
     return response
 
 
+@users_bp.route('/logout', methods=['PATCH'])
+def logout_ep():
+    data = request.get_json()
 
+    username = data.get("username").strip()
+    user_id = get_user_by_name(username)['UserID']
+
+    token = request.cookies.get("token")
+
+    if not verify_session(token, user_id):
+        return make_response("Invalid Session", STATUS.FORBIDDEN)
+
+    deactivate_session(token)
+
+    if verify_session(token, user_id):
+        return make_response("Error Ending Session", STATUS.FORBIDDEN)
+
+    response = make_response(f"Logged Out {username}", STATUS.OK)
+    response.delete_cookie("token")
+    return response
