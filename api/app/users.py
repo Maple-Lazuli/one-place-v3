@@ -68,7 +68,8 @@ def create_user(name, password, prefs):
     cursor.execute("""
         INSERT INTO users (name, hash, salt, preferences)
         VALUES (%s, %s, %s, %s)
-        ON CONFLICT (name) DO NOTHING;
+        ON CONFLICT (name) DO NOTHING
+        RETURNING *;
     """, (name, pwd_hash, salt, prefs))
     new_user = cursor.fetchone()
     conn.commit()

@@ -5,7 +5,7 @@ from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .logging import create_access_request
 
-projects_bp = Blueprint('projects', __name__)
+projects_bp = Blueprint('projects', __name__, url_prefix='/projects')
 projects_fields = ['ProjectID', 'UserID', 'name', 'description', 'TimeCreated']
 
 
@@ -33,7 +33,6 @@ def get_projects():
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM projects")
     projects = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     return projects
@@ -44,7 +43,6 @@ def get_project_by_id(projectID):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM projects where projectID = %s;", (projectID,))
     project = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     project = {k: v for k, v in zip(projects_fields, project)}
@@ -78,10 +76,10 @@ def test_ep():
 
 
 @projects_bp.route('/create_project', methods=['POST'])
-def create_project():
+def create_project_ep():
     data = request.get_json()
     project_name = data.get("project_name").strip()
-    description = data.get("description").strip()
+    description = data.get("project_description").strip()
     token = request.cookies.get("token")
 
     valid, session = verify_session_for_access(token)
@@ -96,5 +94,5 @@ def create_project():
 
     create_access_request(session['SessionID'], new_project['ProjectID'], valid)
 
-    response = make_response(f"Created {project_name}", STATUS.OK)
+    response = make_response(f"Created: {project_name}", STATUS.OK)
     return response
