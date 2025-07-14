@@ -18,10 +18,22 @@ def create_app():
 
     # Register blueprints
     from .analytics import analytics_bp
+    from .canvas import canvas_bp
+    from .code_snippets import code_snippets_bp
+    from .equations import equation_bp
+    from .events import events_bp
+    from .files import files_bp
+    from .images import images_bp
     from .main import main_bp
+    from .pages import pages_bp
+    from .projects import projects_bp
+    from .sessions import sessions_bp
+    from .tags import tags_bp
+    from .todo import todo_bp
+    from .translations import translations_bp
+    from .users import users_bp
 
     app.register_blueprint(analytics_bp, url_prefix='/analytics')
-
 
     app.register_blueprint(main_bp)
 
