@@ -33,8 +33,10 @@ def create_app():
     from .translations import translations_bp
     from .users import users_bp
 
-    app.register_blueprint(analytics_bp, url_prefix='/analytics')
+    app.register_blueprint(analytics_bp)
+    app.register_blueprint(users_bp)
 
     app.register_blueprint(main_bp)
+
 
     return app

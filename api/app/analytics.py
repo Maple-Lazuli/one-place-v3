@@ -9,5 +9,5 @@ def report():
 
 
 @analytics_bp.route('/test', methods=['GET'])
-def report():
+def test():
     return jsonify({"test": "Analytics  Endpoint Reached."})
