@@ -1,2 +1,5 @@
 [flask]
 debug = true
+
+[app]
+session_life_seconds = 86400

@@ -1,12 +1,16 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, make_response
+from http import HTTPStatus as status
 import hashlib
 import secrets
 import json
 
+from .configuration import load_config
 from .db import get_db_connection
 from .sessions import create_session
 
+config = load_config()
 users_bp = Blueprint('users', __name__, url_prefix='/users')
+users_fields = ['UserID', 'name', 'hash', 'salt', 'lastFailedLogin', 'timeCreated', 'preferences']
 
 
 def generate_salt():
@@ -26,9 +30,6 @@ def get_hash(password, salt):
     hash_object = hashlib.sha512(plain_text)
     hashed_hex = hash_object.hexdigest()
     return hashed_hex
-
-
-users_fields = ['UserID', 'name', 'hash', 'salt', 'lastFailedLogin', 'timeCreated', 'preferences']
 
 
 def get_user_by_name(user_name):
@@ -65,13 +66,11 @@ def create_user(name, password, prefs):
 def authenticate_user(name, password):
     account = get_user_by_name(name)
 
-    if account is None:
-        return -1
+    if account is not None:
+        if get_hash(password, account['salt']) == account['hash']:
+            return account['UserID']
 
-    if get_hash(password, account['salt']) != account['hash']:
-        return -1
-
-    return account['UserID']
+    return -1
 
 
 @users_bp.route('/test', methods=['GET'])
@@ -87,17 +86,17 @@ def create_user_ep():
     preferences = data.get("preferences", "{}")
 
     if len(password) < 8:
-        return jsonify({"error": "Password Too Short"}), 400
+        return jsonify({"error": "Password Too Short"}), status.BAD_REQUEST
 
     if get_user_by_name(username) is not None:
-        return jsonify({"error": "Username Taken"}), 400
+        return jsonify({"error": "Username Taken"}), status.BAD_REQUEST
 
     create_user(username, password, preferences)
 
     if get_user_by_name(username) is None:
-        return jsonify({"error": "Error Creating Account"}), 400
+        return jsonify({"error": "Error Creating Account"}), status.BAD_REQUEST
 
-    return jsonify({"success": f"Created: {username}"}), 200
+    return jsonify({"success": f"Created: {username}"}), status.OK
 
 
 @users_bp.route('/login', methods=['POST'])
@@ -108,15 +107,13 @@ def login_ep():
 
     result = authenticate_user(username, password)
     if result == -1:
-        return jsonify({"error": "Failed To Authenticate"}), 400
+        return jsonify({"error": "Failed To Authenticate"}), status.FORBIDDEN
 
     token = create_session(result, request.remote_addr)
 
     if token is None:
-        return jsonify({"error": "Failed To Create Session"}), 400
+        return jsonify({"error": "Failed To Create Session"}), status.INTERNAL_SERVER_ERROR
 
-    return jsonify({"session": token}), 200
-
-
-
-
+    response = make_response(jsonify({"success": f"Created: {username}"}), status.CREATED)
+    response.set_cookie("token", username, max_age=config['app']['session_life_seconds'], httponly=True)
+    return response

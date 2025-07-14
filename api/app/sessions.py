@@ -3,10 +3,11 @@ from flask import Blueprint, jsonify
 import secrets
 import base64
 
+from .configuration import load_config
 from .db import get_db_connection
 
+config = load_config()
 sessions_bp = Blueprint('sessions', __name__, url_prefix='/sessions')
-
 sessions_fields = ['SessionID', 'UserID', 'startTime', 'endTime', 'token', 'ipAddress', 'isActive']
 
 
@@ -20,7 +21,7 @@ def generate_token():
 def create_session(user_id, ip):
     token = generate_token()
     start_time = datetime.now()
-    end_time = start_time + timedelta(hours=48)
+    end_time = start_time + timedelta(seconds=config['app']['session_life_seconds'])
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
