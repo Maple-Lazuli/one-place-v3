@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request, make_response
 from http import HTTPStatus as STATUS
 from datetime import datetime, timedelta
+
 from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .logging import create_access_request
@@ -28,20 +29,61 @@ def create_project(user_id, name, description):
     return new_project
 
 
-def get_projects():
+def update_project(project_id, new_name, new_description):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM projects")
-    projects = cursor.fetchall()
+
+    cursor.execute("""
+        UPDATE projects SET name = %s, description = %s
+        WHERE projectID = %s
+        RETURNING *;
+    """, (new_name, new_description, project_id))
+
+    updated_project = cursor.fetchone()
+    conn.commit()
     cursor.close()
     conn.close()
-    return projects
+    if updated_project is not None:
+        updated_project = {k: v for k, v in zip(projects_fields, updated_project)}
+    return updated_project
 
 
-def get_project_by_id(projectID):
+def delete_project(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM projects where projectID = %s;", (projectID,))
+    cursor.execute("DELETE FROM projects where ProjectID = (%s)", (project_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def get_projects_with_token(token):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT ProjectID, name, description, timeCreated FROM sessions
+    inner join projects
+    on projects.UserID = sessions.UserID
+    where token = %s and endTime > %s and isActive = TRUE 
+    """, (token, datetime.now()))
+    results = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    if results is not None:
+        result_list = []
+        for result in results:
+            result = {k: v for k, v in zip(['ProjectID', 'name', 'description', 'timeCreated'], result)}
+            result_list.append(result)
+        return result_list
+    return None
+
+
+def get_project_by_id(project_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM projects where projectID = %s;", (project_id,))
     project = cursor.fetchone()
     cursor.close()
     conn.close()
@@ -75,7 +117,7 @@ def test_ep():
     return jsonify({"test": "Projects  Endpoint Reached."})
 
 
-@projects_bp.route('/create_project', methods=['POST'])
+@projects_bp.route('/create', methods=['POST'])
 def create_project_ep():
     data = request.get_json()
     project_name = data.get("project_name").strip()
@@ -88,11 +130,110 @@ def create_project_ep():
         return make_response("Not Authorized", STATUS.FORBIDDEN)
 
     new_project = create_project(session['UserID'], project_name, description)
+    create_access_request(session['SessionID'], new_project['ProjectID'], valid)
 
     if new_project is None:
         return make_response("Failed To Create Project", STATUS.INTERNAL_SERVER_ERROR)
 
-    create_access_request(session['SessionID'], new_project['ProjectID'], valid)
-
     response = make_response(f"Created: {project_name}", STATUS.OK)
+    return response
+
+
+@projects_bp.route('/update', methods=['PATCH'])
+def update_project_ep():
+    data = request.get_json()
+    project_id = int(data.get("project_id"))
+    new_project_name = data.get("new_project_name").strip()
+    new_description = data.get("new_project_description").strip()
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        create_access_request(session['SessionID'], project_id, valid)
+        return make_response("Invalid Session", STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        create_access_request(session['SessionID'], project_id, valid)
+        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+
+    updated_project = update_project(project_id, new_project_name, new_description)
+
+    create_access_request(session['SessionID'], project_id, valid)
+
+    if updated_project is None:
+        return make_response("Failed To Update Project", STATUS.INTERNAL_SERVER_ERROR)
+
+    response = make_response(f"Updated: {new_project_name}", STATUS.OK)
+    return response
+
+
+@projects_bp.route('/delete', methods=['DELETE'])
+def delete_project_ep():
+    data = request.get_json()
+    project_id = int(data.get("project_id"))
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        create_access_request(session['SessionID'], project_id, valid)
+        return make_response("Invalid Session", STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        create_access_request(session['SessionID'], project_id, valid)
+        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+
+    create_access_request(session['SessionID'], project_id, valid)
+    delete_project(project_id)
+
+    response = make_response(f"Deleted: {project_id}", STATUS.OK)
+    return response
+
+
+@projects_bp.route('/get', methods=['GET'])
+def get_projects_ep():
+    project_id = int(request.args.get("id"))
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        create_access_request(session['SessionID'], project_id, valid)
+        return make_response("Invalid Session", STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        create_access_request(session['SessionID'], project_id, valid)
+        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+
+    project = get_project_by_id(project_id)
+    create_access_request(session['SessionID'], project_id, valid)
+    if project is None:
+        response = make_response("Does Not Exist", STATUS.OK)
+        return response
+
+    response = make_response(project, STATUS.OK)
+    return response
+
+
+@projects_bp.route('/get_all', methods=['GET'])
+def get_all_projects_ep():
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response("Not Authorized", STATUS.FORBIDDEN)
+
+    projects = get_projects_with_token(token)
+
+    if projects is None:
+        response = make_response("No Projects Found.", STATUS.NO_CONTENT)
+        return response
+
+    for project in projects:
+        create_access_request(session['SessionID'], project['ProjectID'], valid)
+
+    response = make_response(projects, STATUS.OK)
     return response

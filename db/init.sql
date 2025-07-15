@@ -57,7 +57,7 @@ CREATE TABLE todo (
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     dueTime TIMESTAMP,
     completed BOOLEAN DEFAULT FALSE,
-    duration FLOAT8 DEFAULT 0.0, -- seconds
+    timeCompleted TIMESTAMP,
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
 );
 
