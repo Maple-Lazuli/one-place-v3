@@ -127,7 +127,7 @@ def create_project_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Not Authorized", STATUS.FORBIDDEN)
+        return make_response("Session is Invalid", STATUS.FORBIDDEN)
 
     new_project = create_project(session['UserID'], project_name, description)
     create_access_request(session['SessionID'], new_project['ProjectID'], valid)
