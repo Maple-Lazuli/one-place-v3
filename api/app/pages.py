@@ -16,6 +16,16 @@ def test_ep():
     return jsonify({"test": "Pages  Endpoint Reached."})
 
 
+def get_last_update(page_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT lastEditTime FROM pages where PageID = %s;", (page_id,))
+    last_update = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return last_update
+
+
 def authorized_page_access(token, page_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -129,7 +139,7 @@ def create_ep():
     if new_page is None:
         return make_response("Failed To Create Page", STATUS.INTERNAL_SERVER_ERROR)
 
-    create_page_access_request(session['SessionID'], new_page['PageID'], True)
+    create_page_access_request(session['SessionID'], new_page['PageID'], True, "CREATE")
 
     response = make_response(f"Created: {name}", STATUS.OK)
     return response
@@ -146,13 +156,13 @@ def update_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        create_page_access_request(session['SessionID'], page_id, valid)
+        create_page_access_request(session['SessionID'], page_id, valid, "UPDATE")
         return make_response("Session is Invalid", STATUS.FORBIDDEN)
 
     page = get_page_by_id(page_id)
 
     if not authorized_project_access(token, page['ProjectID']):
-        create_page_access_request(session['SessionID'], page_id, False)
+        create_page_access_request(session['SessionID'], page_id, False, "UPDATE")
         return make_response("Not Authorized To Access Page", STATUS.FORBIDDEN)
 
     updated_page = update_page(page_id, name)
@@ -160,7 +170,7 @@ def update_ep():
     if updated_page is None:
         return make_response("Failed To Create Page", STATUS.INTERNAL_SERVER_ERROR)
 
-    create_page_access_request(session['SessionID'], updated_page['PageID'], True)
+    create_page_access_request(session['SessionID'], updated_page['PageID'], True, "UPDATE")
 
     response = make_response(f"Updated: {name}", STATUS.OK)
     return response
@@ -177,17 +187,17 @@ def content_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        create_page_access_request(session['SessionID'], page_id, valid)
+        create_page_access_request(session['SessionID'], page_id, valid, "UPDATE")
         return make_response("Session is Invalid", STATUS.FORBIDDEN)
 
     page = get_page_by_id(page_id)
 
     if not authorized_project_access(token, page['ProjectID']):
-        create_page_access_request(session['SessionID'], page_id, False)
+        create_page_access_request(session['SessionID'], page_id, False, "UPDATE")
         return make_response("Not Authorized To Access Page", STATUS.FORBIDDEN)
 
     update_content(page_id, content)
-    create_page_access_request(session['SessionID'], page_id, valid)
+    create_page_access_request(session['SessionID'], page_id, valid, "UPDATE")
 
     response = make_response(f"Updated: {page_id}", STATUS.OK)
     return response
@@ -203,16 +213,16 @@ def delete_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        create_page_access_request(session['SessionID'], page_id, valid)
+        create_page_access_request(session['SessionID'], page_id, valid, "DELETE")
         return make_response("Session is Invalid", STATUS.FORBIDDEN)
 
     page = get_page_by_id(page_id)
 
     if not authorized_project_access(token, page['ProjectID']):
-        create_page_access_request(session['SessionID'], page_id, False)
+        create_page_access_request(session['SessionID'], page_id, False, "DELETE")
         return make_response("Not Authorized To Access Page", STATUS.FORBIDDEN)
 
-    create_page_access_request(session['SessionID'], page['PageID'], valid)
+    create_page_access_request(session['SessionID'], page['PageID'], valid, "DELETE")
     delete_page(page_id)
 
     response = make_response(f"Deleted: {page}", STATUS.OK)
@@ -244,4 +254,12 @@ def get_page_ep():
     create_page_access_request(session['SessionID'], page['PageID'], valid)
 
     response = make_response(page, STATUS.OK)
+    return response
+
+
+@pages_bp.route('/last_update', methods=['GET'])
+def last_update():
+    page_ip = int(request.args.get("id"))
+    time = get_last_update(page_ip)
+    response = make_response({"page_ip": page_ip, "last_update": time}, STATUS.OK)
     return response
