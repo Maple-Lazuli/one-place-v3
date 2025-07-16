@@ -85,7 +85,7 @@ def create_snippet(page_id, name, description, language, content):
 
 @code_snippets_bp.route('/test', methods=['GET'])
 def test_ep():
-    return jsonify({"test": "Equations  Endpoint Reached."})
+    return jsonify({"test": "Snippets  Endpoint Reached."})
 
 
 @code_snippets_bp.route('/create', methods=['POST'])

@@ -85,7 +85,7 @@ def create_translation(page_id, language):
 
 @translations_bp.route('/test', methods=['GET'])
 def test_ep():
-    return jsonify({"test": "Equations  Endpoint Reached."})
+    return jsonify({"test": "Translations  Endpoint Reached."})
 
 
 @translations_bp.route('/create', methods=['POST'])
