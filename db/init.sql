@@ -24,6 +24,7 @@ CREATE TABLE projects (
     name VARCHAR(64) NOT NULL,
     description VARCHAR(255) NOT NULL,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lastUpdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (UserID) REFERENCES users(UserID) ON DELETE CASCADE
 );
 
@@ -46,6 +47,7 @@ CREATE TABLE events (
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     eventTime TIMESTAMP NOT NULL,
     duration FLOAT8 DEFAULT 0.0, -- seconds
+    lastUpdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
 );
 
@@ -58,6 +60,7 @@ CREATE TABLE todo (
     dueTime TIMESTAMP,
     completed BOOLEAN DEFAULT FALSE,
     timeCompleted TIMESTAMP,
+    lastUpdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
 );
 
@@ -168,3 +171,38 @@ CREATE TABLE canvas (
     FOREIGN KEY (PageID) REFERENCES pages(PageID) ON DELETE CASCADE
 );
 
+CREATE TABLE equationsrequests (
+    RequestID SERIAL PRIMARY KEY,
+    EquationID INTEGER NOT NULL,
+    accessTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    accessGranted BOOLEAN DEFAULT FALSE,
+    notes TEXT,
+    FOREIGN KEY (EquationID) REFERENCES equations(EquationID) ON DELETE CASCADE
+);
+
+CREATE TABLE codesnippetsrequests (
+    RequestID SERIAL PRIMARY KEY,
+    CodeID INTEGER NOT NULL,
+    accessTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    accessGranted BOOLEAN DEFAULT FALSE,
+    notes TEXT,
+    FOREIGN KEY (CodeID) REFERENCES codesnippets(CodeID) ON DELETE CASCADE
+);
+
+CREATE TABLE translationrequests (
+    RequestID SERIAL PRIMARY KEY,
+    TranslationID INTEGER NOT NULL,
+    accessTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    accessGranted BOOLEAN DEFAULT FALSE,
+    notes TEXT,
+    FOREIGN KEY (TranslationID) REFERENCES translations(TranslationID) ON DELETE CASCADE
+);
+
+CREATE TABLE canvasrequests (
+    RequestID SERIAL PRIMARY KEY,
+    CanvasID INTEGER NOT NULL,
+    accessTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    accessGranted BOOLEAN DEFAULT FALSE,
+    notes TEXT,
+    FOREIGN KEY (CanvasID) REFERENCES canvas(CanvasID) ON DELETE CASCADE
+);

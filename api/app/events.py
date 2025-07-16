@@ -8,7 +8,17 @@ from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .projects import authorized_project_access
 
-event_fields = ['EventID', 'ProjectID', 'name', 'description', 'timeCreated', 'eventTime', 'duration']
+event_fields = ['EventID', 'ProjectID', 'name', 'description', 'timeCreated', 'eventTime', 'duration', 'lastUpdate']
+
+
+def get_last_update(event_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT lastUpdate FROM evnets where EventID = %s;", (event_id,))
+    last_update = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return last_update
 
 
 def create_event(projectID, name, description, eventTime, duration):
@@ -32,10 +42,10 @@ def update_event(event_id, name, description, eventTime, duration):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        UPDATE events SET name = %s, description = %s, eventTime = %s, duration = %s
+        UPDATE events SET name = %s, description = %s, eventTime = %s, duration = %s, lastUpdate = %s
         WHERE eventID = %s
         RETURNING *;
-    """, (name, description, eventTime, duration, event_id))
+    """, (name, description, eventTime, duration, datetime.now(), event_id))
     updated_event = cursor.fetchone()
     conn.commit()
     cursor.close()
@@ -220,4 +230,12 @@ def delete_ep():
     delete_event(event_id)
 
     response = make_response(f"Deleted: {event['name']}", STATUS.OK)
+    return response
+
+
+@events_bp.route('/last_update', methods=['GET'])
+def last_update():
+    event_id = int(request.args.get("id"))
+    time = get_last_update(event_id)
+    response = make_response({"event_id": event_id, "last_update": time}, STATUS.OK)
     return response

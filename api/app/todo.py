@@ -9,7 +9,18 @@ from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .projects import authorized_project_access
 
-todo_fields = ['TodoID', 'ProjectID', 'name', 'description', 'timeCreated', 'dueTime', 'completed', 'timeCompleted']
+todo_fields = ['TodoID', 'ProjectID', 'name', 'description', 'timeCreated', 'dueTime', 'completed', 'timeCompleted',
+               'lastUpdate']
+
+
+def get_last_update(todo_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT lastUpdate FROM todo where TodoID = %s;", (todo_id,))
+    last_update = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return last_update
 
 
 def create_todo(project_id, name, description, due=None):
@@ -62,7 +73,8 @@ def get_todo_by_id(todo_id):
 def complete_todo(todo_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("UPDATE todo SET completed = TRUE, timeCompleted = %s where TodoID = %s RETURNING *;", (datetime.now(), todo_id,))
+    cursor.execute("UPDATE todo SET completed = TRUE, timeCompleted = %s where TodoID = %s RETURNING *;",
+                   (datetime.now(), todo_id,))
     completed_todo = cursor.fetchone()
     conn.commit()
     cursor.close()
@@ -258,4 +270,11 @@ def delete_ep():
     delete_todo(todo_id)
 
     response = make_response(f"Deleted: {todo['name']}", STATUS.OK)
+    return response
+
+@todo_bp.route('/last_update', methods=['GET'])
+def last_update():
+    todo_id = int(request.args.get("id"))
+    time = get_last_update(todo_id)
+    response = make_response({"todo_id": todo_id, "last_update": time}, STATUS.OK)
     return response
