@@ -25,7 +25,7 @@ def log_access(equation_id, allowed, notes):
 def get_last_update(equation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT lastEditTime FROM equations where PageID = %s;", (equation_id,))
+    cursor.execute("SELECT lastEditTime FROM equations where EquationID = %s;", (equation_id,))
     last_update = cursor.fetchone()[0]
     cursor.close()
     conn.close()

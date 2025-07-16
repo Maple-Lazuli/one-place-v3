@@ -25,7 +25,7 @@ def log_access(snippet_id, allowed, notes):
 def get_last_update(snippet_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT lastEditTime FROM CodeSnippets where PageID = %s;", (snippet_id,))
+    cursor.execute("SELECT lastEditTime FROM CodeSnippets where CodeID = %s;", (snippet_id,))
     last_update = cursor.fetchone()[0]
     cursor.close()
     conn.close()
