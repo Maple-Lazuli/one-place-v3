@@ -6,7 +6,7 @@ pages_bp = Blueprint('pages', __name__, url_prefix='/pages')
 from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .projects import authorized_project_access
-from .logging import create_page_access_request, get_page_access_requests
+from .logging import create_page_access_request
 
 page_fields = ['PageID', 'ProjectID', 'name', 'content', 'timeCreated', 'lastEditTime', 'timeInvestment']
 
@@ -14,6 +14,29 @@ page_fields = ['PageID', 'ProjectID', 'name', 'content', 'timeCreated', 'lastEdi
 @pages_bp.route('/test', methods=['GET'])
 def test_ep():
     return jsonify({"test": "Pages  Endpoint Reached."})
+
+
+def authorized_page_access(token, page_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT endTime, isActive, token  FROM sessions
+    inner join projects
+    on projects.UserID = sessions.UserID
+    inner join pages
+    on pages.projectID = projects.projectID
+    where token = %s and pages.PageID = %s
+    """, (token, page_id))
+    result = cursor.fetchone()
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    if result is not None:
+        result = {k: v for k, v in zip(['endTime', 'isActive', 'token'], result)}
+        if (result['endTime'] >= datetime.now()) and (result['isActive']):
+            return True
+    return False
 
 
 def create_page(project_id, name, content):
