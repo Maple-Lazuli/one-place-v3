@@ -10,6 +10,28 @@ from .pages import authorized_page_access
 code_fields = ['CodeID', 'PageID', 'name', 'description', 'language', 'content', 'timeCreated', 'lastEditTime']
 
 
+def log_access(snippet_id, allowed, notes):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO codesnippetsrequests (CodeID, accessGranted, notes)
+        VALUES (%s, %s, %s);
+    """, (snippet_id, allowed, notes))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def get_last_update(snippet_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT lastEditTime FROM CodeSnippets where PageID = %s;", (snippet_id,))
+    last_update = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return last_update
+
+
 def delete_snippet(snippet_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -107,11 +129,12 @@ def create_ep():
     if not authorized_page_access(token, page_id):
         return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
 
-    new_equation = create_snippet(page_id, name, description, language, content)
+    new_snippet = create_snippet(page_id, name, description, language, content)
 
-    if new_equation is None:
+    if new_snippet is None:
         return make_response("Failed To Create Snippet", STATUS.INTERNAL_SERVER_ERROR)
 
+    log_access(new_snippet['CodeID'], True, "CREATE")
     response = make_response(f"Created: {name}", STATUS.OK)
     return response
 
@@ -125,17 +148,20 @@ def get_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
+        log_access(snippet_id, valid, "GET")
         return make_response("Invalid Session", STATUS.FORBIDDEN)
 
     snippet = get_snippet_by_id(snippet_id)
 
     if not authorized_page_access(token, snippet['PageID']):
+        log_access(snippet_id, False, "GET")
         return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
 
     if snippet is None:
         response = make_response("Does Not Exist", STATUS.OK)
         return response
 
+    log_access(snippet_id, True, "GET")
     response = make_response(snippet, STATUS.OK)
     return response
 
@@ -178,11 +204,13 @@ def update_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
+        log_access(snippet_id, False, "UPDATE")
         return make_response("Session is Invalid", STATUS.FORBIDDEN)
 
     equation = get_snippet_by_id(snippet_id)
 
     if not authorized_page_access(token, equation['PageID']):
+        log_access(snippet_id, False, "UPDATE")
         return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
 
     updated_snippet = update_snippet(snippet_id, name, description, language, content)
@@ -190,6 +218,7 @@ def update_ep():
     if updated_snippet is None:
         return make_response("Failed To Update Snippet", STATUS.INTERNAL_SERVER_ERROR)
 
+    log_access(snippet_id, True, "UPDATE")
     response = make_response(f"Updated: {name}", STATUS.OK)
     return response
 
@@ -204,14 +233,25 @@ def delete_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
+        log_access(snippet_id, False, "DELETE")
         return make_response("Session is Invalid", STATUS.FORBIDDEN)
 
     snippet = get_snippet_by_id(snippet_id)
 
     if not authorized_page_access(token, snippet['PageID']):
+        log_access(snippet_id, False, "DELETE")
         return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
 
+    log_access(snippet_id, True, "DELETE")
     delete_snippet(snippet_id)
 
     response = make_response(f"Deleted: {snippet}", STATUS.OK)
+    return response
+
+
+@code_snippets_bp.route('/last_update', methods=['GET'])
+def last_update():
+    snippet_id = int(request.args.get("id"))
+    time = get_last_update(snippet_id)
+    response = make_response({"snippet_id": snippet_id, "last_update": time}, STATUS.OK)
     return response

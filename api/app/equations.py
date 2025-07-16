@@ -10,6 +10,28 @@ from .pages import authorized_page_access
 equations_fields = ['EquationID', 'PageID', 'name', 'description', 'content', 'timeCreated', 'lastEditTime']
 
 
+def log_access(equation_id, allowed, notes):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO equationsrequests (EquationID, accessGranted, notes)
+        VALUES (%s, %s, %s);
+    """, (equation_id, allowed, notes))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
+def get_last_update(equation_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT lastEditTime FROM equations where PageID = %s;", (equation_id,))
+    last_update = cursor.fetchone()[0]
+    cursor.close()
+    conn.close()
+    return last_update
+
+
 def delete_equation(equation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -111,6 +133,7 @@ def create_ep():
     if new_equation is None:
         return make_response("Failed To Create Equation", STATUS.INTERNAL_SERVER_ERROR)
 
+    log_access(new_equation['EquationID'], True, "CREATE")
     response = make_response(f"Created: {name}", STATUS.OK)
     return response
 
@@ -124,17 +147,20 @@ def get_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
+        log_access(equation_id, valid, "GET")
         return make_response("Invalid Session", STATUS.FORBIDDEN)
 
     equations = get_equation_by_id(equation_id)
 
     if not authorized_page_access(token, equations['PageID']):
+        log_access(equation_id, False, "GET")
         return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
 
     if equations is None:
         response = make_response("Does Not Exist", STATUS.OK)
         return response
 
+    log_access(equation_id, valid, "GET")
     response = make_response(equations, STATUS.OK)
     return response
 
@@ -176,11 +202,13 @@ def update_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
+        log_access(equation_id, valid, "UPDATE")
         return make_response("Session is Invalid", STATUS.FORBIDDEN)
 
     equation = get_equation_by_id(equation_id)
 
     if not authorized_page_access(token, equation['PageID']):
+        log_access(equation_id, False, "UPDATE")
         return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
 
     updated_equation = update_equation(equation_id, name, description, content)
@@ -188,6 +216,7 @@ def update_ep():
     if updated_equation is None:
         return make_response("Failed To Update Equation", STATUS.INTERNAL_SERVER_ERROR)
 
+    log_access(equation_id, valid, "UPDATE")
     response = make_response(f"Updated: {name}", STATUS.OK)
     return response
 
@@ -202,14 +231,25 @@ def delete_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
+        log_access(equation_id, valid, "DELETE")
         return make_response("Session is Invalid", STATUS.FORBIDDEN)
 
     equation = get_equation_by_id(equation_id)
 
     if not authorized_page_access(token, equation['PageID']):
+        log_access(equation_id, False, "DELETE")
         return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
 
+    log_access(equation_id, valid, "DELETE")
     delete_equation(equation_id)
 
     response = make_response(f"Deleted: {equation}", STATUS.OK)
+    return response
+
+
+@equation_bp.route('/last_update', methods=['GET'])
+def last_update():
+    equation_id = int(request.args.get("id"))
+    time = get_last_update(equation_id)
+    response = make_response({"equation_id": equation_id, "last_update": time}, STATUS.OK)
     return response
