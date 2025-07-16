@@ -167,7 +167,7 @@ def get_all_by_page_ep():
 @code_snippets_bp.route('/update', methods=['PATCH'])
 def update_ep():
     data = request.get_json()
-    equation_id = data.get("snippet_id")
+    snippet_id = data.get("snippet_id")
     name = data.get("new_name")
     description = data.get("new_description")
     language = data.get("new_language")
@@ -180,12 +180,12 @@ def update_ep():
     if not valid:
         return make_response("Session is Invalid", STATUS.FORBIDDEN)
 
-    equation = get_snippet_by_id(equation_id)
+    equation = get_snippet_by_id(snippet_id)
 
     if not authorized_page_access(token, equation['PageID']):
         return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
 
-    updated_snippet = update_snippet(equation_id, name, description, language, content)
+    updated_snippet = update_snippet(snippet_id, name, description, language, content)
 
     if updated_snippet is None:
         return make_response("Failed To Update Snippet", STATUS.INTERNAL_SERVER_ERROR)
