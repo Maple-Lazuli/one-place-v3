@@ -6,7 +6,6 @@ equation_bp = Blueprint('equations', __name__, url_prefix='/equations')
 from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .pages import authorized_page_access
-from .logging import create_page_access_request
 
 equations_fields = ['EquationID', 'PageID', 'name', 'description', 'content', 'timeCreated', 'lastEditTime']
 
