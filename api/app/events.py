@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, make_response
 from http import HTTPStatus as STATUS
-from datetime import  datetime
+from datetime import datetime
 
 events_bp = Blueprint('events', __name__, url_prefix='/events')
 
