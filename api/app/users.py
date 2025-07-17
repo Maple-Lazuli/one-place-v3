@@ -156,15 +156,15 @@ def create_user_ep():
     preferences = data.get("preferences", "{}")
 
     if len(password) < 8:
-        return make_response("Password Too Short. Needs more than 8 characters.", STATUS.BAD_REQUEST)
+        return make_response({'status': 'error', 'message': "Password Needs To Be Longer Than 8 Charactes"}, STATUS.BAD_REQUEST)
 
     if get_user_by_name(username) is not None:
-        return make_response("Username Unavailable", STATUS.BAD_REQUEST)
+        return make_response({'status': 'error', 'message': "Username Unavailable"}, STATUS.BAD_REQUEST)
 
     response = create_user(username, password, preferences)
 
     if response is None:
-        return make_response("Error Creating Account", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Error Creating Account"},STATUS.BAD_REQUEST)
 
     return jsonify({"success": f"Created: {username}"}), STATUS.OK
 
@@ -181,20 +181,20 @@ def update_user_name_ep():
     user_id = authenticate_user(username, password)
 
     if user_id == -1:
-        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Failed To Authenticate"}, STATUS.FORBIDDEN)
 
     if not verify_session(token, user_id):
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
 
     if get_user_by_name(new_username) is not None:
-        return make_response("Username Unavailable", STATUS.BAD_REQUEST)
+        return make_response({'status': 'error', 'message': "Username Unavailable"}, STATUS.BAD_REQUEST)
 
     modified_account = update_user_name(user_id, new_username)
 
     if (modified_account is None) or (modified_account['name'] == username):
-        return make_response("Failed To Mutate Account", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Mutate Account"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Changed username to: {new_username}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f"Changed username to: {new_username}"}, STATUS.OK)
     return response
 
 
@@ -210,17 +210,17 @@ def update_user_password_ep():
     user_id = authenticate_user(username, password)
 
     if user_id == -1:
-        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Failed To Authenticate"}, STATUS.FORBIDDEN)
 
     if not verify_session(token, user_id):
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
 
     modified_account = update_user_password(user_id, new_password)
 
     if modified_account is None:
-        return make_response("Failed To Mutate Account", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Mutate Account"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Updated Password Successfully", STATUS.OK)
+    response = make_response({'status': 'success', 'message': "Updated Password Successfully"}, STATUS.OK)
     return response
 
 
@@ -236,17 +236,17 @@ def update_user_preferences_ep():
     user_id = authenticate_user(username, password)
 
     if user_id == -1:
-        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Failed To Authenticate"}, STATUS.FORBIDDEN)
 
     if not verify_session(token, user_id):
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
 
     modified_account = update_user_preferences(user_id, preferences)
 
     if modified_account is None:
-        return make_response("Failed To Mutate Account", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Mutate Account"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Updated Password Successfully", STATUS.OK)
+    response = make_response({'status': 'success', 'message': "Updated Preferences Successfully"}, STATUS.OK)
     response.set_cookie("preferences", modified_account['preferences'], max_age=config['app']['session_life_seconds'], httponly=False)
     return response
 
@@ -259,16 +259,16 @@ def login_ep():
 
     user_id = authenticate_user(username, password)
     if user_id == -1:
-        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Failed To Authenticate"}, STATUS.FORBIDDEN)
 
     token = create_session(user_id, request.remote_addr)
 
     if token is None:
-        return make_response("Failed To Create Session", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
 
     preferences = get_user_by_id(user_id)['preferences']
 
-    response = make_response(f"Authenticated: {username}", STATUS.CREATED)
+    response = make_response({'status': 'success', 'message': "Authenticated Successfully"}, STATUS.OK)
     response.set_cookie("token", token, max_age=config['app']['session_life_seconds'], httponly=True)
     response.set_cookie("preferences", preferences, max_age=config['app']['session_life_seconds'], httponly=False)
 
@@ -283,18 +283,18 @@ def delete_user_ep():
 
     user_id = authenticate_user(username, password)
     if user_id == -1:
-        return make_response("Failed To Authenticate", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Failed To Authenticate"}, STATUS.FORBIDDEN)
 
     token = request.cookies.get("token")
 
     if not verify_session(token, user_id):
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
 
     delete_user_by_id(user_id)
     if get_user_by_id(user_id) is not None:
-        return make_response("Error Deleting Account", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Delete Account"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Deleted {username}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Deleted: {username}'}, STATUS.OK)
     response.delete_cookie("token")
     return response
 
@@ -309,13 +309,13 @@ def logout_ep():
     token = request.cookies.get("token")
 
     if not verify_session(token, user_id):
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
 
     deactivate_session(token)
 
     if verify_session(token, user_id):
-        return make_response("Error Ending Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Error Ending Session"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Logged Out {username}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Logged Out: {username}'}, STATUS.OK)
     response.delete_cookie("token")
     return response

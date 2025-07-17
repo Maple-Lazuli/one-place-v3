@@ -128,14 +128,14 @@ def create_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     new_tag = create_tag(session['UserID'], tag, options)
 
     if new_tag is None:
-        return make_response("Failed To Create Tag", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Create Tag"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Created: {tag}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {tag}'}, STATUS.OK)
     return response
 
 
@@ -146,15 +146,14 @@ def get_all_by_user_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     tags = get_tags_by_user(session['UserID'])
 
     if tags is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
 
-    response = make_response(tags, STATUS.OK)
+    response = make_response({'status': 'success', 'message': tags}, STATUS.OK)
     return response
 
 
@@ -167,15 +166,15 @@ def get_all_by_project_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     tags = get_tags_by_project(project_id)
 
     if tags is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
 
-    response = make_response(tags, STATUS.OK)
+
+    response = make_response({'status': 'success', 'message': tags}, STATUS.OK)
     return response
 
 
@@ -191,19 +190,19 @@ def update_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     tag = get_tag_by_id(tag_id)
 
     if session['UserID'] != tag['UserID']:
-        return make_response("Not Authorized To Edit Tag", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized"}, STATUS.FORBIDDEN)
 
     updated_tag = update_tag(tag_id, new_tag, new_options)
 
     if updated_tag is None:
-        return make_response("Failed To Update Tag", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Update Tag"}, STATUS.FORBIDDEN)
 
-    response = make_response(f"Updated: {tag}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {tag}'}, STATUS.OK)
     return response
 
 
@@ -218,18 +217,18 @@ def assign_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_project_access(token, project_id):
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized"}, STATUS.FORBIDDEN)
 
     tag = get_tag_by_id(tag_id)
     if session['UserID'] != tag['UserID']:
-        return make_response("Not Authorized To Edit Tag", STATUS.FORBIDDEN)
+                return make_response({'status': 'error', 'message': "Not Authorized"}, STATUS.FORBIDDEN)
 
     create_mapping(tag_id, project_id)
 
-    response = make_response("Mapped Tag", STATUS.OK)
+    response = make_response({'status': 'success', 'message': 'Mapped Tag'}, STATUS.OK)
     return response
 
 
@@ -243,14 +242,14 @@ def delete_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     tag = get_tag_by_id(tag_id)
 
     if session['UserID'] != tag['UserID']:
-        return make_response("Not Authorized To Delete Tag", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Failed To Delete Tag"}, STATUS.FORBIDDEN)
 
     delete_tag(tag_id)
 
-    response = make_response(f"Deleted: {tag_id}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Deleted {tag_id}'}, STATUS.OK)
     return response

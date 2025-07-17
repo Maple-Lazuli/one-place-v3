@@ -278,5 +278,6 @@ def last_update():
     todo_id = int(request.args.get("id"))
     time = get_last_update(todo_id)
     if time is None:
-        return make_response({"todo_id": todo_id, "last_update": None}, STATUS.NO_CONTENT)
+        return make_response({"todo_id": todo_id, "last_update": "Null"}, STATUS.NO_CONTENT)
     return make_response({"todo_id": todo_id, "last_update": time}, STATUS.OK)
+

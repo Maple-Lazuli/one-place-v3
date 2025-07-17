@@ -248,5 +248,5 @@ def last_update():
     translation_id = int(request.args.get("id"))
     time = get_last_update(translation_id)
     if time is None:
-        return make_response({"translation_id": translation_id, "last_update": None}, STATUS.NO_CONTENT)
+        return make_response({"translation_id": translation_id, "last_update": "Null"}, STATUS.NO_CONTENT)
     return make_response({"translation_id": translation_id, "last_update": time}, STATUS.OK)
