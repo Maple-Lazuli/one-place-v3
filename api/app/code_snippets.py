@@ -34,7 +34,6 @@ def get_last_update(snippet_id):
     return None
 
 
-
 def delete_snippet(snippet_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -127,18 +126,18 @@ def create_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_page_access(token, page_id):
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     new_snippet = create_snippet(page_id, name, description, language, content)
 
     if new_snippet is None:
-        return make_response("Failed To Create Snippet", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Create Snippet"}, STATUS.INTERNAL_SERVER_ERROR)
 
     log_access(new_snippet['CodeID'], True, "CREATE")
-    response = make_response(f"Created: {name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {name}'}, STATUS.OK)
     return response
 
 
@@ -161,11 +160,10 @@ def get_ep():
         return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
 
     if snippet is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
 
     log_access(snippet_id, True, "GET")
-    response = make_response(snippet, STATUS.OK)
+    response = make_response({'status': 'success', 'message': snippet}, STATUS.OK)
     return response
 
 
@@ -186,10 +184,9 @@ def get_all_by_page_ep():
         return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
 
     if equations is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
 
-    response = make_response(equations, STATUS.OK)
+    response = make_response({'status': 'success', 'message': equations}, STATUS.OK)
     return response
 
 
@@ -208,21 +205,21 @@ def update_ep():
 
     if not valid:
         log_access(snippet_id, False, "UPDATE")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     equation = get_snippet_by_id(snippet_id)
 
     if not authorized_page_access(token, equation['PageID']):
         log_access(snippet_id, False, "UPDATE")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     updated_snippet = update_snippet(snippet_id, name, description, language, content)
 
     if updated_snippet is None:
-        return make_response("Failed To Update Snippet", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Update Snippet"}, STATUS.FORBIDDEN)
 
     log_access(snippet_id, True, "UPDATE")
-    response = make_response(f"Updated: {name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {name}'}, STATUS.OK)
     return response
 
 
@@ -237,18 +234,18 @@ def delete_ep():
 
     if not valid:
         log_access(snippet_id, False, "DELETE")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     snippet = get_snippet_by_id(snippet_id)
 
     if not authorized_page_access(token, snippet['PageID']):
         log_access(snippet_id, False, "DELETE")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     log_access(snippet_id, True, "DELETE")
     delete_snippet(snippet_id)
 
-    response = make_response(f"Deleted: {snippet}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Deleted {snippet["name"]}'}, STATUS.OK)
     return response
 
 
