@@ -7,11 +7,18 @@ export default defineConfig({
     host: '0.0.0.0',       // Allow connections from outside the container
     port: 3000,            // Vite dev server port
     proxy: {
-      '/todos': {
+      // Proxy all API routes to your backend
+      '/users': {
+        target: 'http://localhost:3001', // Use Docker service name, not localhost
+        changeOrigin: true,
+        secure: false,
+      },
+      '/todo': {
         target: 'http://backend:3001', // Use Docker service name, not localhost
         changeOrigin: true,
         secure: false,
       },
+      // Add other routes as needed
     },
   },
 });

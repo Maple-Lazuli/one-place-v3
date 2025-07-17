@@ -1,0 +1,36 @@
+.calendar {
+  width: 100%;
+  max-width: 900px; /* Increase max width */
+  margin: 0 auto;
+}
+.calendar-header, .calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+.calendar-cell {
+  border: 1px solid #eee;
+  min-height: 120px;
+  padding: 8px;
+  background: #fff;
+  position: relative;
+  font-size: 0.9em; /* Smaller default text */
+}
+.calendar-cell.header {
+  background: #f0f0f0;
+  font-weight: bold;
+  text-align: center;
+  min-height: 40px;
+  font-size: 1.1em;
+}
+.calendar-date {
+  font-size: 1.3em;
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+.calendar-cell.empty {
+  background: transparent;
+  border: none;
+}
+.calendar-cell .cell-content {
+  font-size: 0.85em; /* Even smaller for events/todos */
+}
