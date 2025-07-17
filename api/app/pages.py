@@ -28,7 +28,6 @@ def get_last_update(page_id):
     return None
 
 
-
 def authorized_page_access(token, page_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -132,19 +131,19 @@ def create_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_project_access(token, project_id):
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     new_page = create_page(project_id, name, content)
 
     if new_page is None:
-        return make_response("Failed To Create Page", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Create Page"}, STATUS.INTERNAL_SERVER_ERROR)
 
     create_page_access_request(session['SessionID'], new_page['PageID'], True, "CREATE")
 
-    response = make_response(f"Created: {name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {name}'}, STATUS.OK)
     return response
 
 
@@ -160,22 +159,22 @@ def update_ep():
 
     if not valid:
         create_page_access_request(session['SessionID'], page_id, valid, "UPDATE")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     page = get_page_by_id(page_id)
 
     if not authorized_project_access(token, page['ProjectID']):
         create_page_access_request(session['SessionID'], page_id, False, "UPDATE")
-        return make_response("Not Authorized To Access Page", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     updated_page = update_page(page_id, name)
 
     if updated_page is None:
-        return make_response("Failed To Create Page", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Update Page"}, STATUS.INTERNAL_SERVER_ERROR)
 
     create_page_access_request(session['SessionID'], updated_page['PageID'], True, "UPDATE")
 
-    response = make_response(f"Updated: {name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {name}'}, STATUS.OK)
     return response
 
 
@@ -191,18 +190,18 @@ def content_ep():
 
     if not valid:
         create_page_access_request(session['SessionID'], page_id, valid, "UPDATE")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     page = get_page_by_id(page_id)
 
     if not authorized_project_access(token, page['ProjectID']):
         create_page_access_request(session['SessionID'], page_id, False, "UPDATE")
-        return make_response("Not Authorized To Access Page", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     update_content(page_id, content)
     create_page_access_request(session['SessionID'], page_id, valid, "UPDATE")
 
-    response = make_response(f"Updated: {page_id}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {page["name"]}'}, STATUS.OK)
     return response
 
 
@@ -217,18 +216,18 @@ def delete_ep():
 
     if not valid:
         create_page_access_request(session['SessionID'], page_id, valid, "DELETE")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     page = get_page_by_id(page_id)
 
     if not authorized_project_access(token, page['ProjectID']):
         create_page_access_request(session['SessionID'], page_id, False, "DELETE")
-        return make_response("Not Authorized To Access Page", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     create_page_access_request(session['SessionID'], page['PageID'], valid, "DELETE")
     delete_page(page_id)
 
-    response = make_response(f"Deleted: {page}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Deleted {page["name"]}'}, STATUS.OK)
     return response
 
 
@@ -242,21 +241,20 @@ def get_page_ep():
 
     if not valid:
         create_page_access_request(session['SessionID'], page_id, valid, "DELETE")
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     page = get_page_by_id(page_id)
 
     if not authorized_project_access(token, page['ProjectID']):
         create_page_access_request(session['SessionID'], page_id, False, "DELETE")
-        return make_response("Not Authorized To Access Page", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     if page is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
     create_page_access_request(session['SessionID'], page['PageID'], valid, "DELETE")
 
-    response = make_response(page, STATUS.OK)
+    response = make_response({'status': 'success', 'message': page}, STATUS.OK)
     return response
 
 
