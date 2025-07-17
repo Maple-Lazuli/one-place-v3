@@ -26,10 +26,12 @@ def get_last_update(canvas_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT lastEditTime FROM canvas where CanvasID = %s;", (canvas_id,))
-    last_update = cursor.fetchone()[0]
+    last_update = cursor.fetchone()
     cursor.close()
     conn.close()
-    return last_update
+    if last_update is not None:
+        return last_update[0]
+    return None
 
 
 def delete_canvas(canvas_id):

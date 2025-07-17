@@ -14,10 +14,12 @@ def get_last_update(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT lastUpdate FROM projects where projectID = %s;", (project_id,))
-    last_update = cursor.fetchone()[0]
+    last_update = cursor.fetchone()
     cursor.close()
     conn.close()
-    return last_update
+    if last_update is not None:
+        return last_update[0]
+    return None
 
 
 def create_project(user_id, name, description):
