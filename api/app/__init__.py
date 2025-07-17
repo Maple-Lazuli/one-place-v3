@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from flask_cors import CORS
 import tomli as toml
 
 from .configuration import load_config
@@ -7,7 +8,7 @@ from .configuration import load_config
 
 def create_app():
     app = Flask(__name__)
-
+    CORS(app, supports_credentials=True, origins="*")
     # Load config
     config = load_config()
     app.config['DEBUG'] = config['flask']['debug']

@@ -23,12 +23,12 @@ services:
   #     - backend
   #     - frontend
 
-  frontend:
-    build: ./ui
-    ports:
-      - "3000:3000"
-    networks:
-      - frontend
+  # frontend:
+  #   build: ./ui
+  #   ports:
+  #     - "3000:3000"
+  #   networks:
+  #     - frontend
 
 networks:
   frontend:

@@ -7,7 +7,7 @@ import CreateAccount from "./components/CreateAccount";
 import Home from "./components/Home";
 import NavigationBar from "./components/NavigationBar";
 import Projects from "./components/Projects";
-
+import CreateProject from "./components/CreateProject";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 
@@ -37,7 +37,7 @@ export default function App() {
           <Route path="/register" element={<CreateAccount />} />
           <Route path="/Home" element={<Home />} />
           <Route path="/projects" element={<Projects />} />
-          {/* Add other routes as needed */}
+          <Route path="/projects/create" element={<CreateProject />} />
         </Routes>
       </Router>
     </ThemeProvider>

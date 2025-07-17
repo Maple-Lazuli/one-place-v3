@@ -166,7 +166,7 @@ def create_user_ep():
     if response is None:
         return make_response({'status': 'error', 'message': "Error Creating Account"},STATUS.BAD_REQUEST)
 
-    return jsonify({"success": f"Created: {username}"}), STATUS.OK
+    return jsonify({'status': 'success', "message": f"Created: {username}"}), STATUS.OK
 
 
 @users_bp.route('/update_user_name', methods=['PATCH'])

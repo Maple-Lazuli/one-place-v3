@@ -230,6 +230,7 @@ def get_projects_ep():
 
 @projects_bp.route('/get_all', methods=['GET'])
 def get_all_projects_ep():
+    print("Here")
     token = request.cookies.get("token")
 
     valid, session = verify_session_for_access(token)

@@ -4,21 +4,16 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   server: {
-    host: '0.0.0.0',       // Allow connections from outside the container
-    port: 3000,            // Vite dev server port
+    host: '0.0.0.0',
+    port: 3000,
     proxy: {
-      // Proxy all API routes to your backend
-      '/users': {
-        target: 'http://localhost:3001', // Use Docker service name, not localhost
+      // Proxy API requests starting with /api to backend server
+      '/api': {
+        target: 'http://localhost:3001',
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''), // Remove /api prefix before forwarding
       },
-      '/todo': {
-        target: 'http://backend:3001', // Use Docker service name, not localhost
-        changeOrigin: true,
-        secure: false,
-      },
-      // Add other routes as needed
     },
   },
 });
