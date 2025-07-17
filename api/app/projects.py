@@ -250,5 +250,6 @@ def get_all_projects_ep():
 def last_update():
     project_id = int(request.args.get("id"))
     time = get_last_update(project_id)
-    response = make_response({"project_id": project_id, "last_update": time}, STATUS.OK)
-    return response
+    if time is None:
+        return make_response({"project_id": project_id, "last_update": None}, STATUS.NO_CONTENT)
+    return make_response({"project_id": project_id, "last_update": time}, STATUS.OK)

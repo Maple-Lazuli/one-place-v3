@@ -246,5 +246,7 @@ def delete_ep():
 def last_update():
     translation_id = int(request.args.get("id"))
     time = get_last_update(translation_id)
-    response = make_response({"translation_id": translation_id, "last_update": time}, STATUS.OK)
-    return response
+    if time is None:
+        return make_response({"translation_id": translation_id, "last_update": None}, STATUS.NO_CONTENT)
+    return make_response({"translation_id": translation_id, "last_update": time}, STATUS.OK)
+

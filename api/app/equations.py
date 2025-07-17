@@ -251,5 +251,6 @@ def delete_ep():
 def last_update():
     equation_id = int(request.args.get("id"))
     time = get_last_update(equation_id)
-    response = make_response({"equation_id": equation_id, "last_update": time}, STATUS.OK)
-    return response
+    if time is None:
+        return make_response({"equation_id": equation_id, "last_update": None}, STATUS.NO_CONTENT)
+    return make_response({"equation_id": equation_id, "last_update": time}, STATUS.OK)

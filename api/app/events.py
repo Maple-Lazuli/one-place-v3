@@ -14,7 +14,7 @@ event_fields = ['EventID', 'ProjectID', 'name', 'description', 'timeCreated', 'e
 def get_last_update(event_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("SELECT lastUpdate FROM evnets where EventID = %s;", (event_id,))
+    cursor.execute("SELECT lastUpdate FROM events where EventID = %s;", (event_id,))
     last_update = cursor.fetchone()[0]
     cursor.close()
     conn.close()
@@ -237,5 +237,6 @@ def delete_ep():
 def last_update():
     event_id = int(request.args.get("id"))
     time = get_last_update(event_id)
-    response = make_response({"event_id": event_id, "last_update": time}, STATUS.OK)
-    return response
+    if time is None:
+        return make_response({"event_id": event_id, "last_update": None}, STATUS.NO_CONTENT)
+    return make_response({"event_id": event_id, "last_update": time}, STATUS.OK)
