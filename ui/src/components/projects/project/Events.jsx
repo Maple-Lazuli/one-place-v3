@@ -1,41 +1,29 @@
 import { useParams, Link } from 'react-router-dom'
-import { Typography, Box, Button, CircularProgress, Alert } from '@mui/material'
+import { Typography, Box, Button } from '@mui/material'
 import { useEffect, useState } from 'react'
-import EventCard from './EventCard'  // adjust path as needed
+import EventCard from './EventCard'
 
 export default function Events() {
   const { project_id } = useParams()
   const [events, setEvents] = useState([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
   useEffect(() => {
     async function fetchEvents() {
-      setLoading(true)
-      setError('')
-
-      try {
-        const res = await fetch(`/api/events/get_project_events?project_id=${project_id}`, {
-          credentials: 'include', // send cookies with request
-        })
-
-        const data = await res.json()
-
-        if (!res.ok || data.status === 'error') {
-          throw new Error(data.message || 'Failed to fetch events')
-        }
-
-        // The backend returns events in data.message according to your code
-        setEvents(data.message || [])
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setLoading(false)
+      const res = await fetch(`/api/events/get_project_events?project_id=${project_id}`, {
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (data.status === 'success') {
+        setEvents(data.message)
       }
     }
 
     fetchEvents()
   }, [project_id])
+
+  const handleDelete = (deletedId) => {
+    setEvents((prev) => prev.filter((event) => event.event_id !== deletedId))
+  }
 
   return (
     <Box sx={{ p: 2 }}>
@@ -50,25 +38,19 @@ export default function Events() {
         component={Link}
         to={`/projects/project/${project_id}/events/create`}
         variant="contained"
-        sx={{ mb: 3 }}
+        sx={{ mb: 2 }}
       >
         Create New Event
       </Button>
 
-      {loading && <CircularProgress />}
-
-      {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
-
-      {!loading && !error && events.length === 0 && (
-        <Typography>No events found for this project.</Typography>
-      )}
-
-      {!loading && !error && events.map((event) => (
+      {events.map((event) => (
         <EventCard
-          key={event.id} // assuming your event object has an id field
+          key={event.event_id}
           name={event.name}
-          date={event.time} // your backend returns event_time as 'time', adjust if needed
+          date={event.date}
           description={event.description}
+          event_id={event.event_id}
+          onDelete={handleDelete}
         />
       ))}
     </Box>

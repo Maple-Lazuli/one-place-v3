@@ -28,7 +28,7 @@ export default function UpdateEventForm() {
       setLoading(true)
       setError('')
       try {
-        const res = await fetch(`/events/get_event?project_id=${project_id}&event_id=${event_id}`, {
+        const res = await fetch(`/api/events/get?id=${event_id}`, {
           credentials: 'include',
         })
         const data = await res.json()
@@ -37,16 +37,14 @@ export default function UpdateEventForm() {
           throw new Error(data.message || 'Failed to load event data')
         }
 
-        const event = data.message // Adjust based on your API response structure
+        const event = data.message // from response: { status: 'success', message: event }
 
-        setTitle(event.name)
-        // Format datetime-local input value: "YYYY-MM-DDTHH:mm"
-        const dt = new Date(event.time)
-        const localISO = dt.toISOString().slice(0,16)
+        setTitle(event.Name || '')
+        const dt = new Date(event.Time)
+        const localISO = dt.toISOString().slice(0, 16)
         setDateTime(localISO)
-
-        setDescription(event.description || '')
-        setDuration(event.duration?.toString() || '')
+        setDescription(event.Description || '')
+        setDuration(event.Duration?.toString() || '')
       } catch (err) {
         setError(err.message)
       } finally {
@@ -54,7 +52,7 @@ export default function UpdateEventForm() {
       }
     }
     fetchEvent()
-  }, [project_id, event_id])
+  }, [event_id])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -72,19 +70,18 @@ export default function UpdateEventForm() {
       const timestamp = new Date(dateTime).getTime() / 1000 // seconds since epoch
 
       const payload = {
-        project_id,
         event_id,
-        name: title,
-        description,
-        time: timestamp,
+        new_name: title,
+        new_description: description,
+        new_time: timestamp,
       }
 
       if (duration) {
-        payload.duration = parseInt(duration, 10)
+        payload.new_duration = parseInt(duration, 10)
       }
 
       const res = await fetch('/api/events/update', {
-        method: 'POST', // or PUT depending on your API
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
         credentials: 'include',
@@ -97,7 +94,6 @@ export default function UpdateEventForm() {
       }
 
       setSuccess(data.message || 'Event updated successfully!')
-      // Optionally redirect to events list or project page after a delay
       setTimeout(() => navigate(`/projects/project/${project_id}/events`), 1500)
     } catch (err) {
       setError(err.message)
@@ -106,7 +102,7 @@ export default function UpdateEventForm() {
     }
   }
 
-  if (loading) return <CircularProgress />
+  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>
 
   return (
     <Box
