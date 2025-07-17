@@ -34,7 +34,6 @@ def get_last_update(translation_id):
     return None
 
 
-
 def delete_translation(translation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -124,18 +123,18 @@ def create_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_page_access(token, page_id):
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     new_translation = create_translation(page_id, language)
 
     if new_translation is None:
-        return make_response("Failed To Create Translation", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Create Translation"}, STATUS.INTERNAL_SERVER_ERROR)
 
     log_access(new_translation['TranslationID'], True, "CREATE")
-    response = make_response(f"Created Translation", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f"Created Translation in {new_translation['language']}"}, STATUS.OK)
     return response
 
 
@@ -149,20 +148,19 @@ def get_ep():
 
     if not valid:
         log_access(translation_id, False, "GET")
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     translation = get_translation_by_id(translation_id)
 
     if not authorized_page_access(token, translation['PageID']):
         log_access(translation_id, False, "GET")
-        return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     if translation is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
     log_access(translation_id, True, "GET")
-    response = make_response(translation, STATUS.OK)
+    response = make_response({'status': 'success', 'message': translation}, STATUS.OK)
     return response
 
 
@@ -175,18 +173,17 @@ def get_all_by_page_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     translations = get_translations_by_page(page_id)
 
     if not authorized_page_access(token, page_id):
-        return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     if translations is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
-    response = make_response(translations, STATUS.OK)
+    response = make_response({'status': 'success', 'message': translations}, STATUS.OK)
     return response
 
 
@@ -202,21 +199,22 @@ def update_ep():
 
     if not valid:
         log_access(translation_id, False, "GET")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     translation = get_translation_by_id(translation_id)
 
     if not authorized_page_access(token, translation['PageID']):
         log_access(translation_id, False, "GET")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     updated_translation = update_translation(translation_id, content)
 
     if updated_translation is None:
-        return make_response("Failed To Update Snippet", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Error updating translation"}, STATUS.INTERNAL_SERVER_ERROR)
 
     log_access(translation_id, True, "GET")
-    response = make_response(f"Updated {updated_translation['language']} Translation", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f"Updated {updated_translation['language']} Translation"},
+                             STATUS.OK)
     return response
 
 
@@ -231,17 +229,17 @@ def delete_ep():
 
     if not valid:
         log_access(translation_id, False, "GET")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     translation = get_translation_by_id(translation_id)
 
     if not authorized_page_access(token, translation['PageID']):
         log_access(translation_id, False, "GET")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     log_access(translation_id, True, "GET")
     delete_translation(translation_id)
-    response = make_response(f"Deleted: {translation_id}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f"Deleted: {translation_id}"}, STATUS.OK)
     return response
 
 
@@ -252,4 +250,3 @@ def last_update():
     if time is None:
         return make_response({"translation_id": translation_id, "last_update": None}, STATUS.NO_CONTENT)
     return make_response({"translation_id": translation_id, "last_update": time}, STATUS.OK)
-

@@ -134,18 +134,18 @@ def create_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_page_access(token, page_id):
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     new_canvas = create_canvas(page_id, name, description, content)
 
     if new_canvas is None:
-        return make_response("Failed To Create Canvas", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Create Canvas"}, STATUS.INTERNAL_SERVER_ERROR)
 
     log_access(new_canvas['CanvasID'], True, "CREATE")
-    response = make_response(f"Created: {name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {name}'}, STATUS.OK)
     return response
 
 
@@ -159,20 +159,19 @@ def get_ep():
 
     if not valid:
         log_access(canvas_id, False, "GET")
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     canvas = get_canvas_by_id(canvas_id)
 
     if not authorized_page_access(token, canvas['PageID']):
         log_access(canvas_id, False, "GET")
-        return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     if canvas is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
 
     log_access(canvas_id, True, "GET")
-    response = make_response(canvas, STATUS.OK)
+    response = make_response({'status': 'success', 'message': canvas}, STATUS.OK)
     return response
 
 
@@ -185,18 +184,17 @@ def get_all_by_page_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     canvases = get_canvas_by_page(page_id)
 
     if not authorized_page_access(token, page_id):
-        return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     if canvases is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
-    response = make_response(canvases, STATUS.OK)
+    response = make_response({'status': 'success', 'message': canvases}, STATUS.OK)
     return response
 
 
@@ -213,21 +211,21 @@ def update_ep():
 
     if not valid:
         log_access(canvas_id, False, "UPDATE")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     equation = get_canvas_by_id(canvas_id)
 
     if not authorized_page_access(token, equation['PageID']):
         log_access(canvas_id, False, "UPDATE")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     updated_canvas = update_canvas(canvas_id, name, description)
 
     if updated_canvas is None:
-        return make_response("Failed To Update Canvas", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Update Canvas"}, STATUS.FORBIDDEN)
 
     log_access(canvas_id, True, "UPDATE")
-    response = make_response(f"Updated: {name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {name}'}, STATUS.OK)
     return response
 
 
@@ -243,17 +241,17 @@ def update_content_ep():
 
     if not valid:
         log_access(canvas_id, False, "UPDATE")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     canvas = get_canvas_by_id(canvas_id)
 
     if not authorized_page_access(token, canvas['PageID']):
         log_access(canvas_id, False, "UPDATE")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     update_canvas_content(canvas_id, content)
     log_access(canvas_id, True, "UPDATE")
-    response = make_response(f"Updated {canvas['name']} Translation", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {canvas["name"]}'}, STATUS.OK)
     return response
 
 
@@ -268,18 +266,18 @@ def delete_ep():
 
     if not valid:
         log_access(canvas_id, False, "DELETE")
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     canvas = get_canvas_by_id(canvas_id)
 
     if not authorized_page_access(token, canvas['PageID']):
         log_access(canvas_id, False, "DELETE")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     log_access(canvas_id, True, "DELETE")
     delete_canvas(canvas_id)
 
-    response = make_response(f"Deleted: {canvas}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Deleted {canvas["name"]}'}, STATUS.OK)
     return response
 
 
