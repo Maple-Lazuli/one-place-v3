@@ -236,9 +236,8 @@ def delete_ep():
         log_access(translation_id, False, "GET")
         return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
 
-    delete_translation(translation_id)
-
     log_access(translation_id, True, "GET")
+    delete_translation(translation_id)
     response = make_response(f"Deleted: {translation_id}", STATUS.OK)
     return response
 
