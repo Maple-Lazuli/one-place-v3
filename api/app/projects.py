@@ -139,15 +139,15 @@ def create_project_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     new_project = create_project(session['UserID'], project_name, description)
     create_access_request(session['SessionID'], new_project['ProjectID'], valid, f"CREATE")
 
     if new_project is None:
-        return make_response("Failed To Create Project", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Create Project"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Created: {project_name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {project_name}'}, STATUS.OK)
     return response
 
 
@@ -164,20 +164,20 @@ def update_project_ep():
 
     if not valid:
         create_access_request(session['SessionID'], project_id, valid, f"UPDATE")
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_project_access(token, project_id):
         create_access_request(session['SessionID'], project_id, valid, f"UPDATE")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     updated_project = update_project(project_id, new_project_name, new_description)
 
     create_access_request(session['SessionID'], project_id, valid, f"UPDATE")
 
     if updated_project is None:
-        return make_response("Failed To Update Project", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Update Project"}, STATUS.FORBIDDEN)
 
-    response = make_response(f"Updated: {new_project_name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {new_project_name}'}, STATUS.OK)
     return response
 
 
@@ -191,16 +191,16 @@ def delete_project_ep():
 
     if not valid:
         create_access_request(session['SessionID'], project_id, valid, "DELETE")
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_project_access(token, project_id):
         create_access_request(session['SessionID'], project_id, valid, "DELETE")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     create_access_request(session['SessionID'], project_id, valid, "DELETE")
     delete_project(project_id)
 
-    response = make_response(f"Deleted: {project_id}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Deleted: {project_id}'}, STATUS.OK)
     return response
 
 
@@ -213,19 +213,18 @@ def get_projects_ep():
 
     if not valid:
         create_access_request(session['SessionID'], project_id, valid, "GET")
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_project_access(token, project_id):
         create_access_request(session['SessionID'], project_id, valid, "GET")
-        return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     project = get_project_by_id(project_id)
     create_access_request(session['SessionID'], project_id, valid, "GET")
     if project is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
-    response = make_response(project, STATUS.OK)
+    response = make_response({'status': 'success', 'message': project}, STATUS.OK)
     return response
 
 
@@ -241,10 +240,9 @@ def get_all_projects_ep():
     projects = get_projects_with_token(token)
 
     if projects is None:
-        response = make_response("No Projects Found.", STATUS.NO_CONTENT)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
-    response = make_response(projects, STATUS.OK)
+    response = make_response({'status': 'success', 'message': projects}, STATUS.OK)
     return response
 
 

@@ -25,7 +25,6 @@ def get_last_update(todo_id):
     return None
 
 
-
 def create_todo(project_id, name, description, due=None):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -135,16 +134,16 @@ def create_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_project_access(token, project_id):
-        return make_response("Not Authorized To Access ToDo", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     new_todo = create_todo(project_id, todo_name, todo_description, todo_due)
     if new_todo is None:
-        return make_response("Failed To Create Todo", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Create Todo"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Created: {todo_name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {todo_name}'}, STATUS.OK)
     return response
 
 
@@ -156,18 +155,17 @@ def get_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     todo = get_todo_by_id(todo_id)
 
     if not authorized_project_access(token, todo['ProjectID']):
-        return make_response("Not Authorized To Access ToDo", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     if todo is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
-    response = make_response(todo, STATUS.OK)
+    response = make_response({'status': 'success', 'message': todo}, STATUS.OK)
     return response
 
 
@@ -179,18 +177,17 @@ def get_all_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_project_access(token, project_id):
-        return make_response("Not Authorized To Access", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     todo_list = get_all_todo(project_id)
 
     if todo_list is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
-    response = make_response(todo_list, STATUS.OK)
+    response = make_response({'status': 'success', 'message': todo_list}, STATUS.OK)
     return response
 
 
@@ -211,19 +208,19 @@ def update_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     todo = get_todo_by_id(todo_id)
 
     if not authorized_project_access(token, todo['ProjectID']):
-        return make_response("Not Authorized To Access ToDo", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     updated_todo = update_todo(todo_id, todo_name, todo_description, todo_due)
 
     if updated_todo is None:
-        return make_response("Failed To Update Todo", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Update Todo"}, STATUS.FORBIDDEN)
 
-    response = make_response(f"Updated: {todo_name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {todo_name}'}, STATUS.OK)
     return response
 
 
@@ -237,19 +234,19 @@ def complete_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     todo = get_todo_by_id(todo_id)
 
     if not authorized_project_access(token, todo['ProjectID']):
-        return make_response("Not Authorized To Access ToDo", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     completed_todo = complete_todo(todo_id)
 
     if completed_todo is None:
-        return make_response("Failed To Complete Todo", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Complete Todo"}, STATUS.FORBIDDEN)
 
-    response = make_response(f"Completed: {completed_todo['name']}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Completed {completed_todo["name"]}'}, STATUS.OK)
     return response
 
 
@@ -263,16 +260,16 @@ def delete_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     todo = get_todo_by_id(todo_id)
 
     if not authorized_project_access(token, todo['ProjectID']):
-        return make_response("Not Authorized To Access ToDo", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     delete_todo(todo_id)
 
-    response = make_response(f"Deleted: {todo['name']}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {todo["name"]}'}, STATUS.OK)
     return response
 
 

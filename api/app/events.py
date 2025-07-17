@@ -23,7 +23,6 @@ def get_last_update(event_id):
     return None
 
 
-
 def create_event(projectID, name, description, eventTime, duration):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -121,16 +120,16 @@ def create_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_project_access(token, project_id):
-        return make_response("Not Authorized To Access Event", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     new_event = create_event(project_id, event_name, event_description, event_time, duration)
     if new_event is None:
-        return make_response("Failed To Create Event", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Create Event"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response(f"Created: {event_name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {event_name}'}, STATUS.OK)
     return response
 
 
@@ -142,18 +141,17 @@ def get_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     event = get_event_by_id(event_id)
 
     if not authorized_project_access(token, event['ProjectID']):
-        return make_response("Not Authorized To Access Event", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     if event is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
 
-    response = make_response(event, STATUS.OK)
+    response = make_response({'status': 'success', 'message': event}, STATUS.OK)
     return response
 
 
@@ -166,7 +164,7 @@ def get_all_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     if not authorized_project_access(token, project_id):
         return make_response("Not Authorized To Access", STATUS.FORBIDDEN)
@@ -174,10 +172,9 @@ def get_all_ep():
     event_list = get_all_events(project_id)
 
     if event_list is None:
-        response = make_response("Does Not Exist", STATUS.OK)
-        return response
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
 
-    response = make_response(event_list, STATUS.OK)
+    response = make_response({'status': 'success', 'message': event_list}, STATUS.OK)
     return response
 
 
@@ -197,19 +194,19 @@ def update_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     todo = get_event_by_id(event_id)
 
     if not authorized_project_access(token, todo['ProjectID']):
-        return make_response("Not Authorized To Access Event", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     updated_event = update_event(event_id, event_name, event_description, event_time, duration)
 
     if updated_event is None:
-        return make_response("Failed To Update Event", STATUS.INTERNAL_SERVER_ERROR)
+        return make_response({'status': 'error', 'message': "Failed To Update Event"}, STATUS.FORBIDDEN)
 
-    response = make_response(f"Updated: {event_name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Updated {event_name}'}, STATUS.OK)
     return response
 
 
@@ -223,16 +220,16 @@ def delete_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Session is Invalid", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     event = get_event_by_id(event_id)
 
     if not authorized_project_access(token, event['ProjectID']):
-        return make_response("Not Authorized To Access Event", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     delete_event(event_id)
 
-    response = make_response(f"Deleted: {event['name']}", STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Deleted {event["name"]}'}, STATUS.OK)
     return response
 
 
