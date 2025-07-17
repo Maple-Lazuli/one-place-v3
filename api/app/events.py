@@ -238,5 +238,5 @@ def last_update():
     event_id = int(request.args.get("id"))
     time = get_last_update(event_id)
     if time is None:
-        return make_response({"event_id": event_id, "last_update": "Null"}, STATUS.NO_CONTENT)
+        return make_response({"event_id": event_id, "last_update": "Null"}, STATUS.OK)
     return make_response({"event_id": event_id, "last_update": time}, STATUS.OK)

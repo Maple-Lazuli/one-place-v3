@@ -291,5 +291,5 @@ def last_update():
     canvas_id = int(request.args.get("id"))
     time = get_last_update(canvas_id)
     if time is None:
-        return make_response({"canvas_id": canvas_id, "last_update": "Null"}, STATUS.NO_CONTENT)
+        return make_response({"canvas_id": canvas_id, "last_update": "Null"}, STATUS.OK)
     return make_response({"canvas_id": canvas_id, "last_update": time}, STATUS.OK)

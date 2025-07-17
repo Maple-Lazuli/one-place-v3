@@ -263,5 +263,5 @@ def last_update():
     page_ip = int(request.args.get("id"))
     time = get_last_update(page_ip)
     if time is None:
-        return make_response({"page_ip": page_ip, "last_update": "Null"}, STATUS.NO_CONTENT)
+        return make_response({"page_ip": page_ip, "last_update": "Null"}, STATUS.OK)
     return make_response({"page_ip": page_ip, "last_update": time}, STATUS.OK)

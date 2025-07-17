@@ -251,5 +251,5 @@ def last_update():
     project_id = int(request.args.get("id"))
     time = get_last_update(project_id)
     if time is None:
-        return make_response({"project_id": project_id, "last_update": "Null"}, STATUS.NO_CONTENT)
+        return make_response({"project_id": project_id, "last_update": "Null"}, STATUS.OK)
     return make_response({"project_id": project_id, "last_update": time}, STATUS.OK)
