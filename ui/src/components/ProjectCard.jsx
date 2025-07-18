@@ -18,7 +18,7 @@ export default function ProjectCard ({
 }) {
   const handleDelete = async project_id => {
     const payload = {
-      project_id: Number(project_id) // convert string param to number
+      project_id: Number(project_id)
     }
 
     try {
@@ -27,13 +27,13 @@ export default function ProjectCard ({
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include', // to send the cookie
+        credentials: 'include',
         body: JSON.stringify(payload)
       })
 
       const data = await res.json()
       if (data.status === 'success') {
-        onDelete?.(project_id) // Notify parent to remove the card
+        onDelete?.(project_id)
       } else {
         console.error(data.message)
       }
@@ -49,7 +49,7 @@ export default function ProjectCard ({
         height: 200,
         display: 'flex',
         flexDirection: 'column',
-        flexGrow: 1,
+        justifyContent: 'space-between',
         ...sx
       }}
     >
@@ -58,8 +58,18 @@ export default function ProjectCard ({
           {name}
         </Typography>
         <Typography variant='body2'>{description}</Typography>
-        <Stack direction='row' spacing={2}>
+      </CardContent>
+
+      <Box sx={{ width: '100%', px: 2, pb: 2 }}>
+        <Stack
+          direction='row'
+          spacing={2}
+          justifyContent='space-between'
+          sx={{ width: '100%' }}
+        >
           <Button
+            fullWidth
+            sx={{ flex: 1 }}
             variant='outlined'
             component={Link}
             to={`/projects/project/${project_id}`}
@@ -67,14 +77,18 @@ export default function ProjectCard ({
             Open
           </Button>
           <Button
+            fullWidth
+            sx={{ flex: 1 }}
             variant='outlined'
             component={Link}
             color='warning'
-            to={`/projects/project/${project_id}/`}
+            to={`/projects/project/${project_id}/update`}
           >
             Edit
           </Button>
           <Button
+            fullWidth
+            sx={{ flex: 1 }}
             variant='outlined'
             color='error'
             onClick={() => handleDelete(project_id)}
@@ -82,7 +96,7 @@ export default function ProjectCard ({
             Delete
           </Button>
         </Stack>
-      </CardContent>
+      </Box>
     </Card>
   )
 }
