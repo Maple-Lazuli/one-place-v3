@@ -21,6 +21,16 @@ export default function UpdateTodoForm () {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const formatLocalDateTime = date => {
+    const pad = n => String(n).padStart(2, '0')
+    const yyyy = date.getFullYear()
+    const MM = pad(date.getMonth() + 1)
+    const dd = pad(date.getDate())
+    const hh = pad(date.getHours())
+    const mm = pad(date.getMinutes())
+    return `${yyyy}-${MM}-${dd}T${hh}:${mm}`
+  }
+
   // Fetch todo details on mount
   useEffect(() => {
     async function fetchTodo () {
@@ -36,16 +46,18 @@ export default function UpdateTodoForm () {
           throw new Error(data.message || 'Failed to load todo data')
         }
 
-        const todo = data.message // from response: { status: 'success', message: todo }
+        const todo = data.message
 
         setTitle(todo.name || '')
-        const dt = new Date(todo.dueTime || null)
-        if (dt != null) {
-          const localISO = dt.toISOString().slice(0, 16)
-          setDateTime(localISO)
+
+        if (todo.dueTime) {
+          const dt = new Date(todo.dueTime * 1000)
+          setDateTime(formatLocalDateTime(dt))
+        } else {
+          setDateTime('')
         }
 
-        setDescription(todo.Description || '')
+        setDescription(todo.description || '')
       } catch (err) {
         setError(err.message)
       } finally {
@@ -92,7 +104,7 @@ export default function UpdateTodoForm () {
       }
 
       setSuccess(data.message || 'Todo updated successfully!')
-      setTimeout(() => navigate(`/projects/project/${project_id}/todo`), 1500)
+      setTimeout(() => navigate(`/projects/project/${project_id}/todos`), 1500)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -140,7 +152,6 @@ export default function UpdateTodoForm () {
         value={dateTime}
         onChange={e => setDateTime(e.target.value)}
         InputLabelProps={{ shrink: true }}
-        required
       />
 
       <TextField

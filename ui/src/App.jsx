@@ -20,6 +20,8 @@ import Canvases from './components/projects/project/Canvases'
 import Translations from './components/projects/project/Translations'
 import CreateEventForm from './components/projects/project/CreateEventForm'
 import UpdateEventForm from './components/projects/project/UpdateEventForm'
+import CreateTodoForm from './components/projects/project/CreateTodoForm'
+import UpdateTodoForm from './components/projects/project/UpdateTodoForm'
 import EditProject from './components/UpdateProject'
 const theme = createTheme({
   palette: {
@@ -50,6 +52,8 @@ export default function App () {
             <Route path='pages' element={<Pages />} />
             <Route path='update' element={<EditProject />} />
             <Route path='todos' element={<Todos />} />
+            <Route path='todos/create' element={<CreateTodoForm />} />
+            <Route path='todos/update/:todo_id' element={<UpdateTodoForm />} />
             <Route path='attachments' element={<Attachments />} />
             <Route path='events' element={<Events />} />
             <Route path='events/create' element={<CreateEventForm />} />

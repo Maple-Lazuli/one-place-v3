@@ -14,7 +14,7 @@ export default function Todos() {
 
   useEffect(() => {
     async function fetchTodos() {
-      const res = await fetch(`/api/events/get_project_todo?project_id=${project_id}`, {
+      const res = await fetch(`/api/todo/get_project_todo?project_id=${project_id}`, {
         credentials: 'include',
       })
       const data = await res.json()
@@ -27,16 +27,44 @@ export default function Todos() {
   }, [project_id])
 
   const handleDelete = (deletedId) => {
-    setEvents((prev) => prev.filter((todo) => todo.TodoId !== deletedId))
+    setTodos((prev) => prev.filter((todo) => todo.TodoID !== deletedId))
   }
 
-  const now = Date.now() / 1000 // current UNIX timestamp in seconds
+    const handleComplete = (completedTodoId) => {
+    setTodos((prevTodos) =>
+      prevTodos.map((todo) =>
+        todo.TodoID === completedTodoId ? { ...todo, completed: true, timeCompleted: Math.floor(Date.now() / 1000) } : todo
+      )
+    )
+  }
+
+  const now = Math.floor(Date.now() / 1000)
+const in24Hours = now + 24 * 60 * 60
+
+  const getBorderColor = (dueTime) => {
+  if (!dueTime) return undefined 
+
+  if (dueTime < now) return 'red' 
+  if (dueTime >= now && dueTime <= in24Hours) return 'orange' 
+
+  return undefined 
+}
 
   const pendingTodo = [...todos]
-    .filter((t) => t.completed === false)
+    .filter((t) => !t.completed)
+    .sort((a, b) => {
+      if (!a.dueTime) return 1
+      if (!b.dueTime) return -1
+      return a.dueTime - b.dueTime
+    })
 
   const completedTodo = [...todos]
     .filter((t) => t.completed)
+    .sort((a, b) => {
+      if (!a.timeCompleted) return 1
+      if (!b.timeCompleted) return -1
+      return b.timeCompleted - a.timeCompleted
+    })
 
   return (
     <Box sx={{ p: 2 }}>
@@ -50,23 +78,25 @@ export default function Todos() {
 
       <Button
         component={Link}
-        to={`/projects/project/${project_id}/todo/create`}
+        to={`/projects/project/${project_id}/todos/create`}
         variant="contained"
         sx={{ mb: 3 }}
       >
-        Create New Tdo
+        Create New Todo
       </Button>
 
       <Typography variant="h6" gutterBottom>Pending Todos</Typography>
       <Grid container spacing={2}>
         {pendingTodo.map((todo) => (
           <Grid key={todo.TodoID} item xs={12} sm={6} md={4}>
-            <EventCard
+            <TodoCard
               name={todo.name}
               date={todo.dueTime}
               description={todo.description}
               todo_id={todo.TodoID}
               onDelete={handleDelete}
+              onComplete={handleComplete} 
+              borderColor={getBorderColor(todo.dueTime)} 
             />
           </Grid>
         ))}
@@ -76,12 +106,14 @@ export default function Todos() {
       <Grid container spacing={2}>
         {completedTodo.map((todo) => (
           <Grid key={todo.TodoID} item xs={12} sm={6} md={4}>
-            <EventCard
+            <TodoCard
               name={todo.name}
               date={todo.dueTime}
               description={todo.description}
               todo_id={todo.TodoID}
               onDelete={handleDelete}
+              isPast={true}
+              completedTime={todo.timeCompleted}
             />
           </Grid>
         ))}

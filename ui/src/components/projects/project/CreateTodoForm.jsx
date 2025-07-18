@@ -65,7 +65,7 @@ export default function CreateTodoForm () {
       if (!res.ok) {
         throw new Error(data.message || 'Failed to create todo.')
       }
-      navigate(`/projects/project/${project_id}/todo`)
+      navigate(`/projects/project/${project_id}/todos`)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -106,7 +106,6 @@ export default function CreateTodoForm () {
         value={dateTime}
         onChange={e => setDateTime(e.target.value)}
         InputLabelProps={{ shrink: true }}
-        required
       />
 
       <TextField

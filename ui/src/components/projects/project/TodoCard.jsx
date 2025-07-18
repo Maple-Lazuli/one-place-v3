@@ -9,38 +9,48 @@ import {
 } from '@mui/material'
 import { Link, useParams } from 'react-router-dom'
 
-export default function TodoCard ({
+export default function TodoCard({
   name,
   date,
   description,
   todo_id,
   onDelete,
-  isPast = false
+  onComplete, 
+  isPast = false,
+  completedTime,
+  borderColor
 }) {
   const { project_id } = useParams()
 
-  const formattedDate = new Date(date * 1000).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-
-  const handleDelete = async todo_id => {
+  const formatUnixTime = (unix) => {
+    if (!unix) return 'undefined'
     try {
-      const res = await fetch('/api/todos/delete', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include', // to send the cookie
-        body: JSON.stringify({ todo_id: todo_id })
+      return new Date(unix * 1000).toLocaleString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
       })
+    } catch {
+      return 'undefined'
+    }
+  }
 
+  const formattedDueDate = formatUnixTime(date)
+  const formattedCompletedTime = formatUnixTime(completedTime)
+
+  const handleDelete = async (todo_id) => {
+    try {
+      const res = await fetch('/api/todo/delete', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ todo_id })
+      })
       const data = await res.json()
       if (data.status === 'success') {
-        onDelete?.(todo_id) // Notify parent to remove the card
+        onDelete?.(todo_id)
       } else {
         console.error(data.message)
       }
@@ -49,25 +59,22 @@ export default function TodoCard ({
     }
   }
 
-    const handleComplete = async todo_id => {
+  const handleComplete = async (todo_id) => {
     try {
-      const res = await fetch('/api/todos/complete', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include', // to send the cookie
-        body: JSON.stringify({ todo_id: todo_id })
+      const res = await fetch('/api/todo/complete', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ todo_id })
       })
-
       const data = await res.json()
       if (data.status === 'success') {
-        onDelete?.(todo_id) // Notify parent to remove the card
+        onComplete?.(todo_id)
       } else {
         console.error(data.message)
       }
     } catch (err) {
-      console.error('Delete failed', err)
+      console.error('Complete failed', err)
     }
   }
 
@@ -76,7 +83,8 @@ export default function TodoCard ({
       sx={{
         maxWidth: 400,
         mb: 2,
-        opacity: isPast ? 0.5 : 1
+        opacity: isPast ? 0.5 : 1,
+        border: borderColor ? `3px solid ${borderColor}` : undefined
       }}
     >
       <CardContent>
@@ -84,8 +92,13 @@ export default function TodoCard ({
           {name}
         </Typography>
         <Typography variant='subtitle2' color='text.secondary' gutterBottom>
-          {formattedDate}
+          Due: {formattedDueDate}
         </Typography>
+        {isPast && (
+          <Typography variant='subtitle2' color='text.secondary' gutterBottom>
+            Completed On: {formattedCompletedTime}
+          </Typography>
+        )}
         <Box sx={{ whiteSpace: 'pre-line', mb: 2 }}>
           <Typography variant='body2' color='text.primary'>
             {description}
@@ -93,17 +106,19 @@ export default function TodoCard ({
         </Box>
 
         <Stack direction='row' spacing={1}>
-          <Button
-            variant='outlined'
-            color='success'
-            onClick={() => handleComplete(todo_id)}
-          >
-            Delete
-          </Button>
+          {!isPast && (
+            <Button
+              variant='outlined'
+              color='success'
+              onClick={() => handleComplete(todo_id)}
+            >
+              Complete
+            </Button>
+          )}
           <Button
             variant='outlined'
             component={Link}
-            to={`/projects/project/${project_id}/todo/update/${todo_id}`}
+            to={`/projects/project/${project_id}/todos/update/${todo_id}`}
           >
             Edit
           </Button>
