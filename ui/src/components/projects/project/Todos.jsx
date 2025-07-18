@@ -38,7 +38,7 @@ export default function Todos() {
     )
   }
 
-  const now = Math.floor(Date.now() / 1000)
+const now = Math.floor(Date.now() / 1000)
 const in24Hours = now + 24 * 60 * 60
 
   const getBorderColor = (dueTime) => {

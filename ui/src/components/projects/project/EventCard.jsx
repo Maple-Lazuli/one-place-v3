@@ -15,7 +15,8 @@ export default function EventCard({
   description,
   event_id,
   onDelete,
-  isPast = false
+  isPast = false,
+  borderColor
 }) {
   const { project_id } = useParams()
 
@@ -56,6 +57,7 @@ const formattedDate = new Date(date * 1000).toLocaleString(undefined, {
         maxWidth: 400,
         mb: 2,
         opacity: isPast ? 0.5 : 1,
+        border: borderColor ? `3px solid ${borderColor}` : undefined
       }}
     >
       <CardContent>

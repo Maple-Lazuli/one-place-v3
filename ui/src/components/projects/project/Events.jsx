@@ -31,6 +31,15 @@ export default function Events() {
   }
 
   const now = Date.now() / 1000 // current UNIX timestamp in seconds
+  const in24Hours = now + 24 * 60 * 60
+
+  const getBorderColor = (eventTime) => {
+  if (!eventTime) return undefined 
+
+  if (eventTime >= now && eventTime <= in24Hours) return 'orange' 
+
+  return undefined 
+}
 
   const futureEvents = [...events]
     .filter((e) => e.eventTime > now)
@@ -62,13 +71,14 @@ export default function Events() {
       <Typography variant="h6" gutterBottom>Future Events</Typography>
       <Grid container spacing={2}>
         {futureEvents.map((event) => (
-          <Grid key={event.EventID} item xs={12} sm={6} md={4}>
+          <Grid key={event.EventID}>
             <EventCard
               name={event.name}
               date={event.eventTime}
               description={event.description}
               event_id={event.EventID}
               onDelete={handleDelete}
+              borderColor={getBorderColor(event.eventTime)} 
             />
           </Grid>
         ))}
@@ -77,7 +87,7 @@ export default function Events() {
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>Past Events</Typography>
       <Grid container spacing={2}>
         {pastEvents.map((event) => (
-          <Grid key={event.EventID} item xs={12} sm={6} md={4}>
+          <Grid key={event.EventID}>
             <EventCard
               name={event.name}
               date={event.eventTime}
