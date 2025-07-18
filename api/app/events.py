@@ -11,6 +11,13 @@ from .projects import authorized_project_access
 event_fields = ['EventID', 'ProjectID', 'name', 'description', 'timeCreated', 'eventTime', 'duration', 'lastUpdate']
 
 
+def convert_time(object):
+    object['timeCreated'] = object['timeCreated'].timestamp()
+    object['eventTime'] = object['eventTime'].timestamp()
+    object['lastUpdate'] = object['lastUpdate'].timestamp()
+    return object
+
+
 def get_last_update(event_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -19,7 +26,7 @@ def get_last_update(event_id):
     cursor.close()
     conn.close()
     if last_update is not None:
-        return last_update[0]
+        return last_update[0].timestamp()
     return None
 
 
@@ -37,6 +44,7 @@ def create_event(projectID, name, description, eventTime, duration):
     conn.close()
     if new_event is not None:
         new_event = {k: v for k, v in zip(event_fields, new_event)}
+        new_event = convert_time(new_event)
     return new_event
 
 
@@ -54,6 +62,7 @@ def update_event(event_id, name, description, eventTime, duration):
     conn.close()
     if updated_event is not None:
         updated_event = {k: v for k, v in zip(event_fields, updated_event)}
+        updated_event = convert_time(updated_event)
     return updated_event
 
 
@@ -76,6 +85,7 @@ def get_event_by_id(event_id):
     conn.close()
     if event is not None:
         event = {k: v for k, v in zip(event_fields, event)}
+        event = convert_time(event)
     return event
 
 
@@ -91,6 +101,7 @@ def get_all_events(project_id):
         event_list = []
         for event in events:
             event = {k: v for k, v in zip(event_fields, event)}
+            event = convert_time(event)
             event_list.append(event)
         return event_list
     return None
