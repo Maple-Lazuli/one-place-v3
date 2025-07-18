@@ -104,7 +104,7 @@ export default function UpdateTodoForm () {
       }
 
       setSuccess(data.message || 'Todo updated successfully!')
-      setTimeout(() => navigate(`/projects/project/${project_id}/todos`), 1500)
+      setTimeout(() => navigate(`/projects/project/${project_id}/todos`), 1000)
     } catch (err) {
       setError(err.message)
     } finally {

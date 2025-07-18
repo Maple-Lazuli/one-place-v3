@@ -65,7 +65,8 @@ export default function CreateTodoForm () {
       if (!res.ok) {
         throw new Error(data.message || 'Failed to create todo.')
       }
-      navigate(`/projects/project/${project_id}/todos`)
+      setSuccess(data.message || 'Todo created successfully!')
+      setTimeout(() => navigate(`/projects/project/${project_id}/todos`), 1000)
     } catch (err) {
       setError(err.message)
     } finally {

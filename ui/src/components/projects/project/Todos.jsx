@@ -88,7 +88,7 @@ const in24Hours = now + 24 * 60 * 60
       <Typography variant="h6" gutterBottom>Pending Todos</Typography>
       <Grid container spacing={2}>
         {pendingTodo.map((todo) => (
-          <Grid key={todo.TodoID} item xs={12} sm={6} md={4}>
+          <Grid key={todo.TodoID}>
             <TodoCard
               name={todo.name}
               date={todo.dueTime}
@@ -105,7 +105,7 @@ const in24Hours = now + 24 * 60 * 60
       <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>Completed Todos</Typography>
       <Grid container spacing={2}>
         {completedTodo.map((todo) => (
-          <Grid key={todo.TodoID} item xs={12} sm={6} md={4}>
+          <Grid key={todo.TodoID}>
             <TodoCard
               name={todo.name}
               date={todo.dueTime}

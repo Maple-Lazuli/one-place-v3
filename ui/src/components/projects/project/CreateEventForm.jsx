@@ -67,7 +67,8 @@ export default function CreateEventForm () {
       if (!res.ok) {
         throw new Error(data.message || 'Failed to create event.')
       }
-      navigate(`/projects/project/${project_id}/events`)
+      setSuccess(data.message || 'Event created successfully!')
+      setTimeout(() => navigate(`/projects/project/${project_id}/events`), 1000)
     } catch (err) {
       setError(err.message)
     } finally {

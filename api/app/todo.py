@@ -182,7 +182,6 @@ def get_ep():
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
     response = make_response({'status': 'success', 'message': todo}, STATUS.OK)
-    print(todo)
     return response
 
 
