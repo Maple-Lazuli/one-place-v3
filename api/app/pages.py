@@ -240,19 +240,19 @@ def get_page_ep():
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        create_page_access_request(session['SessionID'], page_id, valid, "DELETE")
+        create_page_access_request(session['SessionID'], page_id, valid, "GET")
         return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     page = get_page_by_id(page_id)
 
     if not authorized_project_access(token, page['ProjectID']):
-        create_page_access_request(session['SessionID'], page_id, False, "DELETE")
+        create_page_access_request(session['SessionID'], page_id, False, "GET")
         return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     if page is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
-    create_page_access_request(session['SessionID'], page['PageID'], valid, "DELETE")
+    create_page_access_request(session['SessionID'], page['PageID'], valid, "GET")
 
     response = make_response({'status': 'success', 'message': page}, STATUS.OK)
     return response

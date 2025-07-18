@@ -8,7 +8,6 @@ import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import ProjectCard from './ProjectCard'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 export default function Projects () {
   const [projects, setProjects] = useState([])

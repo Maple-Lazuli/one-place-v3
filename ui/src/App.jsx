@@ -60,7 +60,7 @@ export default function App () {
             <Route path='canvases' element={<Canvases />} />
           </Route>
 
-          <Route path='/projects/project/:project_id' element={<Project />} />
+          <Route path='/projects/' element={<Projects />} />
           <Route path='/projects/create' element={<CreateProject />} />
         </Routes>
       </Router>

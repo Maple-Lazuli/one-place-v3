@@ -11,7 +11,7 @@ export default function Register() {
     e.preventDefault();
     setError("");
     try {
-      const res = await fetch("/users/create_user", {
+      const res = await fetch("/api/users/create_user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
