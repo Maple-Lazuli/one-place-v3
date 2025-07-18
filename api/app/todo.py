@@ -16,8 +16,11 @@ todo_fields = ['TodoID', 'ProjectID', 'name', 'description', 'timeCreated', 'due
 def convert_time(object):
     object['timeCreated'] = object['timeCreated'].timestamp()
     if object['dueTime'] is not None:
-        object['dueTime'] = object['eventTime'].timestamp()
+        object['dueTime'] = object['dueTime'].timestamp()
+    if object['timeCompleted'] is not None:
+        object['timeCompleted'] = object['timeCompleted'].timestamp()
     object['lastUpdate'] = object['lastUpdate'].timestamp()
+
     return object
 
 
@@ -179,6 +182,7 @@ def get_ep():
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
     response = make_response({'status': 'success', 'message': todo}, STATUS.OK)
+    print(todo)
     return response
 
 
