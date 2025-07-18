@@ -13,6 +13,14 @@ todo_fields = ['TodoID', 'ProjectID', 'name', 'description', 'timeCreated', 'due
                'lastUpdate']
 
 
+def convert_time(object):
+    object['timeCreated'] = object['timeCreated'].timestamp()
+    if object['dueTime'] is not None:
+        object['dueTime'] = object['eventTime'].timestamp()
+    object['lastUpdate'] = object['lastUpdate'].timestamp()
+    return object
+
+
 def get_last_update(todo_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -21,7 +29,7 @@ def get_last_update(todo_id):
     cursor.close()
     conn.close()
     if last_update is not None:
-        return last_update[0]
+        return last_update[0].timestamp()
     return None
 
 
@@ -39,6 +47,7 @@ def create_todo(project_id, name, description, due=None):
     conn.close()
     if new_todo is not None:
         new_todo = {k: v for k, v in zip(todo_fields, new_todo)}
+        new_todo = convert_time(new_todo)
     return new_todo
 
 
@@ -54,6 +63,7 @@ def get_all_todo(project_id):
         todo_list = []
         for todo in todos:
             todo = {k: v for k, v in zip(todo_fields, todo)}
+            todo = convert_time(todo)
             todo_list.append(todo)
         return todo_list
     return None
@@ -69,6 +79,7 @@ def get_todo_by_id(todo_id):
     conn.close()
     if todo is not None:
         todo = {k: v for k, v in zip(todo_fields, todo)}
+        todo = convert_time(todo)
     return todo
 
 
@@ -83,6 +94,7 @@ def complete_todo(todo_id):
     conn.close()
     if completed_todo is not None:
         completed_todo = {k: v for k, v in zip(todo_fields, completed_todo)}
+        completed_todo = convert_time(completed_todo)
     return completed_todo
 
 
@@ -109,6 +121,7 @@ def update_todo(todo_id, name, description, due=None):
     conn.close()
     if updated_todo is not None:
         updated_todo = {k: v for k, v in zip(todo_fields, updated_todo)}
+        updated_todo = convert_time(updated_todo)
     return updated_todo
 
 
@@ -280,4 +293,3 @@ def last_update():
     if time is None:
         return make_response({"todo_id": todo_id, "last_update": "Null"}, STATUS.OK)
     return make_response({"todo_id": todo_id, "last_update": time}, STATUS.OK)
-
