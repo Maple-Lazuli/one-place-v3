@@ -9,24 +9,26 @@ import {
 } from '@mui/material'
 import { Link, useParams } from 'react-router-dom'
 
-export default function EventCard ({
+export default function EventCard({
   name,
   date,
   description,
   event_id,
-  onDelete
+  onDelete,
+  isPast = false
 }) {
   const { project_id } = useParams()
 
-  const formattedDate = new Date(date).toLocaleString(undefined, {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
+const formattedDate = new Date(date * 1000).toLocaleString(undefined, {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+})
 
-  const handleDelete = async () => {
+
+  const handleDelete = async (event_id) => {
     try {
       const res = await fetch('/api/events/delete', {
         method: 'DELETE',
@@ -34,7 +36,7 @@ export default function EventCard ({
           'Content-Type': 'application/json'
         },
         credentials: 'include', // to send the cookie
-        body: JSON.stringify({ event_id })
+        body: JSON.stringify({ event_id: event_id })
       })
 
       const data = await res.json()
@@ -49,7 +51,13 @@ export default function EventCard ({
   }
 
   return (
-    <Card sx={{ maxWidth: 400, mb: 2 }}>
+        <Card
+      sx={{
+        maxWidth: 400,
+        mb: 2,
+        opacity: isPast ? 0.5 : 1,
+      }}
+    >
       <CardContent>
         <Typography variant='h6' gutterBottom>
           {name}
@@ -71,7 +79,7 @@ export default function EventCard ({
           >
             Edit
           </Button>
-          <Button variant='outlined' color='error' onClick={handleDelete}>
+          <Button variant='outlined' color='error' onClick={() => handleDelete(event_id)}>
             Delete
           </Button>
         </Stack>

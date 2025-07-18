@@ -1,5 +1,10 @@
 import { useParams, Link } from 'react-router-dom'
-import { Typography, Box, Button } from '@mui/material'
+import {
+  Typography,
+  Box,
+  Button,
+  Grid
+} from '@mui/material'
 import { useEffect, useState } from 'react'
 import EventCard from './EventCard'
 
@@ -22,14 +27,25 @@ export default function Events() {
   }, [project_id])
 
   const handleDelete = (deletedId) => {
-    setEvents((prev) => prev.filter((event) => event.event_id !== deletedId))
+    setEvents((prev) => prev.filter((event) => event.EventID !== deletedId))
   }
+
+  const now = Date.now() / 1000 // current UNIX timestamp in seconds
+
+  const futureEvents = [...events]
+    .filter((e) => e.eventTime > now)
+    .sort((a, b) => a.eventTime - b.eventTime)
+
+  const pastEvents = [...events]
+    .filter((e) => e.eventTime <= now)
+    .sort((a, b) => b.eventTime - a.eventTime)
 
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>
         Events for Project {project_id}
       </Typography>
+
       <Typography variant="body1" sx={{ mb: 2 }}>
         Track or create events associated with this project.
       </Typography>
@@ -38,21 +54,41 @@ export default function Events() {
         component={Link}
         to={`/projects/project/${project_id}/events/create`}
         variant="contained"
-        sx={{ mb: 2 }}
+        sx={{ mb: 3 }}
       >
         Create New Event
       </Button>
 
-      {events.map((event) => (
-        <EventCard
-          key={event.event_id}
-          name={event.name}
-          date={event.date}
-          description={event.description}
-          event_id={event.event_id}
-          onDelete={handleDelete}
-        />
-      ))}
+      <Typography variant="h6" gutterBottom>Future Events</Typography>
+      <Grid container spacing={2}>
+        {futureEvents.map((event) => (
+          <Grid key={event.EventID} item xs={12} sm={6} md={4}>
+            <EventCard
+              name={event.name}
+              date={event.eventTime}
+              description={event.description}
+              event_id={event.EventID}
+              onDelete={handleDelete}
+            />
+          </Grid>
+        ))}
+      </Grid>
+
+      <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>Past Events</Typography>
+      <Grid container spacing={2}>
+        {pastEvents.map((event) => (
+          <Grid key={event.EventID} item xs={12} sm={6} md={4}>
+            <EventCard
+              name={event.name}
+              date={event.eventTime}
+              description={event.description}
+              event_id={event.EventID}
+              onDelete={handleDelete}
+              isPast={true}
+            />
+          </Grid>
+        ))}
+      </Grid>
     </Box>
   )
 }

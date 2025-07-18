@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 import {
   Box,
@@ -20,6 +20,7 @@ export default function CreateEventForm () {
   const [loading, setLoading] = useState(false)
 
   const { project_id } = useParams()
+    const navigate = useNavigate()
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -66,12 +67,7 @@ export default function CreateEventForm () {
       if (!res.ok) {
         throw new Error(data.message || 'Failed to create event.')
       }
-
-      setSuccess(data.message || 'Event created successfully!')
-      setTitle('')
-      setDateTime('')
-      setDescription('')
-      setDuration('')
+      navigate(`/projects/project/${project_id}/events`)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -116,7 +112,7 @@ export default function CreateEventForm () {
       />
 
       <TextField
-        label='Duration (minutes)'
+        label='Duration (Minutes) (Optional)'
         type='number'
         inputProps={{ min: 0 }}
         value={duration}
