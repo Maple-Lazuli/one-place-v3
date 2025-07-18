@@ -55,6 +55,10 @@ export default function Projects () {
     setOpen(false)
   }
 
+const handleDelete = (deletedId) => {
+  setProjects((prev) => prev.filter((project) => project.ProjectID !== deletedId))
+}
+
   return (
     <Container sx={{ py: 4 }}>
       <Link to='/projects/create' style={{ textDecoration: 'none' }}>
@@ -86,14 +90,14 @@ export default function Projects () {
         <Grid container spacing={3}>
           {projects.map(p => (
             <Grid
-              item
-              xs={4}
-              key={p.id || p.name}
+              key={p.ProjectID}
               sx={{ display: 'flex', height: '100%', minWidth: 0 }}
             >
               <ProjectCard
-                name={p.name}
+                name={`${p.name}`}
                 description={p.description}
+                project_id={p.ProjectID}
+                onDelete={handleDelete}
                 sx={{
                   flexGrow: 1,
                   width: 400,

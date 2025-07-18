@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function CreateProject() {
   const [name, setName] = useState("");
@@ -9,12 +8,19 @@ export default function CreateProject() {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
+  const maxChars = 250;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
 
     if (!name.trim()) {
       setError("Project name is required");
+      return;
+    }
+
+    if (description.length > maxChars) {
+      setError(`Description cannot exceed ${maxChars} characters`);
       return;
     }
 
@@ -65,8 +71,12 @@ export default function CreateProject() {
             id="project_description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            maxLength={maxChars}
             rows={4}
           />
+          <p style={{ fontSize: "0.9em", color: description.length > maxChars ? "red" : "gray" }}>
+            {description.length}/{maxChars} characters
+          </p>
         </div>
         <button type="submit">Create Project</button>
       </form>
