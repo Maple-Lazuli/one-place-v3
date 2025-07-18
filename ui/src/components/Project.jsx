@@ -11,21 +11,20 @@ import {
 } from '@mui/material'
 import MenuIcon from '@mui/icons-material/Menu'
 
-export default function Project() {
+export default function Project () {
   const { project_id } = useParams()
   const [open, setOpen] = useState(false)
 
   const toggleSidebar = () => setOpen(!open)
 
   const links = [
+    { label: 'Overview', path: '' },
     { label: 'Pages', path: `pages` },
     { label: 'Todos', path: `todos` },
-    { label: 'Attachments', path: `attachments` },
     { label: 'Events', path: `events` },
-    { label: 'Code Snippets', path: `snippets` },
-    { label: 'Canvases', path: `canvases` },
-    { label: 'Translations', path: `translations` }
-    
+    { label: 'All Code Snippets', path: `snippets` },
+    { label: 'All Canvases', path: `canvases` },
+    { label: 'All Attachments', path: `attachments` }
   ]
 
   return (

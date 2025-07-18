@@ -20,6 +20,7 @@ import Canvases from './components/projects/project/Canvases'
 import Translations from './components/projects/project/Translations'
 import CreateEventForm from './components/projects/project/CreateEventForm'
 import UpdateEventForm from './components/projects/project/UpdateEventForm'
+import EditProject from './components/UpdateProject'
 const theme = createTheme({
   palette: {
     mode: 'light',
@@ -47,6 +48,7 @@ export default function App () {
           <Route path='/Home' element={<Home />} />
           <Route path='/projects/project/:project_id' element={<Project />}>
             <Route path='pages' element={<Pages />} />
+            <Route path='update' element={<EditProject />} />
             <Route path='todos' element={<Todos />} />
             <Route path='attachments' element={<Attachments />} />
             <Route path='events' element={<Events />} />
