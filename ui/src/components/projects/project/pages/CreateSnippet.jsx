@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import {
@@ -9,6 +9,9 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material'
+
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 export default function CreateSnippetForm () {
   const [title, setTitle] = useState('')
@@ -21,6 +24,7 @@ export default function CreateSnippetForm () {
 
   const { project_id, page_id } = useParams()
   const navigate = useNavigate()
+  const contentRef = useRef(null)
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -36,41 +40,33 @@ export default function CreateSnippetForm () {
 
     try {
       const payload = {
-        page_id: Number(page_id), // convert string param to number
+        page_id: Number(page_id),
         name: title,
-        description: description,
-        language: language,
-        content: content
+        description,
+        language,
+        content
       }
 
       const res = await fetch('/api/code_snippet/create', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        credentials: 'include' // send cookies (token)
+        credentials: 'include'
       })
 
-      // parse JSON safely
       let data = {}
       try {
         data = await res.json()
-      } catch {
-        // response might not be JSON, ignore
-      }
+      } catch {}
 
       if (!res.ok) {
         throw new Error(data.message || 'Failed to create snippet.')
       }
+
       setSuccess(data.message || 'Snippet created successfully!')
-      setTimeout(
-        () =>
-          navigate(
-            `/projects/project/${project_id}/pages/page/${page_id}/snippets`
-          ),
-        1000
-      )
+      setTimeout(() => {
+        navigate(`/projects/project/${project_id}/pages/page/${page_id}/snippets`)
+      }, 1000)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -78,67 +74,121 @@ export default function CreateSnippetForm () {
     }
   }
 
+  const handleKeyDown = (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      const textarea = contentRef.current
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const updated = content.substring(0, start) + '    ' + content.substring(end)
+
+      setContent(updated)
+      // move cursor to after the inserted spaces
+      requestAnimationFrame(() => {
+        textarea.selectionStart = textarea.selectionEnd = start + 4
+      })
+    }
+  }
+
   return (
     <Box
-      component='form'
-      onSubmit={handleSubmit}
       sx={{
-        maxWidth: '25%',
-        // mx: 'auto',
-        mt: 4,
         display: 'flex',
-        flexDirection: 'column',
-        gap: 2
+        gap: 4,
+        mt: 4
       }}
     >
-      <Typography variant='h5' component='h2' gutterBottom>
-        Create New Snippet
-      </Typography>
+      {/* Form Section */}
+      <Box
+        component='form'
+        onSubmit={handleSubmit}
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2
+        }}
+      >
+        <Typography variant='h5' component='h2' gutterBottom>
+          Create New Snippet
+        </Typography>
 
-      {error && <Alert severity='error'>{error}</Alert>}
-      {success && <Alert severity='success'>{success}</Alert>}
+        {error && <Alert severity='error'>{error}</Alert>}
+        {success && <Alert severity='success'>{success}</Alert>}
 
-      <TextField
-        label='Title'
-        value={title}
-        onChange={e => setTitle(e.target.value)}
-        required
-      />
+        <TextField
+          label='Title'
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+          required
+        />
 
-      <TextField
-        label='Description'
-        multiline
-        rows={2}
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-        required
-      />
+        <TextField
+          label='Description'
+          multiline
+          rows={2}
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+          required
+        />
 
-      <TextField
-        label='Language'
-        value={language}
-        onChange={e => setLanguage(e.target.value)}
-        required
-      />
+        <TextField
+          label='Language'
+          value={language}
+          onChange={e => setLanguage(e.target.value)}
+          required
+        />
 
-      <TextField
-        label='Code Content'
-        multiline
-        rows={20}
-        value={content}
-        onChange={e => setContent(e.target.value)}
-        required
+        <TextField
+          inputRef={contentRef}
+          onKeyDown={handleKeyDown}
+          label='Code Content'
+          multiline
+          rows={20}
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          required
           InputProps={{
-    sx: {
-      resize: 'horizontal',
-      overflow: 'auto'
-    }
-  }}
-      />
+            sx: {
+              resize: 'horizontal',
+              overflow: 'auto',
+              fontFamily: 'monospace'
+            }
+          }}
+        />
 
-      <Button variant='contained' type='submit' disabled={loading}>
-        {loading ? <CircularProgress size={24} /> : 'Create Snippet'}
-      </Button>
+        <Button variant='contained' type='submit' disabled={loading}>
+          {loading ? <CircularProgress size={24} /> : 'Create Snippet'}
+        </Button>
+      </Box>
+
+      {/* Live Preview Section */}
+      <Box
+        sx={{
+          flex: 1,
+          p: 2,
+          border: '1px solid #ccc',
+          borderRadius: 2,
+          overflow: 'auto',
+          backgroundColor: '#1e1e1e'
+        }}
+      >
+        <Typography variant='h6' gutterBottom color='white'>
+          Preview
+        </Typography>
+        <SyntaxHighlighter
+          language={language || 'text'}
+          style={oneDark}
+          wrapLines
+          wrapLongLines
+          customStyle={{
+            borderRadius: '8px',
+            padding: '16px'
+          }}
+        >
+          {content}
+        </SyntaxHighlighter>
+      </Box>
     </Box>
   )
 }

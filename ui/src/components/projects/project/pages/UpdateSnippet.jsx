@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-
 import {
   Box,
   Button,
@@ -9,6 +8,9 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material'
+
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
 export default function UpdateSnippetForm () {
   const [title, setTitle] = useState('')
@@ -22,8 +24,8 @@ export default function UpdateSnippetForm () {
 
   const { project_id, page_id, snippet_id } = useParams()
   const navigate = useNavigate()
+  const contentRef = useRef(null)
 
-  // Fetch existing snippet data
   useEffect(() => {
     const fetchSnippet = async () => {
       try {
@@ -50,6 +52,23 @@ export default function UpdateSnippetForm () {
 
     fetchSnippet()
   }, [snippet_id])
+
+  const handleTabKey = (e) => {
+    if (e.key === 'Tab') {
+      e.preventDefault()
+      const el = e.target
+      const start = el.selectionStart
+      const end = el.selectionEnd
+
+      const updated = content.slice(0, start) + '    ' + content.slice(end)
+      setContent(updated)
+
+      // Reset caret position
+      requestAnimationFrame(() => {
+        el.selectionStart = el.selectionEnd = start + 4
+      })
+    }
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -102,70 +121,108 @@ export default function UpdateSnippetForm () {
 
   return (
     <Box
-      component='form'
-      onSubmit={handleSubmit}
       sx={{
-        maxWidth: '25%',
-        // mx: 'auto',
-        mt: 4,
         display: 'flex',
-        flexDirection: 'column',
-        gap: 2
+        gap: 4,
+        mt: 4
       }}
     >
-      <Typography variant='h5' component='h2' gutterBottom>
-        Update Snippet
-      </Typography>
+      {/* Form Section */}
+      <Box
+        component='form'
+        onSubmit={handleSubmit}
+        sx={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2
+        }}
+      >
+        <Typography variant='h5' component='h2' gutterBottom>
+          Update Snippet
+        </Typography>
 
-      {fetching && <CircularProgress />}
-      {error && <Alert severity='error'>{error}</Alert>}
-      {success && <Alert severity='success'>{success}</Alert>}
+        {fetching && <CircularProgress />}
+        {error && <Alert severity='error'>{error}</Alert>}
+        {success && <Alert severity='success'>{success}</Alert>}
 
-      {!fetching && (
-        <>
-          <TextField
-            label='Title'
-            value={title}
-            onChange={e => setTitle(e.target.value)}
-            required
-          />
+        {!fetching && (
+          <>
+            <TextField
+              label='Title'
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              required
+            />
 
-          <TextField
-            label='Description'
-            multiline
-            rows={2}
-            value={description}
-            onChange={e => setDescription(e.target.value)}
-            required
-          />
+            <TextField
+              label='Description'
+              multiline
+              rows={2}
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              required
+            />
 
-          <TextField
-            label='Language'
-            value={language}
-            onChange={e => setLanguage(e.target.value)}
-            required
-          />
+            <TextField
+              label='Language'
+              value={language}
+              onChange={e => setLanguage(e.target.value)}
+              required
+            />
 
-          <TextField
-            label='Code Content'
-            multiline
-            rows={20}
-            value={content}
-            onChange={e => setContent(e.target.value)}
-            required
-                      InputProps={{
-    sx: {
-      resize: 'horizontal',
-      overflow: 'auto'
-    }
-  }}
-          />
+            <TextField
+              inputRef={contentRef}
+              label='Code Content'
+              multiline
+              rows={20}
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              onKeyDown={handleTabKey}
+              required
+              InputProps={{
+                sx: {
+                  resize: 'horizontal',
+                  overflow: 'auto',
+                  fontFamily: 'monospace'
+                }
+              }}
+            />
 
-          <Button variant='contained' type='submit' disabled={loading}>
-            {loading ? <CircularProgress size={24} /> : 'Update Snippet'}
-          </Button>
-        </>
-      )}
+            <Button variant='contained' type='submit' disabled={loading}>
+              {loading ? <CircularProgress size={24} /> : 'Update Snippet'}
+            </Button>
+          </>
+        )}
+      </Box>
+
+      {/* Live Preview Section */}
+      <Box
+        sx={{
+          flex: 1,
+          p: 2,
+          border: '1px solid #ccc',
+          borderRadius: 2,
+          overflow: 'auto',
+          backgroundColor: '#1e1e1e'
+        }}
+      >
+        <Typography variant='h6' gutterBottom color='white'>
+          Preview
+        </Typography>
+        <SyntaxHighlighter
+          language={language || 'text'}
+          style={oneDark}
+          wrapLines
+          wrapLongLines
+          customStyle={{
+            borderRadius: '8px',
+            padding: '16px'
+          }}
+        >
+          {content}
+        </SyntaxHighlighter>
+      </Box>
     </Box>
   )
 }
