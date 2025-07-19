@@ -1,13 +1,7 @@
 import { useParams, Link, Outlet } from 'react-router-dom'
-import {
-  Box,
-  Typography,
-  Button,
-  Divider,
-  Stack
-} from '@mui/material'
+import { Box, Typography, Button, Divider, Stack } from '@mui/material'
 
-export default function Project() {
+export default function Project () {
   const { project_id } = useParams()
 
   const links = [
@@ -16,6 +10,8 @@ export default function Project() {
     { label: 'Todos', path: 'todos' },
     { label: 'Events', path: 'events' },
     { label: 'All Code Snippets', path: 'snippets' },
+    { label: 'All Equations', path: 'equations' },
+
     { label: 'All Canvases', path: 'canvases' },
     { label: 'All Attachments', path: 'attachments' }
   ]
@@ -32,10 +28,10 @@ export default function Project() {
           boxSizing: 'border-box',
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden',
+          overflow: 'hidden'
         }}
       >
-        <Typography variant="h6" gutterBottom>
+        <Typography variant='h6' gutterBottom>
           Project {project_id}
         </Typography>
         <Divider sx={{ borderColor: 'primary.contrastText', mb: 2 }} />
@@ -45,7 +41,7 @@ export default function Project() {
               key={link.label}
               component={Link}
               to={`/projects/project/${project_id}/${link.path}`}
-              variant="text"
+              variant='text'
               sx={{
                 justifyContent: 'flex-start',
                 fontWeight: 'medium',
@@ -63,7 +59,7 @@ export default function Project() {
 
       {/* Main Content */}
       <Box
-        component="main"
+        component='main'
         sx={{
           flexGrow: 1,
           p: 3,
@@ -71,7 +67,7 @@ export default function Project() {
           overflow: 'hidden', // disable scrollbars here
           height: '100%',
           display: 'flex',
-          flexDirection: 'column',
+          flexDirection: 'column'
         }}
       >
         <Outlet />
