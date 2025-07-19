@@ -44,7 +44,6 @@ export default function PageCard ({
       sx={{
         maxWidth: 400,
         mb: 2,
-        opacity: isPast ? 0.5 : 1
       }}
     >
       <CardContent>

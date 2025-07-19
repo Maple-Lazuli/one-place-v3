@@ -14,7 +14,7 @@ export default function Pages() {
 
   useEffect(() => {
     async function fetchPages() {
-      const res = await fetch(`/api/pages/get_pages_by_project?project_id=${project_id}`, {
+      const res = await fetch(`/api/pages/get_project_pages?id=${project_id}`, {
         credentials: 'include',
       })
       const data = await res.json()

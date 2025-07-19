@@ -65,10 +65,6 @@ export default function UpdatePageForm() {
         name: title,
       }
 
-      if (duration) {
-        payload.new_duration = parseInt(duration, 10)
-      }
-
       const res = await fetch('/api/pages/update', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
