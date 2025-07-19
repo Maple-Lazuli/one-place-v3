@@ -143,7 +143,7 @@ export default function UpdateCanvasForm () {
             />
 
             <Button variant='contained' type='submit' disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : 'Update Equation'}
+              {loading ? <CircularProgress size={24} /> : 'Update Canvas Fields '}
             </Button>
           </>
         )}
