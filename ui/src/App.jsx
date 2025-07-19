@@ -28,6 +28,9 @@ import Page from './components/projects/project/pages/Page'
 import PageEditor from './components/projects/project/pages/PageEditor'
 import PageContent from './components/projects/project/pages/PageContent'
 import EditProject from './components/UpdateProject'
+import CreateSnippet from './components/projects/project/pages/CreateSnippet'
+import PageSnippets from './components/projects/project/pages/Snippets'
+import UpdateSnippetForm from './components/projects/project/pages/UpdateSnippet'
 import Box from '@mui/material/Box'
 
 const theme = createTheme({
@@ -51,7 +54,8 @@ export default function App () {
           sx={{
             display: 'flex',
             flexDirection: 'column',
-            height: '100vh', // full viewport height
+            overflow: 'hidden',
+            height: '100vh' // full viewport height
           }}
         >
           <NavigationBar />
@@ -60,13 +64,13 @@ export default function App () {
               flexGrow: 1,
               overflow: 'hidden',
               display: 'flex',
-              flexDirection: 'column',
+              flexDirection: 'column'
             }}
           >
             <Box
               sx={{
                 flexGrow: 1,
-                overflowY: 'hidden', // scroll main content if needed
+                overflowY: 'hidden' // scroll main content if needed
               }}
             >
               <Routes>
@@ -77,27 +81,44 @@ export default function App () {
                 <Route path='/register' element={<CreateAccount />} />
                 <Route path='/home' element={<Home />} />
 
-                <Route path='/projects/project/:project_id' element={<Project />}>
+                <Route
+                  path='/projects/project/:project_id'
+                  element={<Project />}
+                >
                   <Route path='pages' element={<Pages />} />
                   <Route path='pages/create' element={<CreatePageForm />} />
-                  <Route path='pages/update/:page_id' element={<UpdatePageForm />} />
+                  <Route
+                    path='pages/update/:page_id'
+                    element={<UpdatePageForm />}
+                  />
                   <Route
                     path='/projects/project/:project_id/pages/page/:page_id'
                     element={<Page />}
                   >
                     <Route index element={<PageContent />} />
                     <Route path='editor' element={<PageEditor />} />
-                    {/* Other nested routes can go here */}
+                    <Route path='snippets' element={<PageSnippets />} />
+                    <Route path='snippets/create' element={<CreateSnippet />} />
+                    <Route
+                      path='snippets/update/:snippet_id'
+                      element={<UpdateSnippetForm />}
+                    />
                   </Route>
 
                   <Route path='update' element={<EditProject />} />
                   <Route path='todos' element={<Todos />} />
                   <Route path='todos/create' element={<CreateTodoForm />} />
-                  <Route path='todos/update/:todo_id' element={<UpdateTodoForm />} />
+                  <Route
+                    path='todos/update/:todo_id'
+                    element={<UpdateTodoForm />}
+                  />
                   <Route path='attachments' element={<Attachments />} />
                   <Route path='events' element={<Events />} />
                   <Route path='events/create' element={<CreateEventForm />} />
-                  <Route path='events/update/:event_id' element={<UpdateEventForm />} />
+                  <Route
+                    path='events/update/:event_id'
+                    element={<UpdateEventForm />}
+                  />
                   <Route path='translations' element={<Translations />} />
                   <Route path='snippets' element={<Snippets />} />
                   <Route path='canvases' element={<Canvases />} />

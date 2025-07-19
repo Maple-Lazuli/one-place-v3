@@ -22,6 +22,12 @@ def log_access(snippet_id, allowed, notes):
     conn.close()
 
 
+def convert_time(object):
+    object['timeCreated'] = object['timeCreated'].timestamp()
+    object['lastEditTime'] = object['lastEditTime'].timestamp()
+    return object
+
+
 def get_last_update(snippet_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -30,7 +36,7 @@ def get_last_update(snippet_id):
     cursor.close()
     conn.close()
     if last_update is not None:
-        return last_update[0]
+        return last_update[0].timestamp()
     return None
 
 
@@ -57,6 +63,7 @@ def update_snippet(snippet_id, name, description, language, content):
     conn.close()
     if snippet is not None:
         snippet = {k: v for k, v in zip(code_fields, snippet)}
+        snippet = convert_time(snippet)
     return snippet
 
 
@@ -70,6 +77,7 @@ def get_snippet_by_id(snippet_id):
     conn.close()
     if snippet is not None:
         snippet = {k: v for k, v in zip(code_fields, snippet)}
+        snippet = convert_time(snippet)
     return snippet
 
 
@@ -85,6 +93,7 @@ def get_snippets_by_page(page_id):
         snippets_list = []
         for snippet in snippets:
             snippet = {k: v for k, v in zip(code_fields, snippet)}
+            snippet = convert_time(snippet)
             snippets_list.append(snippet)
         return snippets_list
     return None
@@ -104,6 +113,7 @@ def create_snippet(page_id, name, description, language, content):
     conn.close()
     if new_snippet is not None:
         new_snippet = {k: v for k, v in zip(code_fields, new_snippet)}
+        new_snippet = convert_time(new_snippet)
     return new_snippet
 
 

@@ -74,7 +74,7 @@ export default function PageContent() {
       ref={containerRef}
       style={{
         maxWidth: '100%',
-        maxHeight: '100%',
+        // maxHeight: '100%',
         padding: '1rem',
         overflowWrap: 'break-word',
         boxSizing: 'border-box'
@@ -85,9 +85,10 @@ export default function PageContent() {
         style={{
           maxWidth: containerWidth ? containerWidth * 0.9 : '90%',
           wordBreak: 'break-word',
-          maxHeight: '100%',
+          // maxHeight: '100%',
           overflowWrap: 'break-word',
         //   whiteSpace: 'pre-wrap',
+        height: '10vh',
           margin: 'auto'
         }}
       >

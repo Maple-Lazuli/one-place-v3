@@ -8,7 +8,7 @@ import {
 import { useEffect, useState } from 'react'
 import SnippetCard from './SnippetCard'
 
-export default function Snippets() {
+export default function PageSnippets() {
   const {project_id,  page_id } = useParams()
   const [snippets, setSnippets] = useState([])
 
@@ -32,7 +32,7 @@ export default function Snippets() {
 
 
   const sortedSnippets = [...snippets]
-    .sort((a, b) => a.lastEditTime - b.lastEditTime)
+    .sort((a, b) => b.lastEditTime - a.lastEditTime)
 
   return (
     <Box sx={{ p: 2 }}>

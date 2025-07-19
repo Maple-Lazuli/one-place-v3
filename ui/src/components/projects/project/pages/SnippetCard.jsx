@@ -20,7 +20,7 @@ export default function SnippetCard ({
 
   const handleDelete = async code_id => {
     try {
-      const res = await fetch('/api/code_snippets/delete', {
+      const res = await fetch('/api/code_snippet/delete', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
@@ -45,7 +45,6 @@ export default function SnippetCard ({
       sx={{
         maxWidth: 400,
         mb: 2,
-        opacity: isPast ? 0.5 : 1
       }}
     >
       <CardContent>
