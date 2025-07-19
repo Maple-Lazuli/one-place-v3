@@ -38,6 +38,9 @@ import UpdateEquationForm from './components/projects/project/pages/UpdateEquati
 import PageEquations from './components/projects/project/pages/Equations'
 import PageFiles from './components/projects/project/pages/Files'
 import UploadFileForm from './components/projects/project/pages/UploadFile'
+import PageTranslations from './components/projects/project/pages/Translations'
+import StartTranslationForm from './components/projects/project/pages/StartTranslation'
+import UpdateTranslation from './components/projects/project/pages/UpdateTranslation'
 
 import Box from '@mui/material/Box'
 
@@ -129,9 +132,15 @@ export default function App () {
                       element={<ViewEquation />}
                     />
                     <Route path='files' element={<PageFiles />} />
+                    <Route path='files/upload' element={<UploadFileForm />} />
+                    <Route path='translations' element={<PageTranslations />} />
                     <Route
-                      path='files/upload'
-                      element={<UploadFileForm />}
+                      path='translations/start'
+                      element={<StartTranslationForm />}
+                    />
+                    <Route
+                      path='translations/update/:translation_id'
+                      element={<UpdateTranslation />}
                     />
                   </Route>
 

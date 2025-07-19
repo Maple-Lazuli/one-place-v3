@@ -22,6 +22,12 @@ def log_access(translation_id, allowed, notes):
     conn.close()
 
 
+def convert_time(object):
+    object['timeCreated'] = object['timeCreated'].timestamp()
+    object['lastEditTime'] = object['lastEditTime'].timestamp()
+    return object
+
+
 def get_last_update(translation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -30,7 +36,7 @@ def get_last_update(translation_id):
     cursor.close()
     conn.close()
     if last_update is not None:
-        return last_update[0]
+        return last_update[0].timestamp()
     return None
 
 
@@ -57,6 +63,7 @@ def update_translation(translation_id, content):
     conn.close()
     if translation is not None:
         translation = {k: v for k, v in zip(translation_fields, translation)}
+        translation = convert_time(translation)
     return translation
 
 
@@ -70,6 +77,7 @@ def get_translation_by_id(translation_id):
     conn.close()
     if translation is not None:
         translation = {k: v for k, v in zip(translation_fields, translation)}
+        translation = convert_time(translation)
     return translation
 
 
@@ -85,6 +93,7 @@ def get_translations_by_page(page_id):
         translation_list = []
         for translation in translations:
             translation = {k: v for k, v in zip(translation_fields, translation)}
+            translation = convert_time(translation)
             translation_list.append(translation)
         return translation_list
     return None
@@ -104,6 +113,7 @@ def create_translation(page_id, language):
     conn.close()
     if translation is not None:
         translation = {k: v for k, v in zip(translation_fields, translation)}
+        translation = convert_time(translation)
     return translation
 
 
