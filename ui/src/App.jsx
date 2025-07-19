@@ -24,6 +24,8 @@ import CreateTodoForm from './components/projects/project/CreateTodoForm'
 import UpdateTodoForm from './components/projects/project/UpdateTodoForm'
 import UpdatePageForm from './components/projects/project/UpdatePageForm'
 import CreatePageForm from './components/projects/project/CreatePageForm'
+import Page from './components/projects/project/pages/Page'
+import PageEditor from './components/projects/project/pages/PageEditor'
 
 import EditProject from './components/UpdateProject'
 const theme = createTheme({
@@ -55,6 +57,18 @@ export default function App () {
             <Route path='pages' element={<Pages />} />
             <Route path='pages/create' element={<CreatePageForm />} />
             <Route path='pages/update/:page_id' element={<UpdatePageForm />} />
+            <Route
+              path='/projects/project/:project_id/pages/page/:page_id'
+              element={<Page />}
+            >
+              {/* <Route index element={<Content />} /> */}
+              <Route path='editor' element={<PageEditor />} />
+              {/* <Route path='snippets' element={<Snippets />} />
+              <Route path='translations' element={<Translations />} />
+              <Route path='canvases' element={<Canvases />} />
+              <Route path='files' element={<Files />} /> */}
+            </Route>
+
             <Route path='update' element={<EditProject />} />
             <Route path='todos' element={<Todos />} />
             <Route path='todos/create' element={<CreateTodoForm />} />

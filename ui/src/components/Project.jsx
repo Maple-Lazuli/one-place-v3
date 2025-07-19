@@ -2,75 +2,73 @@ import { useState } from 'react'
 import { useParams, Link, Outlet } from 'react-router-dom'
 import {
   Box,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
   Typography,
-  Divider
+  Button,
+  Paper,
+  Divider,
+  Stack
 } from '@mui/material'
-import MenuIcon from '@mui/icons-material/Menu'
 
-export default function Project () {
+export default function Project() {
   const { project_id } = useParams()
-  const [open, setOpen] = useState(false)
-
-  const toggleSidebar = () => setOpen(!open)
 
   const links = [
-    { label: 'Overview', path: '' },
-    { label: 'Pages', path: `pages` },
-    { label: 'Todos', path: `todos` },
-    { label: 'Events', path: `events` },
-    { label: 'All Code Snippets', path: `snippets` },
-    { label: 'All Canvases', path: `canvases` },
-    { label: 'All Attachments', path: `attachments` }
+    { label: 'Calendar', path: '' },
+    { label: 'Pages', path: 'pages' },
+    { label: 'Todos', path: 'todos' },
+    { label: 'Events', path: 'events' },
+    { label: 'All Code Snippets', path: 'snippets' },
+    { label: 'All Canvases', path: 'canvases' },
+    { label: 'All Attachments', path: 'attachments' }
   ]
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      {/* Sidebar toggle button */}
-      <Box sx={{ p: 2 }}>
-        <IconButton onClick={toggleSidebar}>
-          <MenuIcon />
-        </IconButton>
-      </Box>
-
+    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
       {/* Sidebar */}
-      {open && (
-        <Box
-          sx={{
-            width: 250,
-            p: 2,
-            borderRight: '1px solid #ddd',
-            bgcolor: 'background.paper',
-            flexShrink: 0
-          }}
-        >
-          <Typography variant='h6' sx={{ mb: 2 }}>
-            Project {project_id}
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          <List>
-            {links.map(item => (
-              <ListItem
-                key={item.label}
-                button
-                component={Link}
-                to={`/projects/project/${project_id}/${item.path}`}
-              >
-                <ListItemText primary={item.label} />
-              </ListItem>
-            ))}
-          </List>
-        </Box>
-      )}
-
-      {/* Main Content */}
-      <Box sx={{ flexGrow: 1, p: 3 }}>
-        <Typography variant='h4' gutterBottom>
+      <Box
+        sx={{
+          width: 240,
+          bgcolor: 'primary.main',
+          color: 'primary.contrastText',
+          p: 2
+        }}
+      >
+        <Typography variant="h6" gutterBottom>
           Project {project_id}
         </Typography>
+        <Divider sx={{ borderColor: 'primary.contrastText', mb: 2 }} />
+        <Stack spacing={1}>
+          {links.map(link => (
+            <Button
+              key={link.label}
+              component={Link}
+              to={`/projects/project/${project_id}/${link.path}`}
+              variant="text"
+              sx={{
+                justifyContent: 'flex-start',
+                fontWeight: 'medium',
+                color: 'primary.contrastText',
+                '&:hover': { bgcolor: 'primary.dark' },
+                textTransform: 'none'
+              }}
+              fullWidth
+            >
+              {link.label}
+            </Button>
+          ))}
+        </Stack>
+      </Box>
+
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,       // take all remaining horizontal space
+          p: 3,             // padding inside main content
+          overflow: 'auto',  // scroll if content overflows vertically
+          height: '100vh',   // fill full height
+        }}
+      >
         <Outlet />
       </Box>
     </Box>
