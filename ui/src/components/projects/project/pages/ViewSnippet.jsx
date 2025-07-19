@@ -63,7 +63,7 @@ export default function ViewSnippet () {
   }
 
   return (
-    <Box sx={{ maxWidth: '100%', mx: 'auto', mt: 4 }}>
+    <Box sx={{ maxWidth: '100%', mx: 'right', mt: 4 }}>
       <Typography variant='h4' gutterBottom>
         {snippet.name}
       </Typography>
