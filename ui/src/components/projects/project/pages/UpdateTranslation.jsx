@@ -1,15 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-
 import {
   Box,
-  Button,
-  TextField,
   Typography,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Button
 } from '@mui/material'
-
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -17,154 +14,218 @@ import 'katex/dist/katex.min.css'
 
 export default function UpdateTranslation () {
   const [content, setContent] = useState('')
+  const [language, setLanguage] = useState('')
   const [error, setError] = useState('')
-  const [success, setSuccess] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
   const [fetching, setFetching] = useState(true)
+  const [showCurrentPage, setShowCurrentPage] = useState(false)
+  const [currentPageContent, setCurrentPageContent] = useState('')
+  const [lastCurrentPageUpdate, setLastCurrentPageUpdate] = useState(null)
+
+  const lastEditTimeRef = useRef(Date.now())
+  const lastSaveTimeRef = useRef(0)
+  const lastCurrentPagePollRef = useRef(null)
 
   const { project_id, page_id, translation_id } = useParams()
   const navigate = useNavigate()
 
-  useEffect(() => {
-    const fetchTranslation = async () => {
-      try {
-        const res = await fetch(`/api/translations/get?id=${translation_id}`, {
-          credentials: 'include'
-        })
-
-        const data = await res.json()
-
-        if (!res.ok) {
-          throw new Error(data.message || 'Failed to load Translation.')
-        }
-        setContent(data.message.content || '')
-      } catch (err) {
-        setError(err.message)
-      } finally {
-        setFetching(false)
-      }
-    }
-
-    fetchTranslation()
-  }, [translation_id])
-
-  const handleSubmit = async e => {
-    e.preventDefault()
-    setError('')
-    setSuccess('')
-
-    setLoading(true)
-
+  const fetchTranslation = async () => {
     try {
-      const payload = {
-        translation_id: Number(translation_id),
-        new_content: content
-      }
-
-      const res = await fetch('/api/translations/update', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        credentials: 'include',
-        body: JSON.stringify(payload)
+      const res = await fetch(`/api/translations/get?id=${translation_id}`, {
+        credentials: 'include'
       })
-
       const data = await res.json()
 
-      if (!res.ok) {
-        throw new Error(data.message || 'Failed to update Translation.')
-      }
+      if (!res.ok) throw new Error(data.message || 'Failed to load Translation.')
 
-      setSuccess(data.message || 'Translation updated successfully!')
-      setTimeout(() => {
-        navigate(
-          `/projects/project/${project_id}/pages/page/${page_id}/translations`
-        )
-      }, 1000)
+      setContent(data.message.content || '')
+      setLanguage(data.message.language || '')
+
+      lastEditTimeRef.current = (data.message.lastEditTime || 0) * 1000
+      if (lastSaveTimeRef.current < lastEditTimeRef.current) {
+        lastSaveTimeRef.current = lastEditTimeRef.current
+      }
     } catch (err) {
       setError(err.message)
     } finally {
-      setLoading(false)
+      setFetching(false)
     }
   }
 
+  const fetchCurrentPage = async () => {
+    try {
+      const res = await fetch(`/api/pages/get?id=${page_id}`, {
+        credentials: 'include'
+      })
+      const data = await res.json()
+      if (res.ok && data.message) {
+        setCurrentPageContent(data.message.content)
+        setLastCurrentPageUpdate(data.message.lastUpdate)
+        lastCurrentPagePollRef.current = data.message.lastUpdate
+      }
+    } catch (err) {
+      console.error('Error fetching current page:', err)
+    }
+  }
+
+  useEffect(() => {
+    fetchTranslation()
+    fetchCurrentPage()
+  }, [translation_id])
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(
+          `/api/translations/last_update?id=${translation_id}`,
+          { credentials: 'include' }
+        )
+        const data = await res.json()
+
+        if (res.ok && data.last_update && data.last_update !== 'Null') {
+          const lastUpdate = Number(data.last_update) * 1000
+          if (
+            lastUpdate > lastEditTimeRef.current &&
+            lastUpdate > lastSaveTimeRef.current
+          ) {
+            fetchTranslation()
+          }
+        }
+
+        const pageRes = await fetch(`/api/pages/last_update?id=${page_id}`, {
+          credentials: 'include'
+        })
+        const pageData = await pageRes.json()
+        if (
+          pageRes.ok &&
+          pageData.last_update &&
+          pageData.last_update !== lastCurrentPagePollRef.current
+        ) {
+          fetchCurrentPage()
+        }
+      } catch (err) {
+        console.error('Polling error:', err)
+      }
+    }, 1500)
+
+    return () => clearInterval(interval)
+  }, [translation_id, page_id])
+
+  useEffect(() => {
+    if (content === '') return
+
+    const timeout = setTimeout(async () => {
+      setSaving(true)
+      try {
+        await fetch('/api/translations/update', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            translation_id: Number(translation_id),
+            new_content: content
+          })
+        })
+        lastSaveTimeRef.current = Date.now()
+      } catch (err) {
+        console.error('Auto-save failed:', err)
+      } finally {
+        setSaving(false)
+      }
+    }, 500)
+
+    return () => clearTimeout(timeout)
+  }, [content, translation_id])
+
+  const handleChange = e => {
+    setContent(e.target.value)
+    lastEditTimeRef.current = Date.now()
+  }
+
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        gap: 4,
-        mt: 4,
-        width: '100%',
-        height: '100%',
-        flexGrow: 1
-      }}
-    >
-      {/* Form Section */}
-      <Box
-        component='form'
-        onSubmit={handleSubmit}
-        sx={{
-          flex: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 2
-        }}
-      >
+    <Box sx={{ p: 1 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant='h5' component='h2' gutterBottom>
-          Update {} Translation
+          Updating {language} Translation
         </Typography>
-
-        {fetching && <CircularProgress />}
-        {error && <Alert severity='error'>{error}</Alert>}
-        {success && <Alert severity='success'>{success}</Alert>}
-
-        {!fetching && (
-          <>
-
-            <TextField
-              label='Content'
-              multiline
-              rows={20}
-              value={content}
-              onChange={e => setContent(e.target.value)}
-              required
-              InputProps={{
-                sx: {
-                  resize: 'vertical',
-                  overflow: 'auto'
-                }
-              }}
-            />
-
-            <Button variant='contained' type='submit' disabled={loading}>
-              {loading ? <CircularProgress size={24} /> : 'Update Translation'}
-            </Button>
-          </>
-        )}
+        <Button
+          variant='outlined'
+          onClick={() => setShowCurrentPage(prev => !prev)}
+        >
+          {showCurrentPage ? 'Show Translation' : 'Show Current Page'}
+        </Button>
       </Box>
 
-      {/* Preview Section */}
       <Box
         sx={{
-          flex: 1,
-          p: 2,
-          border: '1px solid #ccc',
-          borderRadius: 2,
-          overflow: 'auto',
-          whiteSpace: 'pre-wrap',
-          backgroundColor: '#fafafa',
-          height: '90%'
+          display: 'flex',
+          gap: 4,
+          mt: 2,
+          width: '100%',
+          height: '100%',
+          flexGrow: 1
         }}
       >
-        <Typography variant='h6' gutterBottom>
-          Preview
-        </Typography>
-        <ReactMarkdown
-          children={content}
-          remarkPlugins={[remarkMath]}
-          rehypePlugins={[rehypeKatex]}
-        />
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {fetching && <CircularProgress />}
+          {error && <Alert severity='error'>{error}</Alert>}
+
+          {!fetching && (
+            <textarea
+              lang='auto'
+              value={content}
+              onChange={handleChange}
+              placeholder='Type your translation...'
+              style={{
+                width: '100%',
+                height: '70vh',
+                fontFamily: 'monospace',
+                fontSize: '1rem',
+                padding: '1rem',
+                margin: 0,
+                border: '1px solid #ccc',
+                borderRadius: '8px',
+                resize: 'vertical',
+                overflow: 'auto',
+                boxSizing: 'border-box',
+                whiteSpace: 'pre-wrap',
+                wordWrap: 'break-word'
+              }}
+            />
+          )}
+
+          <div
+            style={{
+              alignSelf: 'flex-end',
+              fontSize: '0.9rem',
+              color: saving ? '#1976d2' : '#4caf50'
+            }}
+          >
+            {saving ? 'Saving...' : '✓ Saved'}
+          </div>
+        </Box>
+
+        <Box
+          sx={{
+            flex: 1,
+            p: 2,
+            border: '1px solid #ccc',
+            borderRadius: 2,
+            overflow: 'auto',
+            whiteSpace: 'pre-wrap',
+            backgroundColor: '#fafafa',
+            height: '70vh'
+          }}
+        >
+          <Typography variant='h6' gutterBottom>
+            {showCurrentPage ? 'Origional Page' : 'Translation Preview'}
+          </Typography>
+          <ReactMarkdown
+            children={showCurrentPage ? currentPageContent : content}
+            remarkPlugins={[remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+          />
+        </Box>
       </Box>
     </Box>
   )

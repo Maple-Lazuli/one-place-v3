@@ -60,6 +60,7 @@ export default function PageTranslations () {
             <TranslationCard
               language={translation.language}
               translation_id={translation.TranslationID}
+              updated={translation.lastEditTime}
               onDelete={handleDelete}
             />
           </Grid>

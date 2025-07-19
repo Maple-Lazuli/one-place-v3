@@ -12,6 +12,7 @@ import { Link, useParams } from 'react-router-dom'
 export default function TranslationCard ({
   language,
   translation_id,
+  updated,
   onDelete
 }) {
   const { project_id, page_id } = useParams()
@@ -38,6 +39,10 @@ export default function TranslationCard ({
     }
   }
 
+  const readableDate = new Date(
+    updated > 1e12 ? updated : updated * 1000
+  ).toLocaleDateString()
+
   return (
     <Card
       sx={{
@@ -50,6 +55,9 @@ export default function TranslationCard ({
           {language}
         </Typography>
 
+        <Typography variant='caption' color='text.secondary' gutterBottom>
+          Updated: {readableDate}
+        </Typography>
         <Stack direction='row' spacing={1}>
           <Button
             variant='outlined'
