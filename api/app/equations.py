@@ -22,6 +22,12 @@ def log_access(equation_id, allowed, notes):
     conn.close()
 
 
+def convert_time(object):
+    object['timeCreated'] = object['timeCreated'].timestamp()
+    object['lastEditTime'] = object['lastEditTime'].timestamp()
+    return object
+
+
 def get_last_update(equation_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -30,7 +36,7 @@ def get_last_update(equation_id):
     cursor.close()
     conn.close()
     if last_update is not None:
-        return last_update[0]
+        return last_update[0].timestamp()
     return None
 
 
@@ -57,6 +63,7 @@ def update_equation(equation_id, name, description, content):
     conn.close()
     if equation is not None:
         equation = {k: v for k, v in zip(equations_fields, equation)}
+        equation = convert_time(equation)
     return equation
 
 
@@ -70,6 +77,7 @@ def get_equation_by_id(equation_id):
     conn.close()
     if equation is not None:
         equation = {k: v for k, v in zip(equations_fields, equation)}
+        equation = convert_time(equation)
     return equation
 
 
@@ -85,6 +93,7 @@ def get_equations_by_page(page_id):
         equations_list = []
         for equation in equations:
             equation = {k: v for k, v in zip(equations_fields, equation)}
+            equation = convert_time(equation)
             equations_list.append(equation)
         return equations_list
     return None
@@ -104,6 +113,7 @@ def create_equation(page_id, name, description, content):
     conn.close()
     if new_equation is not None:
         new_equation = {k: v for k, v in zip(equations_fields, new_equation)}
+        new_equation = convert_time(new_equation)
     return new_equation
 
 

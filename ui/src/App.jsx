@@ -32,6 +32,11 @@ import CreateSnippet from './components/projects/project/pages/CreateSnippet'
 import PageSnippets from './components/projects/project/pages/Snippets'
 import UpdateSnippetForm from './components/projects/project/pages/UpdateSnippet'
 import ViewSnippet from './components/projects/project/pages/ViewSnippet'
+import ViewEquation from './components/projects/project/pages/ViewEquation'
+import CreateEquationForm from './components/projects/project/pages/CreateEquation'
+import UpdateEquationForm from './components/projects/project/pages/UpdateEquation'
+import PageEquations from './components/projects/project/pages/Equations'
+
 import Box from '@mui/material/Box'
 
 const theme = createTheme({
@@ -107,6 +112,16 @@ export default function App () {
                     <Route
                       path='snippets/view/:snippet_id'
                       element={<ViewSnippet />}
+                    />
+                    <Route path='equations' element={<PageEquations />} />
+                    <Route path='equations/create' element={<CreateEquationForm />} />
+                    <Route
+                      path='equations/update/:equation_id'
+                      element={<UpdateEquationForm />}
+                    />
+                    <Route
+                      path='equations/view/:equation_id'
+                      element={<ViewEquation />}
                     />
                   </Route>
 
