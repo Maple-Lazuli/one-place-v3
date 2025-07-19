@@ -26,6 +26,11 @@ def create_file(page_id, name, filename, description, content):
     conn.close()
 
 
+def convert_time(object):
+    object['upload_date'] = object['upload_date'].timestamp()
+    return object
+
+
 def get_file_by_id(file_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -36,6 +41,7 @@ def get_file_by_id(file_id):
     conn.close()
     if file is not None:
         file = {k: v for k, v in zip(files_fields, file)}
+        file = convert_time(file)
     return file
 
 
@@ -43,13 +49,27 @@ def get_files_by_page(page_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM files where PageID = %s;", (page_id,))
-    file = cursor.fetchone()
+    files = cursor.fetchall()
     conn.commit()
     cursor.close()
     conn.close()
-    if file is not None:
-        file = {k: v for k, v in zip(files_fields, file) if k != "content"}
-    return file
+    if files is not None:
+        file_list = []
+        for file in files:
+            file = {k: v for k, v in zip(files_fields, file) if k != "content"}
+            file = convert_time(file)
+            file_list.append(file)
+        return file_list
+    return None
+
+
+def delete_file(file_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM files where fileID = %s;", (file_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
 
 
 @files_bp.route('/test', methods=['GET'])
@@ -125,11 +145,33 @@ def get_files_ep():
     files = get_files_by_page(page_id)
 
     if not authorized_page_access(token, page_id):
-        return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
+        return make_response("Not Authorized To Access", STATUS.FORBIDDEN)
 
     if files is None:
         response = make_response("Does Not Exist", STATUS.OK)
         return response
-
     response = make_response(files, STATUS.OK)
+    return response
+
+
+@files_bp.route('/file', methods=['DELETE'])
+def delete_ep():
+    data = request.get_json()
+    file_id = data.get("file_id")
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    file = get_file_by_id(file_id)
+
+    if not authorized_page_access(token, file['PageID']):
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
+
+    delete_file(file_id)
+
+    response = make_response({'status': 'success', 'message': f'Deleted {file["name"]}'}, STATUS.OK)
     return response

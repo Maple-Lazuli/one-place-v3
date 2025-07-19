@@ -36,6 +36,8 @@ import ViewEquation from './components/projects/project/pages/ViewEquation'
 import CreateEquationForm from './components/projects/project/pages/CreateEquation'
 import UpdateEquationForm from './components/projects/project/pages/UpdateEquation'
 import PageEquations from './components/projects/project/pages/Equations'
+import PageFiles from './components/projects/project/pages/Files'
+import UploadFileForm from './components/projects/project/pages/UploadFile'
 
 import Box from '@mui/material/Box'
 
@@ -114,7 +116,10 @@ export default function App () {
                       element={<ViewSnippet />}
                     />
                     <Route path='equations' element={<PageEquations />} />
-                    <Route path='equations/create' element={<CreateEquationForm />} />
+                    <Route
+                      path='equations/create'
+                      element={<CreateEquationForm />}
+                    />
                     <Route
                       path='equations/update/:equation_id'
                       element={<UpdateEquationForm />}
@@ -122,6 +127,11 @@ export default function App () {
                     <Route
                       path='equations/view/:equation_id'
                       element={<ViewEquation />}
+                    />
+                    <Route path='files' element={<PageFiles />} />
+                    <Route
+                      path='files/upload'
+                      element={<UploadFileForm />}
                     />
                   </Route>
 
