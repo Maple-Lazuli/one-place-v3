@@ -1,15 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import {
-  Box,
-  Typography,
-  CircularProgress,
-  Alert,
-  Paper
-} from '@mui/material'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
+import { Box, Typography, CircularProgress, Alert, Paper } from '@mui/material'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+
 import 'highlight.js/styles/github.css' // or your preferred highlight theme
 
 export default function ViewSnippet () {
@@ -67,30 +61,36 @@ export default function ViewSnippet () {
       <Typography variant='h4' gutterBottom>
         {snippet.name}
       </Typography>
-      <Typography variant='subtitle1' gutterBottom color="text.secondary">
-        Language: {snippet.language}
-      </Typography>
       <Typography variant='body1' gutterBottom>
         {snippet.description}
       </Typography>
+      <Typography variant='subtitle1' gutterBottom color='text.secondary'>
+        Language: {snippet.language}
+      </Typography>
 
-      <Paper
-        variant='outlined'
+      <Box
         sx={{
-          mt: 2,
+          flex: 1,
           p: 2,
-          backgroundColor: '#f6f8fa',
-          overflowX: 'auto',
-          whiteSpace: 'pre-wrap',
-          fontFamily: 'monospace'
+          border: '1px solid #ccc',
+          borderRadius: 2,
+          overflow: 'auto',
+          backgroundColor: '#1e1e1e'
         }}
       >
-        <ReactMarkdown
-          children={snippet.content}
-          remarkPlugins={[remarkGfm]}
-          rehypePlugins={[rehypeHighlight]}
-        />
-      </Paper>
+        <SyntaxHighlighter
+          language={snippet.language || 'text'}
+          style={oneDark}
+          wrapLines
+          wrapLongLines
+          customStyle={{
+            borderRadius: '8px',
+            padding: '16px'
+          }}
+        >
+          {snippet.content}
+        </SyntaxHighlighter>
+      </Box>
     </Box>
   )
 }
