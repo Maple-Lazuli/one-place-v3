@@ -20,7 +20,6 @@ def convert_time(object):
     if object['timeCompleted'] is not None:
         object['timeCompleted'] = object['timeCompleted'].timestamp()
     object['lastUpdate'] = object['lastUpdate'].timestamp()
-
     return object
 
 

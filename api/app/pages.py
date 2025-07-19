@@ -16,6 +16,12 @@ def test_ep():
     return jsonify({"test": "Pages  Endpoint Reached."})
 
 
+def convert_time(object):
+    object['timeCreated'] = object['timeCreated'].timestamp()
+    object['lastEditTime'] = object['lastEditTime'].timestamp()
+    return object
+
+
 def get_last_update(page_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -24,7 +30,7 @@ def get_last_update(page_id):
     cursor.close()
     conn.close()
     if last_update is not None:
-        return last_update[0]
+        return last_update[0].timestamp()
     return None
 
 
@@ -65,6 +71,7 @@ def create_page(project_id, name, content):
     conn.close()
     if new_page is not None:
         new_page = {k: v for k, v in zip(page_fields, new_page)}
+        new_page = convert_time(new_page)
     return new_page
 
 
@@ -78,7 +85,27 @@ def get_page_by_id(page_id):
     conn.close()
     if page is not None:
         page = {k: v for k, v in zip(page_fields, page)}
+        page = convert_time(page)
     return page
+
+
+def get_pages_by_project(project_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM pages where projectID = %s;", (project_id,))
+    pages = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if pages is not None:
+        page_list = []
+        for page in pages:
+            page = {k: v for k, v in zip(page_fields, page)}
+            page = convert_time(page)
+            del page['content']
+            page_list.append(page)
+        return page_list
+    return None
 
 
 def update_page(page_id, name):
@@ -95,6 +122,7 @@ def update_page(page_id, name):
     conn.close()
     if updated_page is not None:
         updated_page = {k: v for k, v in zip(page_fields, updated_page)}
+        updated_page = convert_time(updated_page)
     return updated_page
 
 
@@ -255,6 +283,29 @@ def get_page_ep():
     create_page_access_request(session['SessionID'], page['PageID'], valid, "GET")
 
     response = make_response({'status': 'success', 'message': page}, STATUS.OK)
+    return response
+
+
+@pages_bp.route('/get_project_pages', methods=['GET'])
+def get_pages_by_project_ep():
+    project_id = int(request.args.get("id"))
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
+
+    pages = get_pages_by_project(project_id)
+
+    if pages is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
+
+    response = make_response({'status': 'success', 'message': pages}, STATUS.OK)
     return response
 
 
