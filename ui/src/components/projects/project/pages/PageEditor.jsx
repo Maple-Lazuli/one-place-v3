@@ -9,14 +9,14 @@ import remarkGfm from 'remark-gfm'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
 
-export default function PageEditor () {
-  const { project_id, page_id } = useParams()
+export default function PageEditor() {
+  const { page_id } = useParams()
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
+  const [showPreview, setShowPreview] = useState(false)
 
-  // Load initial content
   useEffect(() => {
-    async function fetchPage () {
+    async function fetchPage() {
       try {
         const res = await fetch(`/api/pages/get?id=${page_id}`, {
           credentials: 'include'
@@ -34,7 +34,6 @@ export default function PageEditor () {
     fetchPage()
   }, [page_id])
 
-  // Auto-save on text change
   useEffect(() => {
     if (text === '') return
     const timeout = setTimeout(async () => {
@@ -54,44 +53,84 @@ export default function PageEditor () {
       } finally {
         setSaving(false)
       }
-    }, 1000) // Save 1 second after last change
+    }, 1000)
 
     return () => clearTimeout(timeout)
   }, [text, page_id])
 
   return (
-    <div style={{ display: 'flex', gap: '2rem', padding: '1rem' }}>
-      <textarea
-        value={text}
-        onChange={e => setText(e.target.value)}
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        height: '95%', // fill parent height
+        boxSizing: 'border-box',
+        padding: '1rem'
+      }}
+    >
+      <button
+        onClick={() => setShowPreview((prev) => !prev)}
         style={{
-          flex: 1,
-          height: '80vh',
-          fontFamily: 'monospace',
-          padding: '1rem',
-          border: '1px solid #ccc'
-        }}
-        placeholder="Write your markdown here..."
-      />
-      <div
-        style={{
-          flex: 1,
-          height: '80vh',
-          overflowY: 'auto',
-          padding: '1rem',
-          background: '#fff',
-          border: '1px solid #ddd'
+          marginBottom: '0.5rem',
+          alignSelf: 'flex-start',
+          padding: '0.5rem 1rem',
+          cursor: 'pointer'
         }}
       >
-        <ReactMarkdown
-          children={text}
-          remarkPlugins={[remarkMath, remarkGfm]}
-          rehypePlugins={[rehypeKatex, rehypeHighlight]}
+        {showPreview ? 'Hide Preview' : 'Show Preview'}
+      </button>
+      <div
+        style={{
+          display: 'flex',
+          gap: '1rem',
+          height: showPreview ? 'calc(100% - 2rem)' : '100%', // leave space for button and status
+          flexGrow: 1,
+          boxSizing: 'border-box',
+          overflow: 'hidden' // prevent container scrollbars
+        }}
+      >
+        <textarea
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+          style={{
+            flex: 1,
+            fontFamily: 'monospace',
+            padding: 0,     
+            margin: 0, 
+            border: '1px solid #ccc',
+            resize: 'none',
+            height: '100%',
+            boxSizing: 'border-box',
+            overflow: 'auto'
+          }}
+          placeholder="Write your markdown here..."
         />
+
+        {showPreview && (
+          <div
+            style={{
+              flex: 1,
+              overflowY: 'auto',
+              background: '#fff',
+              border: '1px solid #ddd',
+              paddingTop: 10,  // top padding of 10px
+              paddingRight: '1rem',
+              paddingBottom: '1rem',
+              paddingLeft: '1rem',
+              height: '100%',
+              boxSizing: 'border-box'
+            }}
+          >
+            <ReactMarkdown
+              children={text}
+              remarkPlugins={[remarkMath, remarkGfm]}
+              rehypePlugins={[rehypeKatex, rehypeHighlight]}
+            />
+          </div>
+        )}
       </div>
-      <div style={{ position: 'absolute', bottom: 10, right: 20 }}>
-        {saving ? 'Saving...' : '✓ Saved'}
-      </div>
+
     </div>
   )
 }

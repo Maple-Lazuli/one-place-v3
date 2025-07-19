@@ -1,10 +1,8 @@
-import { useState } from 'react'
 import { useParams, Link, Outlet } from 'react-router-dom'
 import {
   Box,
   Typography,
   Button,
-  Paper,
   Divider,
   Stack
 } from '@mui/material'
@@ -23,14 +21,18 @@ export default function Project() {
   ]
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
       {/* Sidebar */}
       <Box
         sx={{
           width: 240,
           bgcolor: 'primary.main',
           color: 'primary.contrastText',
-          p: 2
+          p: 2,
+          boxSizing: 'border-box',
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden',
         }}
       >
         <Typography variant="h6" gutterBottom>
@@ -63,10 +65,13 @@ export default function Project() {
       <Box
         component="main"
         sx={{
-          flexGrow: 1,       // take all remaining horizontal space
-          p: 3,             // padding inside main content
-          overflow: 'auto',  // scroll if content overflows vertically
-          height: '100vh',   // fill full height
+          flexGrow: 1,
+          p: 3,
+          boxSizing: 'border-box',
+          overflow: 'hidden', // disable scrollbars here
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <Outlet />
