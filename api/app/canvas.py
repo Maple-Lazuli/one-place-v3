@@ -10,6 +10,12 @@ from .pages import authorized_page_access
 canvas_fields = ['CanvasID', 'PageID', 'name', 'description', 'content', 'timeCreated', 'lastEditTime']
 
 
+def convert_time(object):
+    object['timeCreated'] = object['timeCreated'].timestamp()
+    object['lastEditTime'] = object['lastEditTime'].timestamp()
+    return object
+
+
 def log_access(canvas_id, allowed, notes):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -30,7 +36,7 @@ def get_last_update(canvas_id):
     cursor.close()
     conn.close()
     if last_update is not None:
-        return last_update[0]
+        return last_update[0].timestamp()
     return None
 
 
@@ -57,6 +63,7 @@ def update_canvas(canvas_id, name, description):
     conn.close()
     if canvas is not None:
         canvas = {k: v for k, v in zip(canvas_fields, canvas)}
+        canvas = convert_time(canvas)
     return canvas
 
 
@@ -68,7 +75,6 @@ def update_canvas_content(canvas_id, content):
         WHERE CanvasID = %s
         RETURNING *;
     """, (content, datetime.now(), canvas_id,))
-    canvas = cursor.fetchone()
     conn.commit()
     cursor.close()
     conn.close()
@@ -84,6 +90,7 @@ def get_canvas_by_id(canvas_id):
     conn.close()
     if canvas is not None:
         canvas = {k: v for k, v in zip(canvas_fields, canvas)}
+        canvas = convert_time(canvas)
     return canvas
 
 
@@ -98,7 +105,8 @@ def get_canvas_by_page(page_id):
     if canvases is not None:
         canvas_list = []
         for canvas in canvases:
-            canvas = {k: v for k, v in zip(canvas_fields, canvas)}
+            canvas = {k: v for k, v in zip(canvas_fields, canvas) if k != "content"}
+            canvas = convert_time(canvas)
             canvas_list.append(canvas)
         return canvas_list
     return None
@@ -118,6 +126,7 @@ def create_canvas(page_id, name, description, content):
     conn.close()
     if canvas is not None:
         canvas = {k: v for k, v in zip(canvas_fields, canvas)}
+        canvas = convert_time(canvas)
     return canvas
 
 
@@ -169,6 +178,35 @@ def get_ep():
 
     if canvas is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
+
+    log_access(canvas_id, True, "GET")
+    response = make_response({'status': 'success', 'message': canvas}, STATUS.OK)
+    return response
+
+
+@canvas_bp.route('/get_fields', methods=['GET'])
+def get_fields_ep():
+    canvas_id = int(request.args.get("id"))
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        log_access(canvas_id, False, "GET")
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    canvas = get_canvas_by_id(canvas_id)
+
+    if not authorized_page_access(token, canvas['PageID']):
+        log_access(canvas_id, False, "GET")
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
+
+    if canvas is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
+
+    if canvas['content'] is not None:
+        del canvas['content']
 
     log_access(canvas_id, True, "GET")
     response = make_response({'status': 'success', 'message': canvas}, STATUS.OK)

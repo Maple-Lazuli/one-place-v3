@@ -41,6 +41,9 @@ import UploadFileForm from './components/projects/project/pages/UploadFile'
 import PageTranslations from './components/projects/project/pages/Translations'
 import StartTranslationForm from './components/projects/project/pages/StartTranslation'
 import UpdateTranslation from './components/projects/project/pages/UpdateTranslation'
+import PageCanvases from './components/projects/project/pages/Canvases' 
+import StartCanvas from './components/projects/project/pages/StartCanvas'
+import UpdateCanvasForm from './components/projects/project/pages/UpdateCanvasFields'
 
 import Box from '@mui/material/Box'
 
@@ -142,6 +145,17 @@ export default function App () {
                       path='translations/update/:translation_id'
                       element={<UpdateTranslation />}
                     />
+
+                    <Route path='canvases' element={<PageCanvases />} />
+                    <Route
+                      path='canvases/start'
+                      element={<StartCanvas />}
+                    />
+                    <Route
+                      path='canvases/update_fields/:canvas_id'
+                      element={<UpdateCanvasForm />}
+                    />
+
                   </Route>
 
                   <Route path='update' element={<EditProject />} />
