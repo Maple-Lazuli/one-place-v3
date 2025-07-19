@@ -89,7 +89,9 @@ export default function UpdateSnippetForm () {
 
       setSuccess(data.message || 'Snippet updated successfully!')
       setTimeout(() => {
-        navigate(`/projects/project/${project_id}/pages/page/${page_id}/snippets`)
+        navigate(
+          `/projects/project/${project_id}/pages/page/${page_id}/snippets`
+        )
       }, 1000)
     } catch (err) {
       setError(err.message)
@@ -103,8 +105,8 @@ export default function UpdateSnippetForm () {
       component='form'
       onSubmit={handleSubmit}
       sx={{
-        maxWidth: 400,
-        mx: 'auto',
+        maxWidth: '25%',
+        // mx: 'auto',
         mt: 4,
         display: 'flex',
         flexDirection: 'column',
@@ -147,10 +149,16 @@ export default function UpdateSnippetForm () {
           <TextField
             label='Code Content'
             multiline
-            rows={4}
+            rows={20}
             value={content}
             onChange={e => setContent(e.target.value)}
             required
+                      InputProps={{
+    sx: {
+      resize: 'horizontal',
+      overflow: 'auto'
+    }
+  }}
           />
 
           <Button variant='contained' type='submit' disabled={loading}>

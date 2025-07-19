@@ -31,6 +31,7 @@ import EditProject from './components/UpdateProject'
 import CreateSnippet from './components/projects/project/pages/CreateSnippet'
 import PageSnippets from './components/projects/project/pages/Snippets'
 import UpdateSnippetForm from './components/projects/project/pages/UpdateSnippet'
+import ViewSnippet from './components/projects/project/pages/ViewSnippet'
 import Box from '@mui/material/Box'
 
 const theme = createTheme({
@@ -102,6 +103,10 @@ export default function App () {
                     <Route
                       path='snippets/update/:snippet_id'
                       element={<UpdateSnippetForm />}
+                    />
+                    <Route
+                      path='snippets/view/:snippet_id'
+                      element={<ViewSnippet />}
                     />
                   </Route>
 

@@ -83,8 +83,8 @@ export default function CreateSnippetForm () {
       component='form'
       onSubmit={handleSubmit}
       sx={{
-        maxWidth: 400,
-        mx: 'auto',
+        maxWidth: '25%',
+        // mx: 'auto',
         mt: 4,
         display: 'flex',
         flexDirection: 'column',
@@ -124,10 +124,16 @@ export default function CreateSnippetForm () {
       <TextField
         label='Code Content'
         multiline
-        rows={4}
+        rows={20}
         value={content}
         onChange={e => setContent(e.target.value)}
         required
+          InputProps={{
+    sx: {
+      resize: 'horizontal',
+      overflow: 'auto'
+    }
+  }}
       />
 
       <Button variant='contained' type='submit' disabled={loading}>
