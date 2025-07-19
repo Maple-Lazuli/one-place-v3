@@ -13,6 +13,8 @@ export default function PageContent() {
   const { page_id } = useParams()
   const [text, setText] = useState('')
   const lastEditTimeRef = useRef(0)
+  const containerRef = useRef(null)
+  const [containerWidth, setContainerWidth] = useState(0)
 
   // Function to fetch page content
   const fetchPage = async () => {
@@ -60,19 +62,41 @@ export default function PageContent() {
     return () => clearInterval(interval)
   }, [page_id])
 
+  // Measure container width on mount
+  useEffect(() => {
+    if (containerRef.current) {
+      setContainerWidth(containerRef.current.offsetWidth)
+    }
+  }, [])
+
   return (
     <div
+      ref={containerRef}
       style={{
         maxWidth: '100%',
+        maxHeight: '100%',
+        padding: '1rem',
         overflowWrap: 'break-word',
-        padding: '1rem'
+        boxSizing: 'border-box'
+
       }}
     >
-      <ReactMarkdown
-        children={text}
-        remarkPlugins={[remarkMath, remarkGfm]}
-        rehypePlugins={[rehypeKatex, rehypeHighlight]}
-      />
+      <div
+        style={{
+          maxWidth: containerWidth ? containerWidth * 0.9 : '90%',
+          wordBreak: 'break-word',
+          maxHeight: '100%',
+          overflowWrap: 'break-word',
+        //   whiteSpace: 'pre-wrap',
+          margin: 'auto'
+        }}
+      >
+        <ReactMarkdown
+          children={text}
+          remarkPlugins={[remarkMath, remarkGfm]}
+          rehypePlugins={[rehypeKatex, rehypeHighlight]}
+        />
+      </div>
     </div>
   )
 }
