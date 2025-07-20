@@ -8,7 +8,6 @@ import {
   Stack
 } from '@mui/material'
 import { Link, useParams } from 'react-router-dom'
-import CanvasEditorOverlay from './CanvasEditorOverlay'
 
 export default function CanvasCard ({
   name,
@@ -73,7 +72,11 @@ export default function CanvasCard ({
           >
             View
           </Button>
-          <Button variant='outlined' onClick={() => setShowOverlay(true)}>
+          <Button
+            variant='outlined'
+            component={Link}
+            to={`/projects/project/${project_id}/pages/page/${page_id}/canvases/update/${canvas_id}`}
+          >
             Draw
           </Button>
           <Button
@@ -92,13 +95,6 @@ export default function CanvasCard ({
           </Button>
         </Stack>
       </CardContent>
-      <CanvasEditorOverlay
-        open={showOverlay}
-        onClose={() => {
-          console.log('Overlay close clicked')
-          setShowOverlay(false)
-        }}
-      />
     </Card>
   )
 }
