@@ -79,9 +79,8 @@ export default function CanvasEditor() {
   const imageRefs = useRef([])
 
   const lastPanPos = useRef(null)
-  const saveTimeoutRef = useRef(null)
-  const lastEditTimeRef = useRef(Date.now());
-  const lastSaveTimeRef = useRef(0);
+  const lastEditTimeRef = useRef(Date.now())
+  const lastSaveTimeRef = useRef(0)
 
   // Upload image to backend and get image ID
   async function uploadImage(blob) {
@@ -114,15 +113,6 @@ export default function CanvasEditor() {
     loadCanvas()
   }, [canvas_id])
 
-  // Autosave content after 100ms inactivity on lines or images change
-  useEffect(() => {
-    if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
-    saveTimeoutRef.current = setTimeout(() => {
-      saveCanvas()
-    }, 500)
-    return () => clearTimeout(saveTimeoutRef.current)
-  }, [lines, images])
-
   async function saveCanvas() {
     try {
       const payload = {
@@ -135,8 +125,7 @@ export default function CanvasEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      lastSaveTimeRef.current = Date.now(); // Update last save time
-      // optionally show saved indicator here
+      lastSaveTimeRef.current = Date.now() // update last save time
     } catch (e) {
       console.error('Failed to save canvas:', e)
     }
@@ -156,17 +145,17 @@ export default function CanvasEditor() {
     }
   }
 
-  // New: delete selected image locally and in backend
+  // Delete selected image locally and on backend, then save
   const handleDeleteSelectedImage = () => {
     if (selectedImageIndex === null) return
     const imageToDelete = images[selectedImageIndex]
     setImages((prev) => prev.filter((_, i) => i !== selectedImageIndex))
     setSelectedImageIndex(null)
-    // Call backend delete if desired:
     deleteImageFromBackend(imageToDelete.id)
+    saveCanvas()
   }
 
-  // Handle paste image from clipboard: upload to backend and store image ID + position
+  // Handle paste image from clipboard
   useEffect(() => {
     const handlePaste = async (e) => {
       const items = e.clipboardData.items
@@ -182,6 +171,7 @@ export default function CanvasEditor() {
               ...prev,
               { id: imageId, x: rel.x, y: rel.y, scaleX: 1, scaleY: 1 },
             ])
+            saveCanvas()
           } catch (err) {
             console.error('Image upload failed:', err)
           }
@@ -219,13 +209,14 @@ export default function CanvasEditor() {
     }
   }, [selectedImageIndex])
 
-  // Update image position and scale on drag or transform
+  // Update image position and scale on drag or transform, then save
   function updateImagePosition(index, changes) {
     setImages((prev) => {
       const updated = [...prev]
       updated[index] = { ...updated[index], ...changes }
       return updated
     })
+    saveCanvas()
   }
 
   // Mouse event handlers
@@ -293,11 +284,12 @@ export default function CanvasEditor() {
       setDrawing(false)
       setHistory((prev) => [...prev, [...lines]])
       setRedoStack([])
+      saveCanvas()
     }
     lastPanPos.current = null
   }
 
-  // Undo/Redo
+  // Undo/Redo with saving
   const handleUndo = () => {
     if (history.length === 0) return
     const prev = [...history]
@@ -305,6 +297,7 @@ export default function CanvasEditor() {
     setRedoStack((r) => [...r, lines])
     setLines(last || [])
     setHistory(prev)
+    saveCanvas()
   }
 
   const handleRedo = () => {
@@ -314,9 +307,10 @@ export default function CanvasEditor() {
     setHistory((h) => [...h, lines])
     setLines(restored)
     setRedoStack(redo)
+    saveCanvas()
   }
 
-  // Zoom with mouse wheel
+  // Zoom with mouse wheel (no saving needed here)
   const handleWheel = (e) => {
     e.evt.preventDefault()
     const scaleBy = 1.05
@@ -338,7 +332,7 @@ export default function CanvasEditor() {
     })
   }
 
-  // Export functions
+  // Export functions (no saving triggered)
   const exportAsImage = () => {
     const uri = stageRef.current.toDataURL()
     const link = document.createElement('a')
@@ -355,50 +349,51 @@ export default function CanvasEditor() {
     pdf.save('canvas.pdf')
   }
 
+  // Clear canvas and save
   const handleClear = () => {
     setLines([])
     setImages([])
     setHistory([])
     setRedoStack([])
     setSelectedImageIndex(null)
+    saveCanvas()
   }
 
-  // Update lastEditTimeRef when lines/images change
+  // Update lastEditTimeRef when lines or images change (used for polling updates)
   useEffect(() => {
-    lastEditTimeRef.current = Date.now();
-  }, [lines, images]);
+    lastEditTimeRef.current = Date.now()
+  }, [lines, images])
 
-  // Poll for remote updates every 1.5s
+  // Poll backend for external canvas updates
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/canvas/last_update?id=${canvas_id}`, {
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (res.ok && data.last_update && data.last_update !== "Null") {
-          const lastUpdate = Number(data.last_update) * 1000;
+          credentials: 'include',
+        })
+        const data = await res.json()
+        if (res.ok && data.last_update && data.last_update !== 'Null') {
+          const lastUpdate = Number(data.last_update) * 1000
           // Only fetch if server update is newer than both our last edit and last save time
           if (
             lastUpdate > lastEditTimeRef.current &&
             lastUpdate > lastSaveTimeRef.current
           ) {
-            // Fetch and update canvas
-            const canvasRes = await fetch(`/api/canvas/get?id=${canvas_id}`);
+            const canvasRes = await fetch(`/api/canvas/get?id=${canvas_id}`)
             if (canvasRes.ok) {
-              const canvasData = await canvasRes.json();
-              const parsed = JSON.parse(canvasData.message.content);
-              setLines(parsed.lines || []);
-              setImages(parsed.images || []);
+              const canvasData = await canvasRes.json()
+              const parsed = JSON.parse(canvasData.message.content)
+              setLines(parsed.lines || [])
+              setImages(parsed.images || [])
             }
           }
         }
       } catch (err) {
-        console.error("Error checking canvas last update:", err);
+        console.error('Error checking canvas last update:', err)
       }
-    }, 1500);
-    return () => clearInterval(interval);
-  }, [canvas_id]);
+    }, 1500)
+    return () => clearInterval(interval)
+  }, [canvas_id])
 
   return (
     <div
