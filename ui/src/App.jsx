@@ -44,6 +44,7 @@ import UpdateTranslation from './components/projects/project/pages/UpdateTransla
 import PageCanvases from './components/projects/project/pages/Canvases' 
 import StartCanvas from './components/projects/project/pages/StartCanvas'
 import UpdateCanvasForm from './components/projects/project/pages/UpdateCanvasFields'
+import CanvasEditor from './components/projects/project/pages/CanvasEditor'
 
 import Box from '@mui/material/Box'
 
@@ -154,6 +155,10 @@ export default function App () {
                     <Route
                       path='canvases/update_fields/:canvas_id'
                       element={<UpdateCanvasForm />}
+                    />
+                    <Route
+                      path='canvases/update/:canvas_id'
+                      element={<CanvasEditor />}
                     />
 
                   </Route>

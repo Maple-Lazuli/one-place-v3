@@ -8,6 +8,7 @@ import {
   Stack
 } from '@mui/material'
 import { Link, useParams } from 'react-router-dom'
+import CanvasEditorOverlay from './CanvasEditorOverlay'
 
 export default function CanvasCard ({
   name,
@@ -17,7 +18,7 @@ export default function CanvasCard ({
   onDelete
 }) {
   const { project_id, page_id } = useParams()
-
+  const [showOverlay, setShowOverlay] = React.useState(false)
   const handleDelete = async canvas_id => {
     try {
       const res = await fetch('/api/canvas/delete', {
@@ -72,11 +73,7 @@ export default function CanvasCard ({
           >
             View
           </Button>
-          <Button
-            variant='outlined'
-            component={Link}
-            to={`/projects/project/${project_id}/pages/page/${page_id}/canvases/update/${canvas_id}`}
-          >
+          <Button variant='outlined' onClick={() => setShowOverlay(true)}>
             Draw
           </Button>
           <Button
@@ -95,6 +92,10 @@ export default function CanvasCard ({
           </Button>
         </Stack>
       </CardContent>
+      <CanvasEditorOverlay
+        open={showOverlay}
+        onClose={() => setShowOverlay(false)}
+      />
     </Card>
   )
 }
