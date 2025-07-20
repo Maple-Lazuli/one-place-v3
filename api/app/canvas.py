@@ -209,6 +209,7 @@ def get_fields_ep():
         del canvas['content']
 
     log_access(canvas_id, True, "GET")
+    print(canvas)
     response = make_response({'status': 'success', 'message': canvas}, STATUS.OK)
     return response
 
@@ -272,7 +273,6 @@ def update_content_ep():
     data = request.get_json()
     canvas_id = data.get("canvas_id")
     content = data.get("new_content")
-
     token = request.cookies.get("token")
 
     valid, session = verify_session_for_access(token)
@@ -280,9 +280,7 @@ def update_content_ep():
     if not valid:
         log_access(canvas_id, False, "UPDATE")
         return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
-
     canvas = get_canvas_by_id(canvas_id)
-
     if not authorized_page_access(token, canvas['PageID']):
         log_access(canvas_id, False, "UPDATE")
         return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
