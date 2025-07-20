@@ -80,6 +80,8 @@ export default function CanvasEditor() {
 
   const lastPanPos = useRef(null)
   const saveTimeoutRef = useRef(null)
+  const lastEditTimeRef = useRef(Date.now());
+  const lastSaveTimeRef = useRef(0);
 
   // Upload image to backend and get image ID
   async function uploadImage(blob) {
@@ -117,7 +119,7 @@ export default function CanvasEditor() {
     if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current)
     saveTimeoutRef.current = setTimeout(() => {
       saveCanvas()
-    }, 100)
+    }, 500)
     return () => clearTimeout(saveTimeoutRef.current)
   }, [lines, images])
 
@@ -133,13 +135,13 @@ export default function CanvasEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
+      lastSaveTimeRef.current = Date.now(); // Update last save time
       // optionally show saved indicator here
     } catch (e) {
       console.error('Failed to save canvas:', e)
     }
   }
 
-  // New: delete image from backend (optional)
   async function deleteImageFromBackend(imageId) {
     try {
       // Adjust this URL to your actual backend delete endpoint
@@ -360,6 +362,43 @@ export default function CanvasEditor() {
     setRedoStack([])
     setSelectedImageIndex(null)
   }
+
+  // Update lastEditTimeRef when lines/images change
+  useEffect(() => {
+    lastEditTimeRef.current = Date.now();
+  }, [lines, images]);
+
+  // Poll for remote updates every 1.5s
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/canvas/last_update?id=${canvas_id}`, {
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (res.ok && data.last_update && data.last_update !== "Null") {
+          const lastUpdate = Number(data.last_update) * 1000;
+          // Only fetch if server update is newer than both our last edit and last save time
+          if (
+            lastUpdate > lastEditTimeRef.current &&
+            lastUpdate > lastSaveTimeRef.current
+          ) {
+            // Fetch and update canvas
+            const canvasRes = await fetch(`/api/canvas/get?id=${canvas_id}`);
+            if (canvasRes.ok) {
+              const canvasData = await canvasRes.json();
+              const parsed = JSON.parse(canvasData.message.content);
+              setLines(parsed.lines || []);
+              setImages(parsed.images || []);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error checking canvas last update:", err);
+      }
+    }, 1500);
+    return () => clearInterval(interval);
+  }, [canvas_id]);
 
   return (
     <div
