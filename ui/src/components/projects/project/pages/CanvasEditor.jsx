@@ -118,7 +118,6 @@ export default function CanvasEditor() {
         canvas_id: Number(canvas_id),
         new_content: JSON.stringify({ lines, images }),
       }
-      console.log('Saving canvas:', payload)
       await fetch(`/api/canvas/content`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
