@@ -55,7 +55,6 @@ const DraggableImage = forwardRef(
 )
 
 export default function CanvasEditor() {
-  const containerRef = useRef(null)
   const stageRef = useRef()
   const transformerRef = useRef()
   const { canvas_id } = useParams()
@@ -71,7 +70,6 @@ export default function CanvasEditor() {
   const [strokeWidth, setStrokeWidth] = useState(4)
   const [scale, setScale] = useState(1)
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 })
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 })
   const [middleMouseDown, setMiddleMouseDown] = useState(false)
 
   // For transformer & selection
@@ -113,6 +111,7 @@ export default function CanvasEditor() {
     loadCanvas()
   }, [canvas_id])
 
+  // Save canvas helper
   async function saveCanvas() {
     try {
       const payload = {
@@ -125,7 +124,7 @@ export default function CanvasEditor() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      lastSaveTimeRef.current = Date.now() // update last save time
+      lastSaveTimeRef.current = Date.now()
     } catch (e) {
       console.error('Failed to save canvas:', e)
     }
@@ -133,7 +132,6 @@ export default function CanvasEditor() {
 
   async function deleteImageFromBackend(imageId) {
     try {
-      // Adjust this URL to your actual backend delete endpoint
       const res = await fetch(`/api/images/image?id=${imageId}`, {
         method: 'DELETE',
       })
@@ -145,7 +143,6 @@ export default function CanvasEditor() {
     }
   }
 
-  // Delete selected image locally and on backend, then save
   const handleDeleteSelectedImage = () => {
     if (selectedImageIndex === null) return
     const imageToDelete = images[selectedImageIndex]
@@ -155,7 +152,6 @@ export default function CanvasEditor() {
     saveCanvas()
   }
 
-  // Handle paste image from clipboard
   useEffect(() => {
     const handlePaste = async (e) => {
       const items = e.clipboardData.items
@@ -182,20 +178,6 @@ export default function CanvasEditor() {
     return () => window.removeEventListener('paste', handlePaste)
   }, [])
 
-  // Update container size on mount and resize
-  useEffect(() => {
-    function updateSize() {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
-        setContainerSize({ width: rect.width, height: rect.height })
-      }
-    }
-    updateSize()
-    window.addEventListener('resize', updateSize)
-    return () => window.removeEventListener('resize', updateSize)
-  }, [])
-
-  // Attach transformer to selected image
   useEffect(() => {
     if (selectedImageIndex === null) {
       transformerRef.current?.nodes([])
@@ -209,7 +191,6 @@ export default function CanvasEditor() {
     }
   }, [selectedImageIndex])
 
-  // Update image position and scale on drag or transform, then save
   function updateImagePosition(index, changes) {
     setImages((prev) => {
       const updated = [...prev]
@@ -218,8 +199,6 @@ export default function CanvasEditor() {
     })
     saveCanvas()
   }
-
-  // Mouse event handlers
 
   const handleMouseDown = (e) => {
     const stage = e.target.getStage()
@@ -244,7 +223,6 @@ export default function CanvasEditor() {
         strokeWidth,
       },
     ])
-    // Deselect images when drawing starts
     setSelectedImageIndex(null)
   }
 
@@ -289,7 +267,6 @@ export default function CanvasEditor() {
     lastPanPos.current = null
   }
 
-  // Undo/Redo with saving
   const handleUndo = () => {
     if (history.length === 0) return
     const prev = [...history]
@@ -310,7 +287,6 @@ export default function CanvasEditor() {
     saveCanvas()
   }
 
-  // Zoom with mouse wheel (no saving needed here)
   const handleWheel = (e) => {
     e.evt.preventDefault()
     const scaleBy = 1.05
@@ -332,7 +308,6 @@ export default function CanvasEditor() {
     })
   }
 
-  // Export functions (no saving triggered)
   const exportAsImage = () => {
     const uri = stageRef.current.toDataURL()
     const link = document.createElement('a')
@@ -349,7 +324,6 @@ export default function CanvasEditor() {
     pdf.save('canvas.pdf')
   }
 
-  // Clear canvas and save
   const handleClear = () => {
     setLines([])
     setImages([])
@@ -359,12 +333,10 @@ export default function CanvasEditor() {
     saveCanvas()
   }
 
-  // Update lastEditTimeRef when lines or images change (used for polling updates)
   useEffect(() => {
     lastEditTimeRef.current = Date.now()
   }, [lines, images])
 
-  // Poll backend for external canvas updates
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
@@ -374,7 +346,6 @@ export default function CanvasEditor() {
         const data = await res.json()
         if (res.ok && data.last_update && data.last_update !== 'Null') {
           const lastUpdate = Number(data.last_update) * 1000
-          // Only fetch if server update is newer than both our last edit and last save time
           if (
             lastUpdate > lastEditTimeRef.current &&
             lastUpdate > lastSaveTimeRef.current
@@ -397,14 +368,16 @@ export default function CanvasEditor() {
 
   return (
     <div
-      ref={containerRef}
       style={{
-        width: '100vw',
-        height: '100vh',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
-        position: 'relative',
+        overflow: 'hidden',
       }}
     >
       {/* Toolbar */}
@@ -471,7 +444,6 @@ export default function CanvasEditor() {
         <button onClick={handleClear}>Clear Canvas</button>
         <button onClick={() => navigate('/canvases')}>Close</button>
 
-        {/* Delete Image button visible only if an image is selected */}
         {selectedImageIndex !== null && (
           <button
             onClick={handleDeleteSelectedImage}
@@ -485,8 +457,8 @@ export default function CanvasEditor() {
       {/* Canvas Stage */}
       <Stage
         ref={stageRef}
-        width={containerSize.width || window.innerWidth}
-        height={containerSize.height || window.innerHeight}
+        width={window.innerWidth}
+        height={window.innerHeight}
         scaleX={scale}
         scaleY={scale}
         x={stagePosition.x}
