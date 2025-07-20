@@ -57,7 +57,7 @@ const DraggableImage = forwardRef(
 export default function CanvasEditor() {
   const stageRef = useRef()
   const transformerRef = useRef()
-  const { canvas_id } = useParams()
+  const {project_id, page_id, canvas_id } = useParams()
   const navigate = useNavigate()
 
   const [tool, setTool] = useState('pen') // pen, eraser, pan
@@ -442,7 +442,9 @@ export default function CanvasEditor() {
         <button onClick={exportAsImage}>Export Image</button>
         <button onClick={exportAsPDF}>Export PDF</button>
         <button onClick={handleClear}>Clear Canvas</button>
-        <button onClick={() => navigate('/canvases')}>Close</button>
+        <button onClick={() =>         navigate(
+          `/projects/project/${project_id}/pages/page/${page_id}/canvases`
+        )}>Close</button>
 
         {selectedImageIndex !== null && (
           <button
