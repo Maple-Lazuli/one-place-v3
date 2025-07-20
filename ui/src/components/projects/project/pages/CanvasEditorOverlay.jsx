@@ -15,7 +15,7 @@ export default function CanvasEditorOverlay({ open, onClose }) {
         width: '100vw',
         height: '100vh',
         backgroundColor: 'rgba(0, 0, 0, 0.7)',
-        zIndex: 1300,
+        zIndex: 10000,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -37,9 +37,9 @@ export default function CanvasEditorOverlay({ open, onClose }) {
           onClick={onClose}
           sx={{
             position: 'absolute',
-            top: 8,
-            right: 8,
-            zIndex: 10,
+            top: 1,
+            right: 1,
+            zIndex: 10000,
             backgroundColor: 'white',
           }}
         >

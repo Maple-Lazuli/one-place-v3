@@ -94,7 +94,10 @@ export default function CanvasCard ({
       </CardContent>
       <CanvasEditorOverlay
         open={showOverlay}
-        onClose={() => setShowOverlay(false)}
+        onClose={() => {
+          console.log('Overlay close clicked')
+          setShowOverlay(false)
+        }}
       />
     </Card>
   )
