@@ -173,7 +173,6 @@ def get_all_by_project_ep():
     if tags is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
 
-
     response = make_response({'status': 'success', 'message': tags}, STATUS.OK)
     return response
 
@@ -224,7 +223,7 @@ def assign_ep():
 
     tag = get_tag_by_id(tag_id)
     if session['UserID'] != tag['UserID']:
-                return make_response({'status': 'error', 'message': "Not Authorized"}, STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Not Authorized"}, STATUS.FORBIDDEN)
 
     create_mapping(tag_id, project_id)
 
