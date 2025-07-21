@@ -26,6 +26,8 @@ export default function UpdateTranslation () {
   const lastSaveTimeRef = useRef(0)
   const lastCurrentPagePollRef = useRef(null)
   const textareaRef = useRef(null)
+  const updateTimeout = 1000 // 1 second delay for auto-save  
+  const autoSaveTimeout = 500 // 500ms delay for auto-save
 
   const { project_id, page_id, translation_id } = useParams()
   const navigate = useNavigate()
@@ -61,8 +63,8 @@ export default function UpdateTranslation () {
       const data = await res.json()
       if (res.ok && data.message) {
         setCurrentPageContent(data.message.content)
-        setLastCurrentPageUpdate(data.message.lastUpdate)
-        lastCurrentPagePollRef.current = data.message.lastUpdate
+        setLastCurrentPageUpdate(Number(data.message.lastUpdate) * 1000)
+        lastCurrentPagePollRef.current = data.message.lastUpdate * 1000
       }
     } catch (err) {
       console.error('Error fetching current page:', err)
@@ -96,14 +98,14 @@ export default function UpdateTranslation () {
         if (
           pageRes.ok &&
           pageData.last_update &&
-          pageData.last_update !== lastCurrentPagePollRef.current
+          pageData.last_update > lastCurrentPagePollRef.current
         ) {
           fetchCurrentPage()
         }
       } catch (err) {
         console.error('Polling error:', err)
       }
-    }, 1500)
+    }, updateTimeout)
 
     return () => clearInterval(interval)
   }, [translation_id, page_id])
@@ -129,7 +131,7 @@ export default function UpdateTranslation () {
       } finally {
         setSaving(false)
       }
-    }, 500)
+    }, autoSaveTimeout)
 
     return () => clearTimeout(timeout)
   }, [content, translation_id])
@@ -296,7 +298,7 @@ const insertAtCursor = async (markdown) => {
           }}
         >
           <Typography variant='h6' gutterBottom>
-            {showCurrentPage ? 'Original Page' : 'Translation Preview'}
+            {showCurrentPage ? 'Original Source' : 'Translation Preview'}
           </Typography>
           <ReactMarkdown
             children={showCurrentPage ? currentPageContent : content}
