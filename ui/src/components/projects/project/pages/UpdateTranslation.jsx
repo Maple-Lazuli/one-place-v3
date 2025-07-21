@@ -25,6 +25,7 @@ export default function UpdateTranslation () {
   const lastEditTimeRef = useRef(Date.now())
   const lastSaveTimeRef = useRef(0)
   const lastCurrentPagePollRef = useRef(null)
+  const textareaRef = useRef(null)
 
   const { project_id, page_id, translation_id } = useParams()
   const navigate = useNavigate()
@@ -76,18 +77,14 @@ export default function UpdateTranslation () {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(
-          `/api/translations/last_update?id=${translation_id}`,
-          { credentials: 'include' }
-        )
+        const res = await fetch(`/api/translations/last_update?id=${translation_id}`, {
+          credentials: 'include'
+        })
         const data = await res.json()
 
         if (res.ok && data.last_update && data.last_update !== 'Null') {
           const lastUpdate = Number(data.last_update) * 1000
-          if (
-            lastUpdate > lastEditTimeRef.current &&
-            lastUpdate > lastSaveTimeRef.current
-          ) {
+          if (lastUpdate > lastEditTimeRef.current && lastUpdate > lastSaveTimeRef.current) {
             fetchTranslation()
           }
         }
@@ -137,6 +134,86 @@ export default function UpdateTranslation () {
     return () => clearTimeout(timeout)
   }, [content, translation_id])
 
+useEffect(() => {
+  const handlePaste = async (e) => {
+    if (document.activeElement !== textareaRef.current) return
+    const items = e.clipboardData?.items
+    if (!items) return
+
+    for (const item of items) {
+      if (item.type.startsWith('image')) {
+        const file = item.getAsFile()
+        if (!file) return
+
+        const formData = new FormData()
+        formData.append('file', file)
+
+        try {
+          const response = await fetch('/api/images/image', {
+            method: 'POST',
+            body: formData,
+          })
+          const data = await response.json()
+          if (data && data.id) {
+            const markdown = `![image](http://${window.location.hostname}:3000/api/images/image?id=${data.id})`
+            await insertAtCursor(markdown)
+          }
+        } catch (err) {
+          console.error('Image upload failed:', err)
+        }
+      }
+    }
+  }
+
+  window.addEventListener('paste', handlePaste)
+  return () => window.removeEventListener('paste', handlePaste)
+}, [translation_id])
+
+const insertAtCursor = async (markdown) => {
+  const textarea = textareaRef.current
+  if (!textarea) return
+
+  const currentValue = textarea.value
+  const start = textarea.selectionStart
+  const end = textarea.selectionEnd
+
+  const before = currentValue.slice(0, start)
+  const after = currentValue.slice(end)
+
+  const spacedMarkdown = `\n\n${markdown}\n\n`
+  const newText = before + spacedMarkdown + after
+
+  textarea.value = newText
+  setContent(newText)
+
+  requestAnimationFrame(() => {
+    textarea.focus()
+    const cursor = start + spacedMarkdown.length
+    textarea.setSelectionRange(cursor, cursor)
+  })
+
+  lastEditTimeRef.current = Date.now()
+
+  try {
+    setSaving(true)
+    await fetch('/api/translations/update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        translation_id: Number(translation_id),
+        new_content: newText,
+      }),
+    })
+    lastSaveTimeRef.current = Date.now()
+  } catch (err) {
+    console.error('Auto-save after paste failed:', err)
+  } finally {
+    setSaving(false)
+  }
+}
+
+
   const handleChange = e => {
     setContent(e.target.value)
     lastEditTimeRef.current = Date.now()
@@ -172,6 +249,7 @@ export default function UpdateTranslation () {
 
           {!fetching && (
             <textarea
+              ref={textareaRef}
               lang='auto'
               value={content}
               onChange={handleChange}
@@ -218,7 +296,7 @@ export default function UpdateTranslation () {
           }}
         >
           <Typography variant='h6' gutterBottom>
-            {showCurrentPage ? 'Origional Page' : 'Translation Preview'}
+            {showCurrentPage ? 'Original Page' : 'Translation Preview'}
           </Typography>
           <ReactMarkdown
             children={showCurrentPage ? currentPageContent : content}
