@@ -9,17 +9,21 @@ import remarkGfm from 'remark-gfm'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
 
-export default function PageEditor() {
+export default function PageEditor () {
   const { page_id } = useParams()
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
   const [showPreview, setShowPreview] = useState(false)
-  const lastEditTimeRef = useRef(Date.now())    // tracks last time user edited text locally
-  const lastSaveTimeRef = useRef(0)             // tracks last time we successfully saved to server
+  const lastEditTimeRef = useRef(Date.now())
+  const lastSaveTimeRef = useRef(0)
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
+  const textareaRef = useRef(null)
 
-  // Fetch page content from server and update text & lastEditTimeRef
+  useEffect(() => {
+    fetchPage()
+  }, [page_id])
+
   const fetchPage = async () => {
     try {
       const res = await fetch(`/api/pages/get?id=${page_id}`, {
@@ -29,7 +33,6 @@ export default function PageEditor() {
       if (res.ok && data.status === 'success') {
         setText(data.message.content || '')
         lastEditTimeRef.current = (data.message.lastEditTime || 0) * 1000
-        // Also reset lastSaveTimeRef if server data is fresher (optional)
         if (lastSaveTimeRef.current < lastEditTimeRef.current) {
           lastSaveTimeRef.current = lastEditTimeRef.current
         }
@@ -42,10 +45,6 @@ export default function PageEditor() {
   }
 
   useEffect(() => {
-    fetchPage()
-  }, [page_id])
-
-  useEffect(() => {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/pages/last_update?id=${page_id}`, {
@@ -54,10 +53,8 @@ export default function PageEditor() {
         const data = await res.json()
         if (res.ok && data.last_update && data.last_update !== 'Null') {
           const lastUpdate = Number(data.last_update) * 1000
-
-          // Only fetch if server update is newer than both our last edit and last save time
           if (
-            lastUpdate > lastEditTimeRef.current && 
+            lastUpdate > lastEditTimeRef.current &&
             lastUpdate > lastSaveTimeRef.current
           ) {
             fetchPage()
@@ -70,7 +67,6 @@ export default function PageEditor() {
     return () => clearInterval(interval)
   }, [page_id])
 
-  // Auto-save after user edits, update lastSaveTimeRef on success
   useEffect(() => {
     if (text === '') return
     const timeout = setTimeout(async () => {
@@ -85,14 +81,13 @@ export default function PageEditor() {
             content: text
           })
         })
-        lastSaveTimeRef.current = Date.now()  // mark last save time as now
+        lastSaveTimeRef.current = Date.now()
       } catch (err) {
         console.error('Auto-save failed:', err)
       } finally {
         setSaving(false)
       }
     }, 500)
-
     return () => clearTimeout(timeout)
   }, [text, page_id])
 
@@ -102,9 +97,89 @@ export default function PageEditor() {
     }
   }, [])
 
+  useEffect(() => {
+    const handlePaste = async e => {
+      if (document.activeElement !== textareaRef.current) return
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      for (const item of items) {
+        if (item.type.startsWith('image')) {
+          const file = item.getAsFile()
+          if (!file) return
+          const formData = new FormData()
+          formData.append('file', file)
+          try {
+            const response = await fetch('/api/images/image', {
+              method: 'POST',
+              body: formData
+            })
+            const data = await response.json()
+            if (data && data.id) {
+              const markdown = `![image](http://${window.location.hostname}:3000/api/images/image?id=${data.id})`
+              await insertAtCursor(markdown)
+            }
+          } catch (err) {
+            console.error('Image upload failed:', err)
+          }
+        }
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [])
+
+  const insertAtCursor = async markdown => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const currentValue = textarea.value
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+
+    const before = currentValue.slice(0, start)
+    const after = currentValue.slice(end)
+
+    const spacedMarkdown = `\n\n${markdown}\n\n`
+    const newText = before + spacedMarkdown + after
+
+    // Set the actual <textarea>'s value to keep them in sync
+    textarea.value = newText
+    setText(newText)
+
+    // Restore focus and move cursor after inserted markdown
+    requestAnimationFrame(() => {
+      textarea.focus()
+      const cursor = start + spacedMarkdown.length
+      textarea.setSelectionRange(cursor, cursor)
+    })
+
+    lastEditTimeRef.current = Date.now()
+
+    // Immediate save after paste
+    try {
+      setSaving(true)
+      await fetch('/api/pages/content', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          page_id: page_id,
+          content: newText
+        })
+      })
+      lastSaveTimeRef.current = Date.now()
+    } catch (err) {
+      console.error('Auto-save after paste failed:', err)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleChange = e => {
     setText(e.target.value)
-    lastEditTimeRef.current = Date.now()  // mark last edit time as now
+    lastEditTimeRef.current = Date.now()
   }
 
   return (
@@ -143,6 +218,7 @@ export default function PageEditor() {
         }}
       >
         <textarea
+          ref={textareaRef}
           value={text}
           onChange={handleChange}
           style={{
@@ -158,12 +234,12 @@ export default function PageEditor() {
             whiteSpace: 'pre-wrap',
             wordWrap: 'break-word'
           }}
-          placeholder="Write your markdown here..."
+          placeholder='Write your markdown here...'
         />
 
         {showPreview && (
           <div
-            className="markdown-preview"
+            className='markdown-preview'
             style={{
               flexShrink: 0,
               width: containerWidth ? containerWidth * 0.45 : '45%',
@@ -195,7 +271,7 @@ export default function PageEditor() {
                 remarkPlugins={[remarkMath, remarkGfm]}
                 rehypePlugins={[rehypeKatex, rehypeHighlight]}
                 components={{
-                  code({ node, inline, className, children, ...props }) {
+                  code ({ node, inline, className, children, ...props }) {
                     return (
                       <code
                         style={{
