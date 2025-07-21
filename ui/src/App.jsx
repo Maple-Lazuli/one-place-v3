@@ -43,7 +43,7 @@ import PageCanvases from './components/projects/project/pages/Canvases'
 import StartCanvas from './components/projects/project/pages/StartCanvas'
 import UpdateCanvasForm from './components/projects/project/pages/UpdateCanvasFields'
 import CanvasEditor from './components/projects/project/pages/CanvasEditor'
-
+import UpdateUserAccount from './components/UpdateAccount' // your update account component
 import AppLayout from './AppLayout'  // your layout with NavigationBar
 
 import { ThemeProvider, createTheme } from '@mui/material/styles'
@@ -95,6 +95,7 @@ export default function App() {
               <Route path="/home" element={<Home />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/create" element={<CreateProject />} />
+              <Route path="/update_account" element={<UpdateUserAccount />} />
 
               {/* Nested project routes */}
               <Route path="/projects/project/:project_id" element={<Project />}>

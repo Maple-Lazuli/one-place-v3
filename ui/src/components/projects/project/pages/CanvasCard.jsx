@@ -68,13 +68,6 @@ export default function CanvasCard ({
           <Button
             variant='outlined'
             component={Link}
-            to={`/projects/project/${project_id}/pages/page/${page_id}/canvases/view/${canvas_id}`}
-          >
-            View
-          </Button>
-          <Button
-            variant='outlined'
-            component={Link}
             to={`/projects/project/${project_id}/pages/page/${page_id}/canvases/update/${canvas_id}`}
           >
             Draw

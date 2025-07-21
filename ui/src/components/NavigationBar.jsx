@@ -92,7 +92,7 @@ export default function NavigationBar() {
         {username}
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Button variant="outlined" fullWidth sx={{ mb: 2 }} component={Link} to="/account">
+      <Button variant="outlined" fullWidth sx={{ mb: 2 }} component={Link} to="/update_account">
         Edit Account
       </Button>
       <Button variant="outlined" fullWidth sx={{ mb: 2 }} component={Link} to="/db">
