@@ -156,7 +156,8 @@ def create_user_ep():
     preferences = data.get("preferences", "{}")
 
     if len(password) < 8:
-        return make_response({'status': 'error', 'message': "Password Needs To Be Longer Than 8 Charactes"}, STATUS.BAD_REQUEST)
+        return make_response({'status': 'error', 'message': "Password Needs To Be Longer Than 8 Charactes"},
+                             STATUS.BAD_REQUEST)
 
     if get_user_by_name(username) is not None:
         return make_response({'status': 'error', 'message': "Username Unavailable"}, STATUS.BAD_REQUEST)
@@ -164,7 +165,7 @@ def create_user_ep():
     response = create_user(username, password, preferences)
 
     if response is None:
-        return make_response({'status': 'error', 'message': "Error Creating Account"},STATUS.BAD_REQUEST)
+        return make_response({'status': 'error', 'message': "Error Creating Account"}, STATUS.BAD_REQUEST)
 
     return jsonify({'status': 'success', "message": f"Created: {username}"}), STATUS.OK
 
@@ -195,6 +196,7 @@ def update_user_name_ep():
         return make_response({'status': 'error', 'message': "Failed To Mutate Account"}, STATUS.INTERNAL_SERVER_ERROR)
 
     response = make_response({'status': 'success', 'message': f"Changed username to: {new_username}"}, STATUS.OK)
+
     return response
 
 
@@ -247,7 +249,10 @@ def update_user_preferences_ep():
         return make_response({'status': 'error', 'message': "Failed To Mutate Account"}, STATUS.INTERNAL_SERVER_ERROR)
 
     response = make_response({'status': 'success', 'message': "Updated Preferences Successfully"}, STATUS.OK)
-    response.set_cookie("preferences", modified_account['preferences'], max_age=config['app']['session_life_seconds'], httponly=False)
+    response.set_cookie("preferences", modified_account['preferences'], max_age=config['app']['session_life_seconds'],
+                        httponly=False)
+    response.set_cookie("username", modified_account['name'], max_age=config['app']['session_life_seconds'],
+                        httponly=False)
     return response
 
 
@@ -266,11 +271,13 @@ def login_ep():
     if token is None:
         return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
 
-    preferences = get_user_by_id(user_id)['preferences']
+    user = get_user_by_id(user_id)
 
     response = make_response({'status': 'success', 'message': "Authenticated Successfully"}, STATUS.OK)
     response.set_cookie("token", token, max_age=config['app']['session_life_seconds'], httponly=True)
-    response.set_cookie("preferences", preferences, max_age=config['app']['session_life_seconds'], httponly=False)
+    response.set_cookie("preferences", user['preferences'], max_age=config['app']['session_life_seconds'],
+                        httponly=False)
+    response.set_cookie("username", user['name'], max_age=config['app']['session_life_seconds'], httponly=False)
 
     return response
 
@@ -318,4 +325,7 @@ def logout_ep():
 
     response = make_response({'status': 'success', 'message': f'Logged Out: {username}'}, STATUS.OK)
     response.delete_cookie("token")
+    response.delete_cookie("preferences")
+    response.delete_cookie("username")
+
     return response
