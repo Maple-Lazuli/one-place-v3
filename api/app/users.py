@@ -6,7 +6,7 @@ import json
 
 from .configuration import load_config
 from .db import get_db_connection
-from .sessions import create_session, verify_session, deactivate_session
+from .sessions import create_session, verify_session, deactivate_session, verify_session_for_access
 
 config = load_config()
 users_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -328,4 +328,18 @@ def logout_ep():
     response.delete_cookie("preferences")
     response.delete_cookie("username")
 
+    return response
+
+
+@users_bp.route('/get_name', methods=['GET'])
+def get_name_ep():
+    token = request.cookies.get("token")
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    name = get_user_by_id(session['UserID'])['name']
+
+    response = make_response({'status': 'success', 'name': name}, STATUS.OK)
     return response
