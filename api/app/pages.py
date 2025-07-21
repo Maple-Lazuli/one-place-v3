@@ -152,7 +152,7 @@ def create_ep():
     data = request.get_json()
     project_id = data.get("project_id")
     name = data.get("name")
-    content = f'Created On: {datetime.now()}'
+    content = f'No Content Yet'
 
     token = request.cookies.get("token")
 

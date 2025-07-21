@@ -19,6 +19,8 @@ export default function PageEditor () {
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
   const textareaRef = useRef(null)
+  const updateTimeout = 1000 // 1 second delay for auto-save
+  const autoSaveTimeout = 500 // 500ms delay for auto-save
 
   useEffect(() => {
     fetchPage()
@@ -63,7 +65,7 @@ export default function PageEditor () {
       } catch (err) {
         console.error('Error checking last update:', err)
       }
-    }, 1500)
+    }, updateTimeout)
     return () => clearInterval(interval)
   }, [page_id])
 
@@ -87,7 +89,7 @@ export default function PageEditor () {
       } finally {
         setSaving(false)
       }
-    }, 500)
+    }, autoSaveTimeout)
     return () => clearTimeout(timeout)
   }, [text, page_id])
 
