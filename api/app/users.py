@@ -282,6 +282,42 @@ def login_ep():
     return response
 
 
+@users_bp.route('/new_session', methods=['get'])
+def create_new_session_ep():
+    token = request.cookies.get("token")
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    if request.remote_addr != session['ipAddress']:
+        return make_response({'status': 'error', 'message': "Session Must Be Renewed From Same Host"}, STATUS.FORBIDDEN)
+
+    token = create_session(session['UserID'], request.remote_addr)
+
+    if token is None:
+        return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
+
+    response = make_response({'status': 'success', 'message': "Authenticated Successfully"}, STATUS.OK)
+    response.set_cookie("token", token, max_age=config['app']['session_life_seconds'], httponly=True)
+    return response
+
+
+@users_bp.route('/session', methods=['get'])
+def get_session_details_ep():
+    token = request.cookies.get("token")
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    if token is None:
+        return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
+
+    response = make_response({'status': 'success', 'active': session['isActive'], 'endTime': session['endTime'].timestamp()}, STATUS.OK)
+    return response
+
+
 @users_bp.route('/delete', methods=['DELETE'])
 def delete_user_ep():
     data = request.get_json()

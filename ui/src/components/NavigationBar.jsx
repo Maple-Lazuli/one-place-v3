@@ -1,15 +1,17 @@
-import React, { useEffect, useState } from 'react'
-import AppBar from '@mui/material/AppBar'
-import Toolbar from '@mui/material/Toolbar'
-import Button from '@mui/material/Button'
-import Box from '@mui/material/Box'
-import Drawer from '@mui/material/Drawer'
+import React, { useEffect, useState, useRef } from 'react'
+import {
+  AppBar,
+  Toolbar,
+  Button,
+  Box,
+  Drawer,
+  Typography,
+  Avatar,
+  Divider,
+  Snackbar,
+  Alert as MuiAlert
+} from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
-import Typography from '@mui/material/Typography'
-import Avatar from '@mui/material/Avatar'
-import Divider from '@mui/material/Divider'
-import Snackbar from '@mui/material/Snackbar'
-import MuiAlert from '@mui/material/Alert'
 
 const Alert = React.forwardRef(function Alert(props, ref) {
   return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />
@@ -18,41 +20,113 @@ const Alert = React.forwardRef(function Alert(props, ref) {
 export default function NavigationBar() {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [username, setUsername] = useState(null)
-  const [snack, setSnack] = useState({ open: false, severity: 'info', message: '' })
+  const [snack, setSnack] = useState({ open: false, severity: 'info', message: '', renew: false })
   const navigate = useNavigate()
+  const intervalRef = useRef(null)
 
   const toggleDrawer = (open) => () => {
     setDrawerOpen(open)
   }
 
-  // Fetch username from backend API on mount
+  // Check session validity and fetch username
   useEffect(() => {
-    async function fetchUsername() {
-      try {
-        const res = await fetch('/api/users/get_name', {
-          method: 'GET',
-          credentials: 'include', // include cookies for session token
-        })
+    async function initSessionCheck() {
+      const sessionOk = await checkSession()
+      if (!sessionOk) return
 
-        if (res.ok) {
-          const data = await res.json()
-          if (data.status === 'success' && data.name) {
-            setUsername(data.name)
-          } else {
-            setUsername(null)
-          }
-        } else {
-          // If session invalid or other error, clear username
-          setUsername(null)
-        }
-      } catch (err) {
-        console.error('Error fetching username:', err)
-        setUsername(null)
-      }
+      await fetchUsername()
+
+      // Start periodic session timer
+      intervalRef.current = setInterval(checkSession, 60000)
     }
 
-    fetchUsername()
+    initSessionCheck()
+
+    return () => clearInterval(intervalRef.current)
   }, [])
+
+  // Check session validity
+  const checkSession = async () => {
+    try {
+      const res = await fetch('/api/users/session', { credentials: 'include' })
+      if (!res.ok) {
+        navigate('/login')
+        return false
+      }
+
+      const data = await res.json()
+      if (data.status !== 'success' || !data.active) {
+        navigate('/login')
+        return false
+      }
+
+      const timeLeft = data.endTime * 1000 - Date.now()
+      if (timeLeft <= 10 * 60 * 1000) { // Less than 10 minutes left
+        setSnack({
+          open: true,
+          severity: 'warning',
+          message: 'Session expiring soon. Click to renew.',
+          renew: true
+        })
+      }
+
+      return true
+    } catch (err) {
+      console.error('Session check failed:', err)
+      navigate('/login')
+      return false
+    }
+  }
+
+  // Fetch username
+  const fetchUsername = async () => {
+    try {
+      const res = await fetch('/api/users/get_name', {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      if (res.ok) {
+        const data = await res.json()
+        if (data.status === 'success' && data.name) {
+          setUsername(data.name)
+        } else {
+          setUsername(null)
+        }
+      } else {
+        setUsername(null)
+      }
+    } catch (err) {
+      console.error('Error fetching username:', err)
+      setUsername(null)
+    }
+  }
+
+  const handleRenew = async () => {
+    try {
+      const res = await fetch('/api/users/new_session', {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || data.status !== 'success') {
+        navigate('/login')
+        return
+      }
+
+      setSnack({
+        open: true,
+        severity: 'success',
+        message: 'Session renewed successfully',
+        renew: false
+      })
+    } catch (err) {
+      console.error('Session renewal failed:', err)
+      navigate('/login')
+    }
+  }
 
   const handleLogout = async () => {
     try {
@@ -151,14 +225,20 @@ export default function NavigationBar() {
 
       <Snackbar
         open={snack.open}
-        autoHideDuration={3000}
+        autoHideDuration={snack.renew ? null : 3000}
         onClose={() => setSnack({ ...snack, open: false })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
           onClose={() => setSnack({ ...snack, open: false })}
           severity={snack.severity}
-          sx={{ width: '100%' }}
+          action={
+            snack.renew && (
+              <Button color="inherit" size="small" onClick={handleRenew}>
+                RENEW
+              </Button>
+            )
+          }
         >
           {snack.message}
         </Alert>
