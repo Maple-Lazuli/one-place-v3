@@ -19,6 +19,11 @@ export default function Login () {
       })
       const data = await res.json()
       if (data.status === 'success') {
+        // Cookies.set('username_temp', username, {
+        //   expires: 7,
+        //   path: '/',
+        //   sameSite: 'Strict'
+        // })
         navigate('/')
       } else {
         setError(data.message || 'Login failed')
