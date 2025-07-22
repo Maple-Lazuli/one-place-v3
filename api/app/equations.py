@@ -99,6 +99,28 @@ def get_equations_by_page(page_id):
     return None
 
 
+def get_equations_by_project(project_ID):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT equations.* FROM equations 
+    inner join pages on pages.pageID = equations.pageID
+    where pages.projectID = %s;
+    """, (project_ID,))
+    equations = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if equations is not None:
+        equations_list = []
+        for equation in equations:
+            equation = {k: v for k, v in zip(equations_fields, equation)}
+            equation = convert_time(equation)
+            equations_list.append(equation)
+        return equations_list
+    return None
+
+
 def create_equation(page_id, name, description, content):
     conn = get_db_connection()
     cursor = conn.cursor()

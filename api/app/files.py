@@ -63,6 +63,27 @@ def get_files_by_page(page_id):
     return None
 
 
+def get_files_by_project(project_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""SELECT files.* FROM files
+     inner join on pages.pagesID = files.pagesID
+     where pages.projectID = %s;
+    """, (project_id,))
+    files = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if files is not None:
+        file_list = []
+        for file in files:
+            file = {k: v for k, v in zip(files_fields, file) if k != "content"}
+            file = convert_time(file)
+            file_list.append(file)
+        return file_list
+    return None
+
+
 def delete_file(file_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -145,6 +166,29 @@ def get_files_ep():
     files = get_files_by_page(page_id)
 
     if not authorized_page_access(token, page_id):
+        return make_response("Not Authorized To Access", STATUS.FORBIDDEN)
+
+    if files is None:
+        response = make_response("Does Not Exist", STATUS.OK)
+        return response
+    response = make_response(files, STATUS.OK)
+    return response
+
+
+@files_bp.route('/files_by_project', methods=['get'])
+def get_files_by_project_ep():
+    project_id = int(request.args.get("project_id"))
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response("Invalid Session", STATUS.FORBIDDEN)
+
+    files = get_files_by_project(project_id)
+
+    if not authorized_project_access(project_id):
         return make_response("Not Authorized To Access", STATUS.FORBIDDEN)
 
     if files is None:

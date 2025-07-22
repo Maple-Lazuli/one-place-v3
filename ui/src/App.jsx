@@ -49,6 +49,7 @@ import DeleteTags from './components/DeleteTags'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
+import Equations from './components/projects/project/Equations'
 
 // // PublicLayout for routes without navbar
 function PublicLayout() {
@@ -131,6 +132,7 @@ export default function App() {
                 <Route path="todos/create" element={<CreateTodoForm />} />
                 <Route path="todos/update/:todo_id" element={<UpdateTodoForm />} />
                 <Route path="attachments" element={<Attachments />} />
+                <Route path="equations" element={<Equations />} />
                 <Route path="events" element={<Events />} />
                 <Route path="events/create" element={<CreateEventForm />} />
                 <Route path="events/update/:event_id" element={<UpdateEventForm />} />

@@ -99,6 +99,27 @@ def get_snippets_by_page(page_id):
     return None
 
 
+def get_snippets_by_project(project_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""SELECT CodeSnippets.* FROM CodeSnippets
+     inner join pages on CodeSnippets.pageID = pages.pageID
+     where pages.projectID = %s;
+     """, (project_id,))
+    snippets = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if snippets is not None:
+        snippets_list = []
+        for snippet in snippets:
+            snippet = {k: v for k, v in zip(code_fields, snippet)}
+            snippet = convert_time(snippet)
+            snippets_list.append(snippet)
+        return snippets_list
+    return None
+
+
 def create_snippet(page_id, name, description, language, content):
     conn = get_db_connection()
     cursor = conn.cursor()

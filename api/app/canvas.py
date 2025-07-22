@@ -6,7 +6,7 @@ canvas_bp = Blueprint('canvas', __name__, url_prefix='/canvas')
 from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .pages import authorized_page_access
-
+from .projects import authorized_project_access
 canvas_fields = ['CanvasID', 'PageID', 'name', 'description', 'content', 'timeCreated', 'lastEditTime']
 
 
@@ -98,6 +98,28 @@ def get_canvas_by_page(page_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM canvas where PageID = %s;", (page_id,))
+    canvases = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if canvases is not None:
+        canvas_list = []
+        for canvas in canvases:
+            canvas = {k: v for k, v in zip(canvas_fields, canvas) if k != "content"}
+            canvas = convert_time(canvas)
+            canvas_list.append(canvas)
+        return canvas_list
+    return None
+
+
+def get_canvas_by_project(project_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""SELECT canvas.* FROM canvas
+    inner join pages
+    on pages.pageID = canvas.pageID
+    where pages.projectID = %s
+    """, (project_id,))
     canvases = cursor.fetchall()
     conn.commit()
     cursor.close()
@@ -229,6 +251,29 @@ def get_all_by_page_ep():
 
     if not authorized_page_access(token, page_id):
         return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
+
+    if canvases is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
+
+    response = make_response({'status': 'success', 'message': canvases}, STATUS.OK)
+    return response
+
+
+@canvas_bp.route('/get_all_by_project', methods=['GET'])
+def get_all_by_project_ep():
+    project_id = int(request.args.get("id"))
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        return make_response({'status': 'error', 'message': "Cannot Access Project"}, STATUS.FORBIDDEN)
+
+    canvases = get_canvas_by_project(project_id)
 
     if canvases is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
