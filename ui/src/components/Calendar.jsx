@@ -124,7 +124,11 @@ function summarizeEvents (events) {
   )
 }
 
-export default function CalendarView () {
+export default function CalendarView ({
+  logs_route,
+  userEvents_route,
+  todo_route
+}) {
   const today = new Date()
   const initialStart = new Date(today.getFullYear(), today.getMonth(), 1)
   const initialEnd = new Date(
@@ -159,9 +163,9 @@ const fetchEvents = useCallback(async () => {
 
   try {
     const [logRes, userEventRes, todoRes] = await Promise.all([
-      fetch(`/api/logging/get_user_history?start=${start}&end=${end}&summary=false`),
-      fetch(`/api/events/get_user_events?start=${start}&end=${end}`),
-      fetch(`/api/todo/get_user_todo?start=${start}&end=${end}`)
+      fetch(`${logs_route}start=${start}&end=${end}&summary=false`),
+      fetch(`${userEvents_route}start=${start}&end=${end}`),
+      fetch(`${todo_route}start=${start}&end=${end}`)
     ]);
 
     const logData = await logRes.json();
