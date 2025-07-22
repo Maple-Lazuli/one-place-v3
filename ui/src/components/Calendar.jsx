@@ -431,7 +431,7 @@ const filteredEvents = useMemo(() => {
           view={view}
           onView={setView}
           views={[Views.MONTH, Views.WEEK, Views.DAY]}
-          style={{ height: '100%' }}
+          style={{ height: '100%', padding: '10px' }}
           eventPropGetter={eventStyleGetter}
           onRangeChange={handleRangeChange}
           components={{

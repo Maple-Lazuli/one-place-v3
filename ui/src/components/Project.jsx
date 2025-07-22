@@ -28,7 +28,7 @@ export default function Project () {
   ]
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+    <Box sx={{ display: 'flex', height: '96vh', overflow: 'hidden', width: '100%'}}>
       {/* Top bar with toggle */}
       <IconButton
         onClick={() => setDrawerOpen(!drawerOpen)}
