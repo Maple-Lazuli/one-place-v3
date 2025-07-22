@@ -6,7 +6,7 @@ import json
 
 from .configuration import load_config
 from .db import get_db_connection
-from .sessions import create_session, verify_session, deactivate_session, verify_session_for_access
+from .sessions import create_session, verify_session, deactivate_session, verify_session_for_access, deactivate_session
 
 config = load_config()
 users_bp = Blueprint('users', __name__, url_prefix='/users')
@@ -337,8 +337,13 @@ def delete_user_ep():
     if get_user_by_id(user_id) is not None:
         return make_response({'status': 'error', 'message': "Failed To Delete Account"}, STATUS.INTERNAL_SERVER_ERROR)
 
+    deactivate_session(token)
+
     response = make_response({'status': 'success', 'message': f'Deleted: {username}'}, STATUS.OK)
     response.delete_cookie("token")
+    response.delete_cookie("preferences")
+    response.delete_cookie("username")
+
     return response
 
 

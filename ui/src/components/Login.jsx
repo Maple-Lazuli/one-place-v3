@@ -24,7 +24,7 @@ export default function Login () {
         //   path: '/',
         //   sameSite: 'Strict'
         // })
-        navigate('/Home')
+        navigate('/')
       } else {
         setError(data.message || 'Login failed')
       }
