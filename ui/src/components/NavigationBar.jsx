@@ -169,6 +169,9 @@ export default function NavigationBar() {
       <Button variant="outlined" fullWidth sx={{ mb: 2 }} component={Link} to="/update_account">
         Edit Account
       </Button>
+            <Button variant="outlined" fullWidth sx={{ mb: 2 }} component={Link} to="/delete_tags">
+        Delete Tags
+      </Button>
       <Button variant="outlined" fullWidth sx={{ mb: 2 }} component={Link} to="/db">
         DB Management
       </Button>

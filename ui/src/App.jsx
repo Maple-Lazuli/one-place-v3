@@ -45,7 +45,7 @@ import UpdateCanvasForm from './components/projects/project/pages/UpdateCanvasFi
 import CanvasEditor from './components/projects/project/pages/CanvasEditor'
 import UpdateUserAccount from './components/UpdateAccount' // your update account component
 import AppLayout from './AppLayout'  // your layout with NavigationBar
-
+import DeleteTags from './components/DeleteTags'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
@@ -96,6 +96,7 @@ export default function App() {
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/create" element={<CreateProject />} />
               <Route path="/update_account" element={<UpdateUserAccount />} />
+              <Route path="/delete_tags" element={<DeleteTags />} />
 
               {/* Nested project routes */}
               <Route path="/projects/project/:project_id" element={<Project />}>
