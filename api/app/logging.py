@@ -270,7 +270,6 @@ def get_user_history(user_id, start_time, end_time):
     projects.projectID = pages.projectID
     where projects.UserID = %s
     AND files.timeCreated BETWEEN %s AND %s
-    AND notes != 'GET'
     """, (user_id, start_time, end_time, user_id, start_time, end_time, user_id, start_time, end_time, user_id,
           start_time, end_time, user_id, start_time, end_time, user_id, start_time, end_time, user_id, start_time,
           end_time,))
@@ -323,6 +322,8 @@ def get_history_by_user_ep():
 
     start_time = datetime.fromtimestamp(start_time)
     end_time = datetime.fromtimestamp(end_time)
+    # print(f"Start: {start_time}")
+    # print(f"End: {end_time}")
 
     token = request.cookies.get("token")
 

@@ -26,11 +26,16 @@ const typeColors = {
   TODO: '#fbc02d' // bright yellow for TODOs
 }
 
-const toUnixSecondsUTC = date =>
-  Math.floor((date.getTime() - date.getTimezoneOffset() * 60000) / 1000)
+const toUnixSecondsUTC = date => {
+  const timezoneOffsetSeconds = date.getTimezoneOffset() * 60 // offset from local time to UTC in seconds
+  const utcUnixTime = Math.floor(
+    (date.getTime() + timezoneOffsetSeconds * 1000) / 1000
+  )
+  return utcUnixTime
+}
 
 const allTypes = Object.keys(typeColors)
-const logTypes = ['CREATE', 'DELETE', 'UPDATE', 'UPLOAD']
+const logTypes = ['CREATE', 'DELETE', 'UPDATE', 'UPLOAD', 'REVIEW']
 
 // Custom Event component to hide time text on week/day views
 function EventComponent ({ event, title, view }) {
@@ -51,15 +56,15 @@ function EventComponent ({ event, title, view }) {
   // For month view or others, show title normally
   return <div title={title}>{title}</div>
 }
-function fromUTCToLocalDate(utcDate) {
+function fromUTCToLocalDate (utcDate) {
   // utcDate can be a string or a Date object
-  const date = typeof utcDate === 'string' ? new Date(utcDate) : utcDate;
-  
+  const date = typeof utcDate === 'string' ? new Date(utcDate) : utcDate
+
   // Get the local timezone offset in minutes and convert to ms
-  const timezoneOffsetMs = date.getTimezoneOffset() * 60 * 1000;
-  
+  const timezoneOffsetMs = date.getTimezoneOffset() * 60 * 1000
+
   // Subtract the offset to shift from UTC to local
-  return new Date(date.getTime() - timezoneOffsetMs);
+  return new Date(date.getTime() - timezoneOffsetMs)
 }
 // Summarize multiple events on same day/type/name into a single summary event
 function summarizeEvents (events) {
@@ -76,7 +81,7 @@ function summarizeEvents (events) {
         end: evt.end,
         type: evt.type,
         name: evt.name,
-        eventCounts: { CREATE: 0, DELETE: 0, UPDATE: 0, UPLOAD: 0 }
+        eventCounts: { CREATE: 0, DELETE: 0, UPDATE: 0, UPLOAD: 0, REVIEW: 0 }
       }
     }
     if (grouped[key].eventCounts[evt.eventType] !== undefined) {
@@ -106,6 +111,10 @@ function summarizeEvents (events) {
       if (eventCounts.UPLOAD)
         parts.push(
           `${eventCounts.UPLOAD} upload${eventCounts.UPLOAD > 1 ? 's' : ''}`
+        )
+      if (eventCounts.REVIEW)
+        parts.push(
+          `${eventCounts.REVIEW} review${eventCounts.REVIEW > 1 ? 's' : ''}`
         )
 
       const actionSummary = parts.length > 0 ? parts.join(', ') : 'changes'
@@ -153,104 +162,109 @@ export default function CalendarView ({
 
   const toUnixSeconds = date => Math.floor(date.getTime() / 1000)
 
-const fetchEvents = useCallback(async () => {
-  if (!dateRange[0] || !dateRange[1]) return;
+  const fetchEvents = useCallback(async () => {
+    if (!dateRange[0] || !dateRange[1]) return
 
-  const start = toUnixSecondsUTC(dateRange[0]);
-  const end = dateRange[0] === dateRange[1]
-    ? toUnixSecondsUTC(new Date(dateRange[0].getTime() + 24 * 60 * 60 * 1000 - 1))
-    : toUnixSecondsUTC(dateRange[1]);
+    const start = toUnixSecondsUTC(dateRange[0])
+    const end =
+      dateRange[0] === dateRange[1]
+        ? toUnixSecondsUTC(
+            new Date(dateRange[0].getTime() + 24 * 60 * 60 * 1000 - 1)
+          )
+        : toUnixSecondsUTC(dateRange[1])
 
-  try {
-    const [logRes, userEventRes, todoRes] = await Promise.all([
-      fetch(`${logs_route}start=${start}&end=${end}&summary=false`),
-      fetch(`${userEvents_route}start=${start}&end=${end}`),
-      fetch(`${todo_route}start=${start}&end=${end}`)
-    ]);
+    try {
+      const [logRes, userEventRes, todoRes] = await Promise.all([
+        fetch(`${logs_route}start=${start}&end=${end}&summary=false`),
+        fetch(`${userEvents_route}start=${start}&end=${end}`),
+        fetch(`${todo_route}start=${start}&end=${end}`)
+      ])
 
-    const logData = await logRes.json();
-    const userEventData = await userEventRes.json();
-    const todoData = await todoRes.json();
+      const logData = await logRes.json()
+      const userEventData = await userEventRes.json()
+      const todoData = await todoRes.json()
 
-    const logEvents = logData.status === 'success'
-      ? logData.message.map(entry => ({
-          title: `${
-            entry.event === 'CREATE'
-              ? 'Created'
-              : entry.event === 'DELETE'
-              ? 'Deleted'
-              : entry.event === 'UPLOAD'
-              ? 'Uploaded'
-              : 'Updated'
-          } ${entry.name}`,
-          start: fromUTCToLocalDate(new Date(entry.time * 1000)),
-          end: fromUTCToLocalDate(new Date(entry.time * 1000)),
-          type: entry.type,
-          eventType: entry.event,
-          name: entry.name,
-          source: 'log'
-        }))
-      : [];
+      const logEvents =
+        logData.status === 'success'
+          ? logData.message.map(entry => ({
+              title: `${
+                entry.event === 'CREATE'
+                  ? 'Created'
+                  : entry.event === 'DELETE'
+                  ? 'Deleted'
+                  : entry.event === 'UPLOAD'
+                  ? 'Uploaded'
+                  : entry.event === 'REVIEW'
+                  ? 'Reviewed'
+                  : 'Updated'
+              } ${entry.name}`,
+              start: fromUTCToLocalDate(new Date(entry.time * 1000)),
+              end: fromUTCToLocalDate(new Date(entry.time * 1000)),
+              type: entry.type,
+              eventType: entry.event,
+              name: entry.name,
+              source: 'log'
+            }))
+          : []
 
-    const userEvents = userEventData.status === 'success'
-      ? userEventData.message.map(e => ({
-          title: e.name,
-          start: fromUTCToLocalDate(new Date(e.eventTime * 1000)),
-          end: fromUTCToLocalDate(new Date((e.eventTime + 3600) * 1000)), // 1hr default
-          description: e.description,
-          type: 'USER_EVENT',
-          eventType: 'USER_EVENT',
-          name: e.name,
-          source: 'userEvent'
-        }))
-      : [];
-
-    const todoEvents = todoData.status === 'success'
-      ? todoData.message
-          .filter(e => e.completed ? e.timeCompleted : e.dueTime)
-          .map(e => {
-            const timestamp = e.completed ? e.timeCompleted : e.dueTime;
-            const label = e.completed ? 'Completed TODO' : 'Due TODO';
-            return {
-              title: `${label}: ${e.name}`,
-              start: fromUTCToLocalDate(new Date(timestamp * 1000)),
-              end: fromUTCToLocalDate(new Date((timestamp + 1800) * 1000)), // 30 mins
-              type: 'TODO',
-              eventType: e.completed ? 'COMPLETED' : 'DUE',
-              completed: e.completed,
-              name: e.name,
+      const userEvents =
+        userEventData.status === 'success'
+          ? userEventData.message.map(e => ({
+              title: e.name,
+              start: fromUTCToLocalDate(new Date(e.eventTime * 1000)),
+              end: fromUTCToLocalDate(new Date((e.eventTime + 3600) * 1000)), // 1hr default
               description: e.description,
-              source: 'todo'
-            };
-          })
-      : [];
+              type: 'USER_EVENT',
+              eventType: 'USER_EVENT',
+              name: e.name,
+              source: 'userEvent'
+            }))
+          : []
 
-    // Summarize logs only
-    let processedLogs = logEvents;
-    if (view === Views.MONTH) {
-      processedLogs = summarizeEvents(logEvents);
-    } else if (view === Views.WEEK || view === Views.DAY) {
-      processedLogs = summarizeDayViewEvents(logEvents);
+      const todoEvents =
+        todoData.status === 'success'
+          ? todoData.message
+              .filter(e => (e.completed ? e.timeCompleted : e.dueTime))
+              .map(e => {
+                const timestamp = e.completed ? e.timeCompleted : e.dueTime
+                const label = e.completed ? 'Completed TODO' : 'Due TODO'
+                return {
+                  title: `${label}: ${e.name}`,
+                  start: fromUTCToLocalDate(new Date(timestamp * 1000)),
+                  end: fromUTCToLocalDate(new Date((timestamp + 1800) * 1000)), // 30 mins
+                  type: 'TODO',
+                  eventType: e.completed ? 'COMPLETED' : 'DUE',
+                  completed: e.completed,
+                  name: e.name,
+                  description: e.description,
+                  source: 'todo'
+                }
+              })
+          : []
+
+      // Summarize logs only
+      let processedLogs = logEvents
+      if (view === Views.MONTH) {
+        processedLogs = summarizeEvents(logEvents)
+      } else if (view === Views.WEEK || view === Views.DAY) {
+        processedLogs = summarizeDayViewEvents(logEvents)
+      }
+
+      setEvents([...processedLogs, ...userEvents, ...todoEvents])
+    } catch (error) {
+      console.error('Failed to fetch events:', error)
     }
+  }, [dateRange, view])
 
-    setEvents([...processedLogs, ...userEvents, ...todoEvents]);
-  } catch (error) {
-    console.error('Failed to fetch events:', error);
-  }
-}, [dateRange, view]);
-
-
-const filteredEvents = useMemo(() => {
-  return events.filter(event => {
-    const isLog = event.source === 'log'
-    const typeMatch = filters[event.type]
-    const logMatch =
-      isLog &&
-      (event.eventType === 'SUMMARY' || logFilters[event.eventType])
-    return isLog ? typeMatch && logMatch : typeMatch
-  })
-}, [events, filters, logFilters])
-
+  const filteredEvents = useMemo(() => {
+    return events.filter(event => {
+      const isLog = event.source === 'log'
+      const typeMatch = filters[event.type]
+      const logMatch =
+        isLog && (event.eventType === 'SUMMARY' || logFilters[event.eventType])
+      return isLog ? typeMatch && logMatch : typeMatch
+    })
+  }, [events, filters, logFilters])
 
   useEffect(() => {
     fetchEvents()
@@ -419,10 +433,9 @@ const filteredEvents = useMemo(() => {
             />
           ))}
         </Stack>
-        
       </Paper>
 
-      <Box sx={{ flexGrow: 1, p: 2, height: '100%'}}>
+      <Box sx={{ flexGrow: 1, p: 2, height: '100%' }}>
         <Calendar
           localizer={localizer}
           events={summarizedEvents}
