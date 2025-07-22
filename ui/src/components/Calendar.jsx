@@ -22,7 +22,8 @@ const typeColors = {
   equation: '#d32f2f',
   canvas: '#0288d1',
   files: '#5d4037',
-  USER_EVENT: '#007BFF' 
+  USER_EVENT: '#007BFF',
+  TODO: '#fbc02d' // bright yellow for TODOs
 }
 
 const toUnixSecondsUTC = date =>
@@ -156,16 +157,16 @@ const fetchEvents = useCallback(async () => {
     ? toUnixSecondsUTC(new Date(dateRange[0].getTime() + 24 * 60 * 60 * 1000 - 1))
     : toUnixSecondsUTC(dateRange[1]);
 
-  const summary = view === Views.MONTH ? 'true' : 'false';
-
   try {
-    const [logRes, userEventRes] = await Promise.all([
+    const [logRes, userEventRes, todoRes] = await Promise.all([
       fetch(`/api/logging/get_user_history?start=${start}&end=${end}&summary=false`),
-      fetch(`/api/events/get_user_events?start=${start}&end=${end}`)
+      fetch(`/api/events/get_user_events?start=${start}&end=${end}`),
+      fetch(`/api/todo/get_user_todo?start=${start}&end=${end}`)
     ]);
 
     const logData = await logRes.json();
     const userEventData = await userEventRes.json();
+    const todoData = await todoRes.json();
 
     const logEvents = logData.status === 'success'
       ? logData.message.map(entry => ({
@@ -191,7 +192,7 @@ const fetchEvents = useCallback(async () => {
       ? userEventData.message.map(e => ({
           title: e.name,
           start: fromUTCToLocalDate(new Date(e.eventTime * 1000)),
-          end: fromUTCToLocalDate(new Date((e.eventTime + 3600) * 1000)), // 1 hour duration
+          end: fromUTCToLocalDate(new Date((e.eventTime + 3600) * 1000)), // 1hr default
           description: e.description,
           type: 'USER_EVENT',
           eventType: 'USER_EVENT',
@@ -200,22 +201,40 @@ const fetchEvents = useCallback(async () => {
         }))
       : [];
 
-    // Summarize logs separately based on view
-    let processedLogs = logEvents
+    const todoEvents = todoData.status === 'success'
+      ? todoData.message
+          .filter(e => e.completed ? e.timeCompleted : e.dueTime)
+          .map(e => {
+            const timestamp = e.completed ? e.timeCompleted : e.dueTime;
+            const label = e.completed ? 'Completed TODO' : 'Due TODO';
+            return {
+              title: `${label}: ${e.name}`,
+              start: fromUTCToLocalDate(new Date(timestamp * 1000)),
+              end: fromUTCToLocalDate(new Date((timestamp + 1800) * 1000)), // 30 mins
+              type: 'TODO',
+              eventType: e.completed ? 'COMPLETED' : 'DUE',
+              completed: e.completed,
+              name: e.name,
+              description: e.description,
+              source: 'todo'
+            };
+          })
+      : [];
+
+    // Summarize logs only
+    let processedLogs = logEvents;
     if (view === Views.MONTH) {
-      processedLogs = summarizeEvents(logEvents)
+      processedLogs = summarizeEvents(logEvents);
     } else if (view === Views.WEEK || view === Views.DAY) {
-      processedLogs = summarizeDayViewEvents(logEvents)
+      processedLogs = summarizeDayViewEvents(logEvents);
     }
 
-    // Combine logs and user events
-    const allCombinedEvents = [...processedLogs, ...userEvents]
-    setEvents(allCombinedEvents)
-
+    setEvents([...processedLogs, ...userEvents, ...todoEvents]);
   } catch (error) {
     console.error('Failed to fetch events:', error);
   }
-}, [dateRange, view])
+}, [dateRange, view]);
+
 
 const filteredEvents = useMemo(() => {
   return events.filter(event => {
