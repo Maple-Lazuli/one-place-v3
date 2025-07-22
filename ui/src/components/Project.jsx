@@ -99,10 +99,9 @@ export default function Project () {
           overflow: 'hidden',
           ml: drawerOpen ? '240px' : 0,
           transition: 'margin-left 0.3s',
-          height: '96vh',
-          width: '100vw',
-          margin: 0,
-          pt: '4vh' // Push below navbar
+          height: '95vh',
+          width: '98vw',
+          // pt: '4vh' // Push below navbar
         }}
       >
         <Outlet />
