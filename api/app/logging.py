@@ -7,6 +7,23 @@ from .db import get_db_connection
 from .sessions import verify_session_for_access
 
 
+def authorized_page_access(token, page_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT endTime, isActive, token  FROM sessions
+    inner join projects
+    on projects.UserID = sessions.UserID
+    inner join pages
+    on pages.projectID = projects.projectID
+    where token = %s and pages.PageID = %s
+    """, (token, page_id))
+    result = cursor.fetchone()
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
 def authorized_project_access(token, project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -80,6 +97,22 @@ def get_page_access_requests():
     cursor.close()
     conn.close()
     return requests
+
+
+def get_page_last_review(page_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT max(accessTime) FROM pageRequests
+    where pageRequests.PageID = %s AND accessGranted = TRUE AND notes = 'REVIEW' 
+    """, (page_id,))
+    last_review = cursor.fetchone()[0]
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if last_review is not None:
+        last_review = last_review.timestamp()
+    return last_review
 
 
 def get_project_history(project_id, start_time, end_time):
@@ -169,6 +202,7 @@ def get_user_history(user_id, start_time, end_time):
     projects.projectID = projectRequests.projectID 
     where projects.UserID = %s AND accessGranted = TRUE 
     AND accessTime BETWEEN %s AND %s
+    AND notes != 'GET'
     --Pages
     UNION
     SELECT pages.name, notes, 'page', accessTime FROM pageRequests
@@ -178,6 +212,7 @@ def get_user_history(user_id, start_time, end_time):
     projects.projectID = pages.projectID 
     where projects.UserID = %s AND accessGranted = TRUE
     AND accessTime BETWEEN %s AND %s
+    AND notes != 'GET'
     --CodeSnippets
     UNION
     SELECT codesnippets.name, notes, 'code', accessTime FROM codesnippetsrequests
@@ -189,6 +224,7 @@ def get_user_history(user_id, start_time, end_time):
     projects.projectID = pages.projectID
     where projects.UserID = %s AND accessGranted = TRUE
     AND accessTime BETWEEN %s AND %s
+    AND notes != 'GET'
     --Translations
     UNION
     SELECT translations.language, notes, 'translation', accessTime FROM translationrequests
@@ -200,6 +236,7 @@ def get_user_history(user_id, start_time, end_time):
     projects.projectID = pages.projectID
     where projects.UserID = %s AND accessGranted = TRUE
     AND accessTime BETWEEN %s AND %s
+    AND notes != 'GET'
     --Equations
     UNION
     SELECT equations.name, notes, 'equation', accessTime FROM equationsrequests
@@ -211,6 +248,7 @@ def get_user_history(user_id, start_time, end_time):
     projects.projectID = pages.projectID
     where projects.UserID = %s AND accessGranted = TRUE
     AND accessTime BETWEEN %s AND %s
+    AND notes != 'GET'
     --Canvas
     UNION
     SELECT canvas.name, notes, 'canvas', accessTime FROM canvasrequests
@@ -222,6 +260,7 @@ def get_user_history(user_id, start_time, end_time):
     projects.projectID = pages.projectID
     where projects.UserID = %s AND accessGranted = TRUE
     AND accessTime BETWEEN %s AND %s
+    AND notes != 'GET'
     --Files
     UNION
     SELECT files.name, 'UPLOAD', 'file', files.timeCreated FROM files
@@ -231,6 +270,7 @@ def get_user_history(user_id, start_time, end_time):
     projects.projectID = pages.projectID
     where projects.UserID = %s
     AND files.timeCreated BETWEEN %s AND %s
+    AND notes != 'GET'
     """, (user_id, start_time, end_time, user_id, start_time, end_time, user_id, start_time, end_time, user_id,
           start_time, end_time, user_id, start_time, end_time, user_id, start_time, end_time, user_id, start_time,
           end_time,))
@@ -296,4 +336,27 @@ def get_history_by_user_ep():
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
     response = make_response({'status': 'success', 'message': logs}, STATUS.OK)
+    return response
+
+
+@logging_bp.route('/get_page_last_review', methods=['GET'])
+def get_last_page_review_ep():
+    page_id = int(request.args.get("id"))
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    # if not authorized_page_access(token, page_id):
+    #     return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
+
+    last_review = get_page_last_review(page_id)
+
+    if last_review is None:
+        return make_response({'status': 'error', 'message': 0}, STATUS.OK)
+
+    response = make_response({'status': 'success', 'message': last_review}, STATUS.OK)
     return response

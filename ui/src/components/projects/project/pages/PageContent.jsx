@@ -11,7 +11,9 @@ import {
   FormControl,
   InputLabel,
   MenuItem,
-  Select
+  Select,
+  Button,
+  Typography
 } from '@mui/material'
 
 import 'katex/dist/katex.min.css'
@@ -22,11 +24,13 @@ export default function PageContent() {
   const [text, setText] = useState('')
   const [translations, setTranslations] = useState([])
   const [selectedTranslationId, setSelectedTranslationId] = useState('original')
+  const [lastReviewed, setLastReviewed] = useState(null)
+
   const lastEditTimeRef = useRef(0)
   const pollingRef = useRef(null)
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
-  const pollingRate = 1000 // Poll every 5 seconds
+  const pollingRate = 1000
 
   const fetchPage = async () => {
     try {
@@ -74,6 +78,32 @@ export default function PageContent() {
     }
   }
 
+const fetchLastReviewed = async () => {
+  try {
+    const res = await fetch(`/api/logging/get_page_last_review?id=${page_id}`, {
+      credentials: 'include'
+    })
+    const data = await res.json()
+
+    if (res.ok && data.message !== '0') {
+      const utcSeconds = Number(data.message)
+      const utcDate = new Date(utcSeconds * 1000)
+
+      // Get local time by subtracting the timezone offset (in minutes)
+      const offsetMs = utcDate.getTimezoneOffset() * 60 * 1000
+      const localDate = new Date(utcDate.getTime() - offsetMs)
+
+      const formatted = localDate.toLocaleString()
+
+      setLastReviewed(formatted)
+    } else {
+      setLastReviewed(null)
+    }
+  } catch (err) {
+    console.error('Error fetching last review:', err)
+  }
+}
+
   const startPolling = (id, type) => {
     stopPolling()
     pollingRef.current = setInterval(async () => {
@@ -109,9 +139,27 @@ export default function PageContent() {
     }
   }
 
+  const handleReviewed = async () => {
+    try {
+      const res = await fetch(`/api/pages/review?id=${page_id}`, {
+        method: 'POST',
+        credentials: 'include'
+      })
+      if (res.ok) {
+        console.log('Page marked as reviewed successfully.')
+        fetchLastReviewed() // Refresh the timestamp after review
+      } else {
+        alert('Failed to mark as reviewed.')
+      }
+    } catch (err) {
+      console.error('Error marking page as reviewed:', err)
+    }
+  }
+
   useEffect(() => {
     fetchPage()
     fetchTranslations()
+    fetchLastReviewed()
   }, [page_id])
 
   useEffect(() => {
@@ -141,7 +189,7 @@ export default function PageContent() {
         boxSizing: 'border-box'
       }}
     >
-      <Box sx={{ px: 2, mb: 2, paddingTop: 2 }}>
+      <Box sx={{ px: 2, mb: 2, paddingTop: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
         <FormControl size="small">
           <InputLabel id="translation-select-label">Language</InputLabel>
           <Select
@@ -158,6 +206,20 @@ export default function PageContent() {
             ))}
           </Select>
         </FormControl>
+
+        <Button
+          variant="outlined"
+          color="success"
+          onClick={handleReviewed}
+          disabled={selectedTranslationId !== 'original'}
+        >
+          Reviewed
+        </Button>
+
+        <Typography variant="body2" sx={{ ml: 2, color: 'text.secondary' }}>
+          Last Reviewed:{' '}
+          {lastReviewed ? lastReviewed : 'Never'}
+        </Typography>
       </Box>
 
       <div

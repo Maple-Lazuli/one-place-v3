@@ -286,6 +286,33 @@ def get_page_ep():
     return response
 
 
+@pages_bp.route('/review', methods=['POST'])
+def update_page_review():
+    page_id = int(request.args.get("id"))
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        create_page_access_request(session['SessionID'], page_id, valid, "REVIEW")
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    page = get_page_by_id(page_id)
+
+    if not authorized_project_access(token, page['ProjectID']):
+        create_page_access_request(session['SessionID'], page_id, False, "REVIEW")
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
+
+    if page is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
+
+    create_page_access_request(session['SessionID'], page['PageID'], valid, "REVIEW")
+
+    response = make_response({'status': 'success', 'message': f"Reviewed: {page['name']}"}, STATUS.OK)
+    return response
+
+
 @pages_bp.route('/get_project_pages', methods=['GET'])
 def get_pages_by_project_ep():
     project_id = int(request.args.get("id"))
