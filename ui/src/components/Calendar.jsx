@@ -27,7 +27,82 @@ const typeColors = {
 const allTypes = Object.keys(typeColors);
 const logTypes = ['CREATE', 'DELETE', 'UPDATE', 'UPLOAD'];
 
+// Custom Event component to hide time text on week/day views
+function EventComponent({ event, title, view }) {
+  if (view === Views.WEEK || view === Views.DAY) {
+    return (
+      <div
+        style={{
+          whiteSpace: 'nowrap',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+        }}
+        title={title}
+      >
+        {title}
+      </div>
+    );
+  }
+  // For month view or others, show title normally
+  return (
+    <div title={title}>
+      {title}
+    </div>
+  );
+}
+
+// Summarize multiple events on same day/type/name into a single summary event
+function summarizeEvents(events) {
+  const grouped = {};
+
+  events.forEach((evt) => {
+    // Group by date string + type + name
+    const day = evt.start.toISOString().slice(0, 10);
+    const key = `${day}|${evt.type}|${evt.name}`;
+
+    if (!grouped[key]) {
+      grouped[key] = {
+        start: evt.start,
+        end: evt.end,
+        type: evt.type,
+        name: evt.name,
+        eventCounts: { CREATE: 0, DELETE: 0, UPDATE: 0, UPLOAD: 0 },
+      };
+    }
+    if (grouped[key].eventCounts[evt.eventType] !== undefined) {
+      grouped[key].eventCounts[evt.eventType]++;
+    } else {
+      // count any unknown event type generically as 'UPDATE'
+      grouped[key].eventCounts.UPDATE++;
+    }
+  });
+
+  // Now convert grouped into summary events with a combined title
+  return Object.values(grouped).map(({ eventCounts, type, name, start, end }) => {
+    const parts = [];
+    if (eventCounts.CREATE) parts.push(`${eventCounts.CREATE} creation${eventCounts.CREATE > 1 ? 's' : ''}`);
+    if (eventCounts.UPDATE) parts.push(`${eventCounts.UPDATE} update${eventCounts.UPDATE > 1 ? 's' : ''}`);
+    if (eventCounts.DELETE) parts.push(`${eventCounts.DELETE} deletion${eventCounts.DELETE > 1 ? 's' : ''}`);
+    if (eventCounts.UPLOAD) parts.push(`${eventCounts.UPLOAD} upload${eventCounts.UPLOAD > 1 ? 's' : ''}`);
+
+    const actionSummary = parts.length > 0 ? parts.join(', ') : 'changes';
+
+    return {
+      title: `${actionSummary} to ${type.charAt(0).toUpperCase()+ ":" + type.slice(1)} ${name}`,
+      start,
+      end,
+      type,
+      eventType: 'SUMMARY',
+      isSummary: true,
+    };
+  });
+}
+
 export default function CalendarView() {
+  const today = new Date();
+  const initialStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const initialEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+
   const [events, setEvents] = useState([]);
   const [filters, setFilters] = useState(() =>
     allTypes.reduce((acc, type) => ({ ...acc, [type]: true }), {})
@@ -36,13 +111,8 @@ export default function CalendarView() {
     logTypes.reduce((acc, type) => ({ ...acc, [type]: true }), {})
   );
   const [view, setView] = useState(Views.MONTH);
-  const today = new Date();
-  const initialStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const initialEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
-
   const [dateRange, setDateRange] = useState([initialStart, initialEnd]);
 
-  // Helper: convert Date to unix seconds
   const toUnixSeconds = (date) => Math.floor(date.getTime() / 1000);
 
   const fetchEvents = useCallback(async () => {
@@ -50,7 +120,6 @@ export default function CalendarView() {
 
     const start = toUnixSeconds(dateRange[0]);
     const end = toUnixSeconds(dateRange[1]);
-
     const summary = view === Views.MONTH ? 'true' : 'false';
 
     try {
@@ -66,8 +135,12 @@ export default function CalendarView() {
           end: new Date(entry.time * 1000),
           type: entry.type,
           eventType: entry.event,
+          name: entry.name,
         }));
-        setEvents(formatted);
+
+        // Summarize for month view
+        const finalEvents = view === Views.MONTH ? summarizeEvents(formatted) : formatted;
+        setEvents(finalEvents);
       }
     } catch (error) {
       console.error('Failed to fetch events:', error);
@@ -81,11 +154,9 @@ export default function CalendarView() {
   const handleRangeChange = (range) => {
     let start, end;
     if (Array.isArray(range)) {
-      // Month view gives an array of dates
       start = range[0];
       end = range[range.length - 1];
     } else if (range.start && range.end) {
-      // Week/day view gives object with start/end
       start = range.start;
       end = range.end;
     } else {
@@ -103,24 +174,33 @@ export default function CalendarView() {
     setLogFilters((prev) => ({ ...prev, [logType]: !prev[logType] }));
   };
 
-  // Filter events by both content type and log event type
   const filteredEvents = events.filter(
-    (event) => filters[event.type] && logFilters[event.eventType]
+    (event) => filters[event.type] && (event.eventType === 'SUMMARY' || logFilters[event.eventType])
   );
 
-  const eventStyleGetter = (event) => ({
-    style: {
+  const eventStyleGetter = (event) => {
+    const baseStyle = {
       backgroundColor: typeColors[event.type] || '#607d8b',
       borderRadius: '4px',
       color: 'white',
       border: 'none',
-      padding: '4px',
-    },
-  });
+      padding: view === Views.MONTH ? '4px' : '2px 4px',
+      fontSize: view === Views.MONTH ? '0.875rem' : '0.75rem',
+      whiteSpace: view === Views.MONTH ? 'normal' : 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      fontStyle: event.isSummary ? 'italic' : 'normal',
+      opacity: event.isSummary ? 0.85 : 1,
+    };
+    return { style: baseStyle };
+  };
 
   return (
     <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
-      <Paper elevation={3} sx={{ width: 280, p: 2, borderRadius: 0, overflowY: 'auto' }}>
+      <Paper
+        elevation={3}
+        sx={{ width: 280, p: 2, borderRadius: 0, overflowY: 'auto' }}
+      >
         <Typography variant="h6" gutterBottom>
           My Filters
         </Typography>
@@ -185,6 +265,10 @@ export default function CalendarView() {
           style={{ height: '100%' }}
           eventPropGetter={eventStyleGetter}
           onRangeChange={handleRangeChange}
+          components={{ event: (props) => <EventComponent {...props} view={view} /> }}
+          showMultiDayTimes={view !== Views.MONTH}
+          max={3}
+          popup
         />
       </Box>
     </Box>
