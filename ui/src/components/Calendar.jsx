@@ -422,7 +422,7 @@ const filteredEvents = useMemo(() => {
         
       </Paper>
 
-      <Box sx={{ flexGrow: 1, p: 2, height: '100%' }}>
+      <Box sx={{ flexGrow: 1, p: 2, height: '100%'}}>
         <Calendar
           localizer={localizer}
           events={summarizedEvents}

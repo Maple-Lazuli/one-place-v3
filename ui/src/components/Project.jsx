@@ -1,8 +1,20 @@
+import { useState } from 'react'
 import { useParams, Link, Outlet } from 'react-router-dom'
-import { Box, Typography, Button, Divider, Stack } from '@mui/material'
+import {
+  Box,
+  Typography,
+  Button,
+  Divider,
+  IconButton,
+  Drawer,
+  Stack
+} from '@mui/material'
+import CloseIcon from '@mui/icons-material/Close'
+import MenuIcon from '@mui/icons-material/Menu'
 
 export default function Project () {
   const { project_id } = useParams()
+  const [drawerOpen, setDrawerOpen] = useState(true)
 
   const links = [
     { label: 'Calendar', path: '' },
@@ -11,24 +23,44 @@ export default function Project () {
     { label: 'Events', path: 'events' },
     { label: 'All Code Snippets', path: 'snippets' },
     { label: 'All Equations', path: 'equations' },
-
     { label: 'All Canvases', path: 'canvases' },
     { label: 'All Attachments', path: 'attachments' }
   ]
 
   return (
-    <Box sx={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
-      {/* Sidebar */}
-      <Box
+    <Box sx={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
+      {/* Top bar with toggle */}
+      <IconButton
+        onClick={() => setDrawerOpen(!drawerOpen)}
         sx={{
-          width: 240,
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          p: 2,
-          boxSizing: 'border-box',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
+          position: 'fixed',
+          top: 8,
+          left: 8,
+          zIndex: 1301, // higher than drawer
+          color: 'primary.contrastText'
+        }}
+      >
+        {drawerOpen ? <CloseIcon /> : <MenuIcon />}
+      </IconButton>
+
+      {/* Sidebar Drawer */}
+      <Drawer
+        variant='temporary'
+        anchor='left'
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        ModalProps={{
+          keepMounted: true // Better open performance on mobile
+        }}
+        sx={{
+          '& .MuiDrawer-paper': {
+            width: 240,
+            boxSizing: 'border-box',
+            bgcolor: 'primary.main',
+            color: 'primary.contrastText',
+            p: 2,
+            pt: '4vh' // Push below navbar
+          }
         }}
       >
         <Typography variant='h6' gutterBottom>
@@ -55,7 +87,7 @@ export default function Project () {
             </Button>
           ))}
         </Stack>
-      </Box>
+      </Drawer>
 
       {/* Main Content */}
       <Box
@@ -64,10 +96,13 @@ export default function Project () {
           flexGrow: 1,
           p: 3,
           boxSizing: 'border-box',
-          overflow: 'hidden', // disable scrollbars here
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column'
+          overflow: 'hidden',
+          ml: drawerOpen ? '240px' : 0,
+          transition: 'margin-left 0.3s',
+          height: '96vh',
+          width: '100vw',
+          margin: 0,
+          pt: '4vh' // Push below navbar
         }}
       >
         <Outlet />
