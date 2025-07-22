@@ -8,6 +8,28 @@ from .logging import create_access_request
 
 projects_bp = Blueprint('projects', __name__, url_prefix='/projects')
 projects_fields = ['ProjectID', 'UserID', 'name', 'description', 'TimeCreated', 'lastUpdate']
+tag_fields = ['TagID', 'UserID', 'tag', 'options']
+
+
+def get_tags_by_project(project_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT tags.TagID, UserID, tag, options FROM tags 
+    join tagmappings on tags.tagid = tagmappings.tagid
+    where projectID = %s order by Tag;
+    """, (project_id,))
+    tags = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if tags is not None:
+        tag_list = []
+        for tag in tags:
+            tag = {k: v for k, v in zip(tag_fields, tag)}
+            tag_list.append(tag)
+        return tag_list
+    return None
 
 
 def get_last_update(project_id):
@@ -147,7 +169,7 @@ def create_project_ep():
     if new_project is None:
         return make_response({'status': 'error', 'message': "Failed To Create Project"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response({'status': 'success', 'message': f'Created {project_name}'}, STATUS.OK)
+    response = make_response({'status': 'success', 'id': new_project['ProjectID']}, STATUS.OK)
     return response
 
 
@@ -220,6 +242,9 @@ def get_projects_ep():
         return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     project = get_project_by_id(project_id)
+
+    project['tags'] = get_tags_by_project(project['ProjectID'])
+
     create_access_request(session['SessionID'], project_id, valid, "GET")
     if project is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
@@ -242,7 +267,12 @@ def get_all_projects_ep():
     if projects is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
-    response = make_response({'status': 'success', 'message': projects}, STATUS.OK)
+    project_list = []
+    for project in projects:
+        project['tags'] = get_tags_by_project(project['ProjectID'])
+        project_list.append(project)
+
+    response = make_response({'status': 'success', 'message': project_list}, STATUS.OK)
     return response
 
 

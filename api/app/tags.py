@@ -48,7 +48,7 @@ def get_tags_by_project(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT TagID, UserID, tag, options FROM tags 
+    SELECT tags.TagID, UserID, tag, options FROM tags 
     join tagmappings on tags.tagid = tagmappings.tagid
     where projectID = %s order by Tag;
     """, (project_id,))
@@ -112,6 +112,15 @@ def create_mapping(tag_id, project_id):
     conn.close()
 
 
+def delete_mapping(project_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tagmappings where projectID = %s;", (project_id,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+
 @tags_bp.route('/test', methods=['GET'])
 def test_ep():
     return jsonify({"test": "Tags  Endpoint Reached."})
@@ -121,7 +130,7 @@ def test_ep():
 def create_ep():
     data = request.get_json()
     tag = data.get("tag").strip()
-    options = data.get("options").strip()
+    options = data.get("options", "").strip()
 
     token = request.cookies.get("token")
 
@@ -228,6 +237,27 @@ def assign_ep():
     create_mapping(tag_id, project_id)
 
     response = make_response({'status': 'success', 'message': 'Mapped Tag'}, STATUS.OK)
+    return response
+
+
+@tags_bp.route('/unassign', methods=['POST'])
+def unassign_ep():
+    data = request.get_json()
+    project_id = data.get("project_id")
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        return make_response({'status': 'error', 'message': "Not Authorized"}, STATUS.FORBIDDEN)
+
+    delete_mapping(project_id)
+
+    response = make_response({'status': 'success', 'message': 'Removed Tags'}, STATUS.OK)
     return response
 
 
