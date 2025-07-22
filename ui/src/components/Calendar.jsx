@@ -353,7 +353,7 @@ export default function CalendarView ({
         ...event,
         start,
         end,
-        title: `${capitalize(event.event)} ${capitalize(event.type)} ${
+        title: `${capitalize(event.eventType)}: ${
           event.name || ''
         }`.trim()
       }
