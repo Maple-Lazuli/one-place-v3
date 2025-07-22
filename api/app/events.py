@@ -107,6 +107,30 @@ def get_all_events(project_id):
     return None
 
 
+def get_all_events_by_user(user_id, start_time, end_time):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT events.* FROM events
+    inner join projects on
+    projects.projectID = events.projectID
+    where projects.UserID = %s
+    AND eventTime BETWEEN %s AND %s 
+    """, (user_id, start_time, end_time))
+    events = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if events is not None:
+        event_list = []
+        for event in events:
+            event = {k: v for k, v in zip(event_fields, event)}
+            event = convert_time(event)
+            event_list.append(event)
+        return event_list
+    return None
+
+
 @events_bp.route('/test', methods=['GET'])
 def test_ep():
     return jsonify({"test": "Events  Endpoint Reached."})
@@ -181,6 +205,29 @@ def get_all_ep():
         return make_response("Not Authorized To Access", STATUS.FORBIDDEN)
 
     event_list = get_all_events(project_id)
+
+    if event_list is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
+
+    response = make_response({'status': 'success', 'message': event_list}, STATUS.OK)
+    return response
+
+
+@events_bp.route('/get_user_events', methods=['GET'])
+def get_all_user_events_ep():
+    start_time = float(request.args.get("start"))
+    end_time = float(request.args.get("end"))
+    start_time = datetime.fromtimestamp(start_time)
+    end_time = datetime.fromtimestamp(end_time)
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    event_list = get_all_events_by_user(session['UserID'], start_time, end_time)
 
     if event_list is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)

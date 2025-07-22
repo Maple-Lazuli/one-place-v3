@@ -71,6 +71,29 @@ def get_all_todo(project_id):
     return None
 
 
+def get_all_user_todo(user_id, start_time, end_time):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""SELECT todo.* FROM todo
+    inner join projects on
+    projects.projectID = todo.projectID
+    where projects.UserID = %s
+    AND (dueTime BETWEEN %s AND %s OR timeCompleted BETWEEN %s AND %s)
+    """, (user_id, start_time, end_time, start_time, end_time))
+    todos = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if todos is not None:
+        todo_list = []
+        for todo in todos:
+            todo = {k: v for k, v in zip(todo_fields, todo)}
+            todo = convert_time(todo)
+            todo_list.append(todo)
+        return todo_list
+    return None
+
+
 def get_todo_by_id(todo_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -198,6 +221,29 @@ def get_all_ep():
         return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
     todo_list = get_all_todo(project_id)
+
+    if todo_list is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
+
+    response = make_response({'status': 'success', 'message': todo_list}, STATUS.OK)
+    return response
+
+
+@todo_bp.route('/get_user_todo', methods=['GET'])
+def get_all_user_ep():
+    start_time = float(request.args.get("start"))
+    end_time = float(request.args.get("end"))
+    start_time = datetime.fromtimestamp(start_time)
+    end_time = datetime.fromtimestamp(end_time)
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    todo_list = get_all_user_todo(session['UserID'], start_time, end_time)
 
     if todo_list is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)

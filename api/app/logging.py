@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, make_response
 from http import HTTPStatus as STATUS
-from datetime import datetime
+from datetime import datetime, timezone
 
 logging_bp = Blueprint('logging', __name__, url_prefix='/logging')
 from .db import get_db_connection
@@ -292,7 +292,6 @@ def get_history_by_user_ep():
         return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     logs = get_user_history(session['UserID'], start_time, end_time)
-
     if logs is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
