@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Box,
   Checkbox,
@@ -6,13 +6,13 @@ import {
   Typography,
   Paper,
   Stack,
-  Divider,
-} from '@mui/material';
-import { Calendar, momentLocalizer, Views } from 'react-big-calendar';
-import moment from 'moment';
-import 'react-big-calendar/lib/css/react-big-calendar.css';
+  Divider
+} from '@mui/material'
+import { Calendar, momentLocalizer, Views } from 'react-big-calendar'
+import moment from 'moment'
+import 'react-big-calendar/lib/css/react-big-calendar.css'
 
-const localizer = momentLocalizer(moment);
+const localizer = momentLocalizer(moment)
 
 const typeColors = {
   project: '#1976d2',
@@ -21,44 +21,52 @@ const typeColors = {
   translation: '#6a1b9a',
   equation: '#d32f2f',
   canvas: '#0288d1',
-  files: '#5d4037',
-};
+  files: '#5d4037'
+}
 
-const allTypes = Object.keys(typeColors);
-const logTypes = ['CREATE', 'DELETE', 'UPDATE', 'UPLOAD'];
+const toUnixSecondsUTC = date =>
+  Math.floor((date.getTime() - date.getTimezoneOffset() * 60000) / 1000)
+
+const allTypes = Object.keys(typeColors)
+const logTypes = ['CREATE', 'DELETE', 'UPDATE', 'UPLOAD']
 
 // Custom Event component to hide time text on week/day views
-function EventComponent({ event, title, view }) {
+function EventComponent ({ event, title, view }) {
   if (view === Views.WEEK || view === Views.DAY) {
     return (
       <div
         style={{
           whiteSpace: 'nowrap',
           overflow: 'hidden',
-          textOverflow: 'ellipsis',
+          textOverflow: 'ellipsis'
         }}
         title={title}
       >
         {title}
       </div>
-    );
+    )
   }
   // For month view or others, show title normally
-  return (
-    <div title={title}>
-      {title}
-    </div>
-  );
+  return <div title={title}>{title}</div>
 }
-
+function fromUTCToLocalDate(utcDate) {
+  // utcDate can be a string or a Date object
+  const date = typeof utcDate === 'string' ? new Date(utcDate) : utcDate;
+  
+  // Get the local timezone offset in minutes and convert to ms
+  const timezoneOffsetMs = date.getTimezoneOffset() * 60 * 1000;
+  
+  // Subtract the offset to shift from UTC to local
+  return new Date(date.getTime() - timezoneOffsetMs);
+}
 // Summarize multiple events on same day/type/name into a single summary event
-function summarizeEvents(events) {
-  const grouped = {};
+function summarizeEvents (events) {
+  const grouped = {}
 
-  events.forEach((evt) => {
+  events.forEach(evt => {
     // Group by date string + type + name
-    const day = evt.start.toISOString().slice(0, 10);
-    const key = `${day}|${evt.type}|${evt.name}`;
+    const day = evt.start.toISOString().slice(0, 10)
+    const key = `${day}|${evt.type}|${evt.name}`
 
     if (!grouped[key]) {
       grouped[key] = {
@@ -66,119 +74,163 @@ function summarizeEvents(events) {
         end: evt.end,
         type: evt.type,
         name: evt.name,
-        eventCounts: { CREATE: 0, DELETE: 0, UPDATE: 0, UPLOAD: 0 },
-      };
+        eventCounts: { CREATE: 0, DELETE: 0, UPDATE: 0, UPLOAD: 0 }
+      }
     }
     if (grouped[key].eventCounts[evt.eventType] !== undefined) {
-      grouped[key].eventCounts[evt.eventType]++;
+      grouped[key].eventCounts[evt.eventType]++
     } else {
       // count any unknown event type generically as 'UPDATE'
-      grouped[key].eventCounts.UPDATE++;
+      grouped[key].eventCounts.UPDATE++
     }
-  });
+  })
 
   // Now convert grouped into summary events with a combined title
-  return Object.values(grouped).map(({ eventCounts, type, name, start, end }) => {
-    const parts = [];
-    if (eventCounts.CREATE) parts.push(`${eventCounts.CREATE} creation${eventCounts.CREATE > 1 ? 's' : ''}`);
-    if (eventCounts.UPDATE) parts.push(`${eventCounts.UPDATE} update${eventCounts.UPDATE > 1 ? 's' : ''}`);
-    if (eventCounts.DELETE) parts.push(`${eventCounts.DELETE} deletion${eventCounts.DELETE > 1 ? 's' : ''}`);
-    if (eventCounts.UPLOAD) parts.push(`${eventCounts.UPLOAD} upload${eventCounts.UPLOAD > 1 ? 's' : ''}`);
+  return Object.values(grouped).map(
+    ({ eventCounts, type, name, start, end }) => {
+      const parts = []
+      if (eventCounts.CREATE)
+        parts.push(
+          `${eventCounts.CREATE} creation${eventCounts.CREATE > 1 ? 's' : ''}`
+        )
+      if (eventCounts.UPDATE)
+        parts.push(
+          `${eventCounts.UPDATE} update${eventCounts.UPDATE > 1 ? 's' : ''}`
+        )
+      if (eventCounts.DELETE)
+        parts.push(
+          `${eventCounts.DELETE} deletion${eventCounts.DELETE > 1 ? 's' : ''}`
+        )
+      if (eventCounts.UPLOAD)
+        parts.push(
+          `${eventCounts.UPLOAD} upload${eventCounts.UPLOAD > 1 ? 's' : ''}`
+        )
 
-    const actionSummary = parts.length > 0 ? parts.join(', ') : 'changes';
+      const actionSummary = parts.length > 0 ? parts.join(', ') : 'changes'
 
-    return {
-      title: `${actionSummary} to ${type.charAt(0).toUpperCase()+ ":" + type.slice(1)} ${name}`,
-      start,
-      end,
-      type,
-      eventType: 'SUMMARY',
-      isSummary: true,
-    };
-  });
+      return {
+        title: `${actionSummary} to ${
+          type.charAt(0).toUpperCase() + ':' + type.slice(1)
+        } ${name}`,
+        start,
+        end,
+        type,
+        eventType: 'SUMMARY',
+        isSummary: true
+      }
+    }
+  )
 }
 
-export default function CalendarView() {
-  const today = new Date();
-  const initialStart = new Date(today.getFullYear(), today.getMonth(), 1);
-  const initialEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+export default function CalendarView () {
+  const today = new Date()
+  const initialStart = new Date(today.getFullYear(), today.getMonth(), 1)
+  const initialEnd = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    0,
+    23,
+    59,
+    59,
+    999
+  )
 
-  const [events, setEvents] = useState([]);
+  const [events, setEvents] = useState([])
   const [filters, setFilters] = useState(() =>
     allTypes.reduce((acc, type) => ({ ...acc, [type]: true }), {})
-  );
+  )
   const [logFilters, setLogFilters] = useState(() =>
     logTypes.reduce((acc, type) => ({ ...acc, [type]: true }), {})
-  );
-  const [view, setView] = useState(Views.MONTH);
-  const [dateRange, setDateRange] = useState([initialStart, initialEnd]);
+  )
+  const [view, setView] = useState(Views.MONTH)
+  const [dateRange, setDateRange] = useState([initialStart, initialEnd])
 
-  const toUnixSeconds = (date) => Math.floor(date.getTime() / 1000);
+  const toUnixSeconds = date => Math.floor(date.getTime() / 1000)
 
   const fetchEvents = useCallback(async () => {
-    if (!dateRange[0] || !dateRange[1]) return;
+    if (!dateRange[0] || !dateRange[1]) return
+    const start = toUnixSecondsUTC(dateRange[0])
+    let end // declare here, no const
 
-    const start = toUnixSeconds(dateRange[0]);
-    const end = toUnixSeconds(dateRange[1]);
-    const summary = view === Views.MONTH ? 'true' : 'false';
+    if (dateRange[0].getTime() === dateRange[1].getTime()) {
+      // same day: add almost 24h minus 1 ms to include full day
+      end = toUnixSecondsUTC(
+        new Date(dateRange[0].getTime() + 24 * 60 * 60 * 1000 - 1)
+      )
+    } else {
+      end = toUnixSecondsUTC(dateRange[1])
+    }
+
+    const summary = view === Views.MONTH ? 'true' : 'false'
 
     try {
       const res = await fetch(
         `/api/logging/get_user_history?start=${start}&end=${end}&summary=${summary}`
-      );
-      const data = await res.json();
+      )
+      const data = await res.json()
 
       if (data.status === 'success') {
-        const formatted = data.message.map((entry) => ({
-          title: `${entry.event === 'CREATE' ? 'Created' : entry.event === 'DELETE' ? 'Deleted' : entry.event === 'UPLOAD' ? 'Uploaded' : 'Updated'} ${entry.name}`,
-          start: new Date(entry.time * 1000),
-          end: new Date(entry.time * 1000),
+        const formatted = data.message.map(entry => ({
+          title: `${
+            entry.event === 'CREATE'
+              ? 'Created'
+              : entry.event === 'DELETE'
+              ? 'Deleted'
+              : entry.event === 'UPLOAD'
+              ? 'Uploaded'
+              : 'Updated'
+          } ${entry.name}`,
+          start: fromUTCToLocalDate(new Date(entry.time * 1000)),
+          end: fromUTCToLocalDate(new Date(entry.time * 1000)),
           type: entry.type,
           eventType: entry.event,
-          name: entry.name,
-        }));
+          name: entry.name
+        }))
 
         // Summarize for month view
-        const finalEvents = view === Views.MONTH ? summarizeEvents(formatted) : formatted;
-        setEvents(finalEvents);
+        const finalEvents =
+          view === Views.MONTH ? summarizeEvents(formatted) : formatted
+        setEvents(finalEvents)
       }
     } catch (error) {
-      console.error('Failed to fetch events:', error);
+      console.error('Failed to fetch events:', error)
     }
-  }, [dateRange, view]);
+  }, [dateRange, view])
 
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    fetchEvents()
+  }, [fetchEvents])
 
-  const handleRangeChange = (range) => {
-    let start, end;
+  const handleRangeChange = range => {
+    let start, end
     if (Array.isArray(range)) {
-      start = range[0];
-      end = range[range.length - 1];
+      start = range[0]
+      end = range[range.length - 1]
     } else if (range.start && range.end) {
-      start = range.start;
-      end = range.end;
+      start = range.start
+      end = range.end
     } else {
-      start = null;
-      end = null;
+      start = null
+      end = null
     }
-    setDateRange([start, end]);
-  };
+    setDateRange([start, end])
+  }
 
-  const handleFilterChange = (type) => {
-    setFilters((prev) => ({ ...prev, [type]: !prev[type] }));
-  };
+  const handleFilterChange = type => {
+    setFilters(prev => ({ ...prev, [type]: !prev[type] }))
+  }
 
-  const handleLogFilterChange = (logType) => {
-    setLogFilters((prev) => ({ ...prev, [logType]: !prev[logType] }));
-  };
+  const handleLogFilterChange = logType => {
+    setLogFilters(prev => ({ ...prev, [logType]: !prev[logType] }))
+  }
 
   const filteredEvents = events.filter(
-    (event) => filters[event.type] && (event.eventType === 'SUMMARY' || logFilters[event.eventType])
-  );
+    event =>
+      filters[event.type] &&
+      (event.eventType === 'SUMMARY' || logFilters[event.eventType])
+  )
 
-  const eventStyleGetter = (event) => {
+  const eventStyleGetter = event => {
     const baseStyle = {
       backgroundColor: typeColors[event.type] || '#607d8b',
       borderRadius: '4px',
@@ -190,27 +242,92 @@ export default function CalendarView() {
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       fontStyle: event.isSummary ? 'italic' : 'normal',
-      opacity: event.isSummary ? 0.85 : 1,
-    };
-    return { style: baseStyle };
-  };
+      opacity: event.isSummary ? 0.85 : 1
+    }
+    return { style: baseStyle }
+  }
+
+  function summarizeDayViewEvents (events) {
+    const grouped = {}
+
+    events.forEach(event => {
+      const dayKey = new Date(event.start)
+      dayKey.setHours(0, 0, 0, 0)
+
+      const key = `${event.type || ''}-${event.name || ''}-${
+        event.event || ''
+      }-${dayKey.toISOString()}`
+
+      if (!grouped[key]) {
+        grouped[key] = {
+          ...event,
+          start: new Date(event.start),
+          end: new Date(event.end)
+        }
+      } else {
+        if (new Date(event.start) < grouped[key].start) {
+          grouped[key].start = new Date(event.start)
+        }
+        if (new Date(event.end) > grouped[key].end) {
+          grouped[key].end = new Date(event.end)
+        }
+      }
+    })
+
+    return Object.values(grouped).map(event => {
+      let start = new Date(event.start)
+      let end = new Date(event.end)
+
+      if (start.getTime() === end.getTime()) {
+        end = new Date(end.getTime() + 5 * 60 * 1000) // add 5 minutes
+      }
+
+      return {
+        ...event,
+        start,
+        end,
+        title: `${capitalize(event.event)} ${capitalize(event.type)} ${
+          event.name || ''
+        }`.trim()
+      }
+    })
+  }
+
+  function capitalize (word) {
+    if (!word || typeof word !== 'string') return ''
+    return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+  }
+
+  const summarizedEvents = useMemo(() => {
+    if (view === 'week' || view === 'day') {
+      return summarizeDayViewEvents(filteredEvents)
+    }
+    return filteredEvents
+  }, [filteredEvents, view])
 
   return (
-    <Box sx={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden' }}>
+    <Box
+      sx={{
+        display: 'flex',
+        height: '100vh',
+        width: '100vw',
+        overflow: 'hidden'
+      }}
+    >
       <Paper
         elevation={3}
         sx={{ width: 280, p: 2, borderRadius: 0, overflowY: 'auto' }}
       >
-        <Typography variant="h6" gutterBottom>
+        <Typography variant='h6' gutterBottom>
           My Filters
         </Typography>
         <Divider sx={{ mb: 2 }} />
 
-        <Typography variant="subtitle1" sx={{ mt: 1 }}>
+        <Typography variant='subtitle1' sx={{ mt: 1 }}>
           Content Types
         </Typography>
         <Stack spacing={1}>
-          {allTypes.map((type) => (
+          {allTypes.map(type => (
             <FormControlLabel
               key={type}
               control={
@@ -219,7 +336,7 @@ export default function CalendarView() {
                   onChange={() => handleFilterChange(type)}
                   sx={{
                     color: typeColors[type],
-                    '&.Mui-checked': { color: typeColors[type] },
+                    '&.Mui-checked': { color: typeColors[type] }
                   }}
                 />
               }
@@ -230,11 +347,11 @@ export default function CalendarView() {
 
         <Divider sx={{ my: 2 }} />
 
-        <Typography variant="subtitle1" gutterBottom>
+        <Typography variant='subtitle1' gutterBottom>
           Log Event Types
         </Typography>
         <Stack spacing={1}>
-          {logTypes.map((logType) => (
+          {logTypes.map(logType => (
             <FormControlLabel
               key={logType}
               control={
@@ -243,11 +360,13 @@ export default function CalendarView() {
                   onChange={() => handleLogFilterChange(logType)}
                   sx={{
                     color: '#555',
-                    '&.Mui-checked': { color: '#1976d2' },
+                    '&.Mui-checked': { color: '#1976d2' }
                   }}
                 />
               }
-              label={logType.charAt(0).toUpperCase() + logType.slice(1).toLowerCase()}
+              label={
+                logType.charAt(0).toUpperCase() + logType.slice(1).toLowerCase()
+              }
             />
           ))}
         </Stack>
@@ -256,21 +375,23 @@ export default function CalendarView() {
       <Box sx={{ flexGrow: 1, p: 2, height: '100%' }}>
         <Calendar
           localizer={localizer}
-          events={filteredEvents}
-          startAccessor="start"
-          endAccessor="end"
+          events={summarizedEvents}
+          startAccessor='start'
+          endAccessor='end'
           view={view}
           onView={setView}
           views={[Views.MONTH, Views.WEEK, Views.DAY]}
           style={{ height: '100%' }}
           eventPropGetter={eventStyleGetter}
           onRangeChange={handleRangeChange}
-          components={{ event: (props) => <EventComponent {...props} view={view} /> }}
+          components={{
+            event: props => <EventComponent {...props} view={view} />
+          }}
           showMultiDayTimes={view !== Views.MONTH}
           max={3}
           popup
         />
       </Box>
     </Box>
-  );
+  )
 }
