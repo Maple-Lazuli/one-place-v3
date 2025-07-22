@@ -21,6 +21,7 @@ def create_app():
     from .events import events_bp
     from .files import files_bp
     from .images import images_bp
+    from .logging import logging_bp
     from .main import main_bp
     from .pages import pages_bp
     from .projects import projects_bp
@@ -37,6 +38,7 @@ def create_app():
     app.register_blueprint(events_bp)
     app.register_blueprint(files_bp)
     app.register_blueprint(images_bp)
+    app.register_blueprint(logging_bp)
     app.register_blueprint(main_bp)
     app.register_blueprint(pages_bp)
     app.register_blueprint(projects_bp)
