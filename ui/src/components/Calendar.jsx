@@ -36,7 +36,11 @@ export default function CalendarView() {
     logTypes.reduce((acc, type) => ({ ...acc, [type]: true }), {})
   );
   const [view, setView] = useState(Views.MONTH);
-  const [dateRange, setDateRange] = useState([null, null]);
+  const today = new Date();
+  const initialStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  const initialEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0, 23, 59, 59, 999);
+
+  const [dateRange, setDateRange] = useState([initialStart, initialEnd]);
 
   // Helper: convert Date to unix seconds
   const toUnixSeconds = (date) => Math.floor(date.getTime() / 1000);
