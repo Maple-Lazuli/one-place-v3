@@ -65,7 +65,9 @@ export default function CreateSnippetForm () {
 
       setSuccess(data.message || 'Snippet created successfully!')
       setTimeout(() => {
-        navigate(`/projects/project/${project_id}/pages/page/${page_id}/snippets`)
+        navigate(
+          `/projects/project/${project_id}/pages/page/${page_id}/snippets`
+        )
       }, 1000)
     } catch (err) {
       setError(err.message)
@@ -74,13 +76,14 @@ export default function CreateSnippetForm () {
     }
   }
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = e => {
     if (e.key === 'Tab') {
       e.preventDefault()
       const textarea = contentRef.current
       const start = textarea.selectionStart
       const end = textarea.selectionEnd
-      const updated = content.substring(0, start) + '    ' + content.substring(end)
+      const updated =
+        content.substring(0, start) + '    ' + content.substring(end)
 
       setContent(updated)
       // move cursor to after the inserted spaces
@@ -95,7 +98,8 @@ export default function CreateSnippetForm () {
       sx={{
         display: 'flex',
         gap: 4,
-        mt: 4
+        mt: 4,
+        height: '80vh'
       }}
     >
       {/* Form Section */}

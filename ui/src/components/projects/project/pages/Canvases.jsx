@@ -35,7 +35,7 @@ export default function PageCanvases () {
     .sort((a, b) => b.lastEditTime - a.lastEditTime)
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, maxHeight: '80vh', overflowY: 'auto' }}>
       <Typography variant="h5" gutterBottom>
         Canvases for Page {page_id}
       </Typography>

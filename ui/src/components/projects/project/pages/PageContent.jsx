@@ -88,8 +88,9 @@ export default function PageContent() {
           // maxHeight: '100%',
           overflowWrap: 'break-word',
         //   whiteSpace: 'pre-wrap',
-        height: '10vh',
-          margin: 'auto'
+          height: '80vh',
+          margin: 'auto',
+          overflowY: 'auto',
         }}
       >
         <ReactMarkdown

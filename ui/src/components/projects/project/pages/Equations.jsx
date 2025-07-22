@@ -35,12 +35,12 @@ export default function PageEquations () {
     .sort((a, b) => b.lastEditTime - a.lastEditTime)
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, maxHeight: '80vh', overflowY: 'auto' }}>
       <Typography variant="h5" gutterBottom>
         Equations for Page {page_id}
       </Typography>
 
-      <Typography variant="body1" sx={{ mb: 2 }}>
+      <Typography variant="body1" sx={{ mb: 2, overflowY: 'auto' }}>
         Equations Stuff
       </Typography>
 

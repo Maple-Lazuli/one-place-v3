@@ -71,7 +71,7 @@ export default function Page () {
         <Box
           sx={{
             flexGrow: 1,
-            overflowY: 'auto',
+            overflowY: 'hidden',
             minHeight: 0, // important for scroll containment inside flexbox
             maxHeight: '80vh' // limit height to viewport
           }}

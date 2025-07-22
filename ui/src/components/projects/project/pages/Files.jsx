@@ -26,7 +26,7 @@ export default function PageFiles () {
   const sortedFiles = [...files].sort((a, b) => b.upload_date - a.upload_date)
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, maxHeight: '80vh', overflowY: 'auto' }}>
       <Typography variant='h5' gutterBottom>
         Files for Page {page_id}
       </Typography>

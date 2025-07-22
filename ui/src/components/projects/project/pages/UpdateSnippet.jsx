@@ -124,7 +124,8 @@ export default function UpdateSnippetForm () {
       sx={{
         display: 'flex',
         gap: 4,
-        mt: 4
+        mt: 4,
+        height: '80vh'
       }}
     >
       {/* Form Section */}
@@ -203,7 +204,7 @@ export default function UpdateSnippetForm () {
           p: 2,
           border: '1px solid #ccc',
           borderRadius: 2,
-          overflow: 'auto',
+          overflowY: 'auto',
           backgroundColor: '#1e1e1e'
         }}
       >
