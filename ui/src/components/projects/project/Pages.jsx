@@ -32,7 +32,7 @@ export default function Pages() {
 
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2}}>
       <Typography variant="h5" gutterBottom>
         Pages for Project {project_id}
       </Typography>
