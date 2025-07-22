@@ -6,6 +6,7 @@ code_snippets_bp = Blueprint('code_snippet', __name__, url_prefix='/code_snippet
 from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .pages import authorized_page_access
+from .projects import authorized_project_access
 
 code_fields = ['CodeID', 'PageID', 'name', 'description', 'language', 'content', 'timeCreated', 'lastEditTime']
 
@@ -218,6 +219,29 @@ def get_all_by_page_ep():
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
 
     response = make_response({'status': 'success', 'message': equations}, STATUS.OK)
+    return response
+
+
+@code_snippets_bp.route('/get_all_by_project', methods=['GET'])
+def get_all_by_project_ep():
+    project_id = int(request.args.get("id"))
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        return make_response({'status': 'error', 'message': "Cannot Access Project"}, STATUS.FORBIDDEN)
+
+    snippets = get_snippets_by_project(project_id)
+
+    if snippets is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.FORBIDDEN)
+
+    response = make_response({'status': 'success', 'message': snippets}, STATUS.OK)
     return response
 
 
