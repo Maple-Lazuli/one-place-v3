@@ -14,7 +14,7 @@ import MenuIcon from '@mui/icons-material/Menu'
 
 export default function Project () {
   const { project_id } = useParams()
-  const [drawerOpen, setDrawerOpen] = useState(true)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   const links = [
     { label: 'Calendar', path: '' },
@@ -28,20 +28,33 @@ export default function Project () {
   ]
 
   return (
-    <Box sx={{ display: 'flex', height: '96vh', overflow: 'hidden', width: '100%'}}>
+    <Box
+      sx={{
+        display: 'flex',
+        height: '96vh',
+        overflow: 'hidden',
+        width: '100%'
+      }}
+    >
       {/* Top bar with toggle */}
-      <IconButton
-        onClick={() => setDrawerOpen(!drawerOpen)}
-        sx={{
-          position: 'fixed',
-          top: 8,
-          left: 8,
-          zIndex: 1301, // higher than drawer
-          color: 'primary.contrastText'
-        }}
-      >
-        {drawerOpen ? <CloseIcon /> : <MenuIcon />}
-      </IconButton>
+<IconButton
+  onClick={() => setDrawerOpen(!drawerOpen)}
+  sx={{
+    position: 'fixed',
+    top: 8,
+    left: 8,
+    zIndex: 1301,
+    color: 'primary.contrastText',
+    animation: 'flash 0.5s ease-in-out 2',
+    '@keyframes flash': {
+      '0%': { opacity: 1 },
+      '50%': { opacity: 0.2 },
+      '100%': { opacity: 1 }
+    }
+  }}
+>
+  {drawerOpen ? <CloseIcon /> : <MenuIcon />}
+</IconButton>
 
       {/* Sidebar Drawer */}
       <Drawer
@@ -100,7 +113,7 @@ export default function Project () {
           ml: drawerOpen ? '240px' : 0,
           transition: 'margin-left 0.3s',
           height: '95vh',
-          width: '98vw',
+          width: '98vw'
           // pt: '4vh' // Push below navbar
         }}
       >
