@@ -26,6 +26,7 @@ export default function PageContent() {
   const pollingRef = useRef(null)
   const containerRef = useRef(null)
   const [containerWidth, setContainerWidth] = useState(0)
+  const pollingRate = 1000 // Poll every 5 seconds
 
   const fetchPage = async () => {
     try {
@@ -98,7 +99,7 @@ export default function PageContent() {
       } catch (err) {
         console.error('Error polling for updates:', err)
       }
-    }, 500)
+    }, pollingRate)
   }
 
   const stopPolling = () => {
@@ -140,7 +141,7 @@ export default function PageContent() {
         boxSizing: 'border-box'
       }}
     >
-      <Box sx={{ px: 2, mb: 2 }}>
+      <Box sx={{ px: 2, mb: 2, paddingTop: 2 }}>
         <FormControl size="small">
           <InputLabel id="translation-select-label">Language</InputLabel>
           <Select
