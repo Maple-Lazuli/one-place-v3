@@ -160,8 +160,8 @@ const fetchEvents = useCallback(async () => {
 
   try {
     const [logRes, userEventRes] = await Promise.all([
-      fetch(`/api/logging/get_user_history?start=${start}&end=${end}&summary=${summary}`),
-      fetch(`/api/events/get_user_events?start=${start}&end=${end}&summary=${summary}`)
+      fetch(`/api/logging/get_user_history?start=${start}&end=${end}&summary=false`),
+      fetch(`/api/events/get_user_events?start=${start}&end=${end}`)
     ]);
 
     const logData = await logRes.json();
@@ -190,24 +190,43 @@ const fetchEvents = useCallback(async () => {
     const userEvents = userEventData.status === 'success'
       ? userEventData.message.map(e => ({
           title: e.name,
-          start: new Date(e.eventTime * 1000),
-          end: new Date((e.eventTime + 3600) * 1000), // default 1hr
+          start: fromUTCToLocalDate(new Date(e.eventTime * 1000)),
+          end: fromUTCToLocalDate(new Date((e.eventTime + 3600) * 1000)), // 1 hour duration
           description: e.description,
-          type: 'Event',
+          type: 'USER_EVENT',
+          eventType: 'USER_EVENT',
+          name: e.name,
           source: 'userEvent'
         }))
       : [];
 
-    const allEvents =
-      view === Views.MONTH
-        ? summarizeEvents([...logEvents, ...userEvents])
-        : [...logEvents, ...userEvents];
+    // Summarize logs separately based on view
+    let processedLogs = logEvents
+    if (view === Views.MONTH) {
+      processedLogs = summarizeEvents(logEvents)
+    } else if (view === Views.WEEK || view === Views.DAY) {
+      processedLogs = summarizeDayViewEvents(logEvents)
+    }
 
-    setEvents(allEvents);
+    // Combine logs and user events
+    const allCombinedEvents = [...processedLogs, ...userEvents]
+    setEvents(allCombinedEvents)
+
   } catch (error) {
     console.error('Failed to fetch events:', error);
   }
-}, [dateRange, view]);
+}, [dateRange, view])
+
+const filteredEvents = useMemo(() => {
+  return events.filter(event => {
+    const isLog = event.source === 'log'
+    const typeMatch = filters[event.type]
+    const logMatch =
+      isLog &&
+      (event.eventType === 'SUMMARY' || logFilters[event.eventType])
+    return isLog ? typeMatch && logMatch : typeMatch
+  })
+}, [events, filters, logFilters])
 
 
   useEffect(() => {
@@ -236,12 +255,6 @@ const fetchEvents = useCallback(async () => {
   const handleLogFilterChange = logType => {
     setLogFilters(prev => ({ ...prev, [logType]: !prev[logType] }))
   }
-
-  const filteredEvents = events.filter(
-    event =>
-      filters[event.type] &&
-      (event.eventType === 'SUMMARY' || logFilters[event.eventType])
-  )
 
   const eventStyleGetter = event => {
     const baseStyle = {
