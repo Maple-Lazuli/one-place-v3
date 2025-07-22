@@ -250,21 +250,25 @@ export default function CalendarView ({
         processedLogs = summarizeDayViewEvents(logEvents)
       }
 
-      setEvents([...processedLogs, ...userEvents, ...todoEvents])
+      setEvents([...logEvents, ...userEvents, ...todoEvents])
     } catch (error) {
       console.error('Failed to fetch events:', error)
     }
   }, [dateRange, view])
 
-  const filteredEvents = useMemo(() => {
+  const filteredLogEvents = useMemo(() => {
     return events.filter(event => {
-      const isLog = event.source === 'log'
+      if (event.source !== 'log') return false
       const typeMatch = filters[event.type]
       const logMatch =
-        isLog && (event.eventType === 'SUMMARY' || logFilters[event.eventType])
-      return isLog ? typeMatch && logMatch : typeMatch
+        event.eventType === 'SUMMARY' || logFilters[event.eventType]
+      return typeMatch && logMatch
     })
   }, [events, filters, logFilters])
+
+  const nonLogEvents = useMemo(() => {
+    return events.filter(event => event.source !== 'log' && filters[event.type])
+  }, [events, filters])
 
   useEffect(() => {
     fetchEvents()
@@ -361,12 +365,17 @@ export default function CalendarView ({
     return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
   }
 
-  const summarizedEvents = useMemo(() => {
-    if (view === 'week' || view === 'day') {
-      return summarizeDayViewEvents(filteredEvents)
-    }
-    return filteredEvents
-  }, [filteredEvents, view])
+const summarizedLogEvents = useMemo(() => {
+  if (view === 'week' || view === 'day') {
+    return summarizeDayViewEvents(filteredLogEvents)
+  } else {
+    return summarizeEvents(filteredLogEvents)
+  }
+}, [filteredLogEvents, view])
+
+const summarizedEvents = useMemo(() => {
+  return [...nonLogEvents, ...summarizedLogEvents]
+}, [nonLogEvents, summarizedLogEvents])
 
   return (
     <Box
