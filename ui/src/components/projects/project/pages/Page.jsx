@@ -16,10 +16,13 @@ export default function Page () {
     { label: 'Translations', path: 'translations' }
   ]
 
-  const currentPathSegment = location.pathname.split('/').pop()
-  const currentTabIndex = navLinks.findIndex(
-    link => link.path === currentPathSegment
-  )
+  // Get the path after .../page/:page_id/
+  const basePath = `/projects/project/${project_id}/pages/page/${page_id}/`
+  const subPath = location.pathname.startsWith(basePath)
+    ? location.pathname.slice(basePath.length).split('/')[0]
+    : ''
+
+  const currentTabIndex = navLinks.findIndex(link => link.path === subPath)
   const tabIndex = currentTabIndex === -1 ? 0 : currentTabIndex
 
   const handleChange = (event, newValue) => {
@@ -65,15 +68,15 @@ export default function Page () {
           display: 'flex',
           flexDirection: 'column',
           p: 2,
-          minHeight: 0 // important for flexbox scroll containment
+          minHeight: 0
         }}
       >
         <Box
           sx={{
             flexGrow: 1,
             overflowY: 'hidden',
-            minHeight: 0, // important for scroll containment inside flexbox
-            maxHeight: '80vh' // limit height to viewport
+            minHeight: 0,
+            maxHeight: '80vh'
           }}
         >
           <Outlet />
