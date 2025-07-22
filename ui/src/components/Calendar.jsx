@@ -21,7 +21,8 @@ const typeColors = {
   translation: '#6a1b9a',
   equation: '#d32f2f',
   canvas: '#0288d1',
-  files: '#5d4037'
+  files: '#5d4037',
+  USER_EVENT: '#007BFF' 
 }
 
 const toUnixSecondsUTC = date =>
@@ -110,8 +111,8 @@ function summarizeEvents (events) {
 
       return {
         title: `${actionSummary} to ${
-          type.charAt(0).toUpperCase() + ':' + type.slice(1)
-        } ${name}`,
+          type.charAt(0).toUpperCase() + type.slice(1)
+        }: ${name}`,
         start,
         end,
         type,
@@ -147,30 +148,27 @@ export default function CalendarView () {
 
   const toUnixSeconds = date => Math.floor(date.getTime() / 1000)
 
-  const fetchEvents = useCallback(async () => {
-    if (!dateRange[0] || !dateRange[1]) return
-    const start = toUnixSecondsUTC(dateRange[0])
-    let end // declare here, no const
+const fetchEvents = useCallback(async () => {
+  if (!dateRange[0] || !dateRange[1]) return;
 
-    if (dateRange[0].getTime() === dateRange[1].getTime()) {
-      // same day: add almost 24h minus 1 ms to include full day
-      end = toUnixSecondsUTC(
-        new Date(dateRange[0].getTime() + 24 * 60 * 60 * 1000 - 1)
-      )
-    } else {
-      end = toUnixSecondsUTC(dateRange[1])
-    }
+  const start = toUnixSecondsUTC(dateRange[0]);
+  const end = dateRange[0] === dateRange[1]
+    ? toUnixSecondsUTC(new Date(dateRange[0].getTime() + 24 * 60 * 60 * 1000 - 1))
+    : toUnixSecondsUTC(dateRange[1]);
 
-    const summary = view === Views.MONTH ? 'true' : 'false'
+  const summary = view === Views.MONTH ? 'true' : 'false';
 
-    try {
-      const res = await fetch(
-        `/api/logging/get_user_history?start=${start}&end=${end}&summary=${summary}`
-      )
-      const data = await res.json()
+  try {
+    const [logRes, userEventRes] = await Promise.all([
+      fetch(`/api/logging/get_user_history?start=${start}&end=${end}&summary=${summary}`),
+      fetch(`/api/events/get_user_events?start=${start}&end=${end}&summary=${summary}`)
+    ]);
 
-      if (data.status === 'success') {
-        const formatted = data.message.map(entry => ({
+    const logData = await logRes.json();
+    const userEventData = await userEventRes.json();
+
+    const logEvents = logData.status === 'success'
+      ? logData.message.map(entry => ({
           title: `${
             entry.event === 'CREATE'
               ? 'Created'
@@ -184,18 +182,33 @@ export default function CalendarView () {
           end: fromUTCToLocalDate(new Date(entry.time * 1000)),
           type: entry.type,
           eventType: entry.event,
-          name: entry.name
+          name: entry.name,
+          source: 'log'
         }))
+      : [];
 
-        // Summarize for month view
-        const finalEvents =
-          view === Views.MONTH ? summarizeEvents(formatted) : formatted
-        setEvents(finalEvents)
-      }
-    } catch (error) {
-      console.error('Failed to fetch events:', error)
-    }
-  }, [dateRange, view])
+    const userEvents = userEventData.status === 'success'
+      ? userEventData.message.map(e => ({
+          title: e.name,
+          start: new Date(e.eventTime * 1000),
+          end: new Date((e.eventTime + 3600) * 1000), // default 1hr
+          description: e.description,
+          type: 'Event',
+          source: 'userEvent'
+        }))
+      : [];
+
+    const allEvents =
+      view === Views.MONTH
+        ? summarizeEvents([...logEvents, ...userEvents])
+        : [...logEvents, ...userEvents];
+
+    setEvents(allEvents);
+  } catch (error) {
+    console.error('Failed to fetch events:', error);
+  }
+}, [dateRange, view]);
+
 
   useEffect(() => {
     fetchEvents()
@@ -370,6 +383,7 @@ export default function CalendarView () {
             />
           ))}
         </Stack>
+        
       </Paper>
 
       <Box sx={{ flexGrow: 1, p: 2, height: '100%' }}>
