@@ -4,6 +4,7 @@ import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'
 import Grid from '@mui/material/Grid'
 import Container from '@mui/material/Container'
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
 import ProjectCard from './ProjectCard'
@@ -60,16 +61,25 @@ const handleDelete = (deletedId) => {
 }
 
   return (
-    <Container sx={{ py: 4 }}>
+      <Box
+    sx={{
+      width: '100vw',
+      height: '100vh', // take full screen height
+      overflowY: 'auto',
+      px: 4,
+      py: 4,
+    }}
+  >
+      <Typography variant='h4' gutterBottom>
+        Projects
+      </Typography>
+
+
       <Link to='/projects/create' style={{ textDecoration: 'none' }}>
         <Button variant='contained' sx={{ mb: 2 }}>
           Create New Project
         </Button>
       </Link>
-
-      <Typography variant='h4' gutterBottom>
-        Projects
-      </Typography>
 
       <Snackbar
         open={open}
@@ -110,6 +120,6 @@ const handleDelete = (deletedId) => {
           ))}
         </Grid>
       )}
-    </Container>
+    </Box>
   )
 }
