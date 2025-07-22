@@ -1,15 +1,58 @@
-import { useParams } from 'react-router-dom';
-import { Typography, Box } from '@mui/material';
+import { useParams, Link } from 'react-router-dom'
+import { Typography, Box, Button, Grid } from '@mui/material'
+import { useEffect, useState } from 'react'
+import FileCard from './pages/FileCard'
 
-export default function Attachments() {
-  const { project_id } = useParams();
+export default function Attachments () {
+  const { project_id } = useParams()
+  const [files, setFiles] = useState([])
+
+  useEffect(() => {
+    async function fetchFiles () {
+      const res = await fetch(`/api/files/files_by_project?id=${project_id}`, {
+        credentials: 'include'
+      })
+      const data = await res.json()
+      setFiles(data)
+    }
+
+    fetchFiles()
+  }, [project_id])
+
+  const handleDelete = deletedId => {
+    setFiles(prev => prev.filter(file => file.FileID !== deletedId))
+  }
+
+  const sortedFiles = [...files].sort((a, b) => b.upload_date - a.upload_date)
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h5" gutterBottom>
-        Attachments for Project {project_id}
+      <Typography variant='h5' gutterBottom>
+        Files For Project
       </Typography>
-      <Typography variant="body1">Upload or view files related to this project.</Typography>
+
+      <Typography variant='body1' sx={{ mb: 2 }}>
+        Files Stuff
+      </Typography>
+
+
+      <Typography variant='h6' gutterBottom>
+        Files
+      </Typography>
+      <Grid container spacing={2}>
+        {sortedFiles.map(file => (
+          <Grid key={file.FileID}>
+            <FileCard
+              name={file.name}
+              description={file.description}
+              filename={file.filename}
+              upload_date={file.upload_date}
+              file_id={file.FileID}
+              onDelete={handleDelete}
+            />
+          </Grid>
+        ))}
+      </Grid>
     </Box>
-  );
+  )
 }

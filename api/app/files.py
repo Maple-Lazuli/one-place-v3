@@ -7,7 +7,7 @@ files_bp = Blueprint('files', __name__, url_prefix='/files')
 from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .pages import authorized_page_access
-
+from .projects import authorized_project_access
 files_fields = ['FileID', 'PageID', 'name', 'hash', 'filename', 'description', 'upload_date', 'content']
 
 
@@ -67,8 +67,9 @@ def get_files_by_project(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""SELECT files.* FROM files
-     inner join on pages.pagesID = files.pagesID
-     where pages.projectID = %s;
+    inner join pages
+    on pages.pageID =  files.pageID
+    where pages.projectID = %s;
     """, (project_id,))
     files = cursor.fetchall()
     conn.commit()
@@ -177,19 +178,19 @@ def get_files_ep():
 
 @files_bp.route('/files_by_project', methods=['get'])
 def get_files_by_project_ep():
-    project_id = int(request.args.get("project_id"))
+    project_id = int(request.args.get("id"))
 
     token = request.cookies.get("token")
 
     valid, session = verify_session_for_access(token)
 
     if not valid:
-        return make_response("Invalid Session", STATUS.FORBIDDEN)
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        return make_response({'status': 'error', 'message': "Cannot Access Project"}, STATUS.FORBIDDEN)
 
     files = get_files_by_project(project_id)
-
-    if not authorized_project_access(project_id):
-        return make_response("Not Authorized To Access", STATUS.FORBIDDEN)
 
     if files is None:
         response = make_response("Does Not Exist", STATUS.OK)
