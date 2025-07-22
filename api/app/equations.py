@@ -6,6 +6,7 @@ equation_bp = Blueprint('equations', __name__, url_prefix='/equations')
 from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .pages import authorized_page_access
+from .projects import authorized_project_access
 
 equations_fields = ['EquationID', 'PageID', 'name', 'description', 'content', 'timeCreated', 'lastEditTime']
 
@@ -213,6 +214,29 @@ def get_all_by_page_ep():
 
     if not authorized_page_access(token, page_id):
         return make_response("Not Authorized To Access Equation", STATUS.FORBIDDEN)
+
+    if equations is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
+
+    response = make_response({'status': 'success', 'message': equations}, STATUS.OK)
+    return response
+
+
+@equation_bp.route('/get_all_by_project', methods=['GET'])
+def get_all_by_project_ep():
+    project_id = int(request.args.get("id"))
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        return make_response({'status': 'error', 'message': "Cannot Access Project"}, STATUS.FORBIDDEN)
+
+    equations = get_equations_by_project(project_id)
 
     if equations is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
