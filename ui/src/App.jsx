@@ -1,8 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom'
 
-import Dashboard from './components/Dashboard'
-import Todo from './components/Todo'
-import MarkdownEditor from './components/MarkdownEditor'
 import Login from './components/Login'
 import CreateAccount from './components/CreateAccount'
 import Home from './components/Home'
@@ -50,7 +47,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
 import Equations from './components/projects/project/Equations'
-
+import ProjectCalendar from './components/ProjectCalendar'
 // // PublicLayout for routes without navbar
 function PublicLayout() {
   return <Outlet />  // just render the child routes
@@ -90,10 +87,7 @@ export default function App() {
 
             {/* Authenticated app routes with navbar */}
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/todo" element={<Todo />} />
-              <Route path="/notes" element={<MarkdownEditor />} />
-              <Route path="/home" element={<Home />} />
+              <Route path="/" element={<Home />} />
               <Route path="/projects" element={<Projects />} />
               <Route path="/projects/create" element={<CreateProject />} />
               <Route path="/update_account" element={<UpdateUserAccount />} />
@@ -139,6 +133,8 @@ export default function App() {
                 <Route path="translations" element={<Translations />} />
                 <Route path="snippets" element={<Snippets />} />
                 <Route path="canvases" element={<Canvases />} />
+                <Route path="" element={<ProjectCalendar />} />
+                
               </Route>
             </Route>
           </Routes>

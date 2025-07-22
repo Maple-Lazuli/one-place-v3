@@ -193,7 +193,7 @@ export default function NavigationBar() {
     <>
       <AppBar position="static" color="primary" elevation={2}>
         <Toolbar>
-          <Button component={Link} to="/home" color="inherit" sx={{ fontWeight: 'bold' }}>
+          <Button component={Link} to="/" color="inherit" sx={{ fontWeight: 'bold' }}>
             Home
           </Button>
           <Button component={Link} to="/projects" color="inherit">
