@@ -81,7 +81,7 @@ export default function ViewRecipe () {
         }}
       >
         <ReactMarkdown
-          children={text}
+          children={recipe.content}
           remarkPlugins={[remarkMath, remarkGfm]}
           rehypePlugins={[rehypeKatex, rehypeHighlight]}
           components={{

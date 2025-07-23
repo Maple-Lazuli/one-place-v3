@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import {
@@ -30,6 +30,9 @@ export default function UpdateRecipeForm () {
   const { project_id, page_id, recipe_id } = useParams()
   const navigate = useNavigate()
 
+  // Create ref to the textarea to manage cursor & insertions
+  const textareaRef = useRef(null)
+
   useEffect(() => {
     const fetchRecipe = async () => {
       try {
@@ -56,7 +59,67 @@ export default function UpdateRecipeForm () {
     fetchRecipe()
   }, [recipe_id])
 
-  const handleSubmit = async e => {
+  // Paste handler to upload images and insert markdown
+  useEffect(() => {
+    const handlePaste = async (e) => {
+      if (document.activeElement !== textareaRef.current) return
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      for (const item of items) {
+        if (item.type.startsWith('image')) {
+          e.preventDefault() // Prevent default image paste
+
+          const file = item.getAsFile()
+          if (!file) return
+
+          const formData = new FormData()
+          formData.append('file', file)
+
+          try {
+            const response = await fetch('/api/images/image', {
+              method: 'POST',
+              body: formData
+            })
+            const data = await response.json()
+            if (data && data.id) {
+              const markdown = `![image](http://${window.location.hostname}:3000/api/images/image?id=${data.id})`
+              insertAtCursor(markdown)
+            }
+          } catch (err) {
+            console.error('Image upload failed:', err)
+          }
+        }
+      }
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [content])
+
+  // Insert markdown text at cursor position inside content
+  const insertAtCursor = (markdown) => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const value = content
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+
+    const insertText = `\n\n${markdown}\n\n`
+    const newValue = value.slice(0, start) + insertText + value.slice(end)
+
+    setContent(newValue)
+
+    // Reset cursor position after state update
+    setTimeout(() => {
+      textarea.focus()
+      const cursorPos = start + insertText.length
+      textarea.setSelectionRange(cursorPos, cursorPos)
+    }, 0)
+  }
+
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setSuccess('')
@@ -93,9 +156,7 @@ export default function UpdateRecipeForm () {
 
       setSuccess(data.message || 'Recipe updated successfully!')
       setTimeout(() => {
-        navigate(
-          `/projects/project/${project_id}/pages/page/${page_id}/recipes`
-        )
+        navigate(`/projects/project/${project_id}/pages/page/${page_id}/recipes`)
       }, 1000)
     } catch (err) {
       setError(err.message)
@@ -159,10 +220,12 @@ export default function UpdateRecipeForm () {
               value={content}
               onChange={e => setContent(e.target.value)}
               required
+              inputRef={textareaRef} // <-- Add ref here
               InputProps={{
                 sx: {
                   resize: 'vertical',
-                  overflow: 'auto'
+                  overflow: 'auto',
+                  fontFamily: 'monospace' // optional, helps markdown editing
                 }
               }}
             />
@@ -191,7 +254,7 @@ export default function UpdateRecipeForm () {
           Preview
         </Typography>
         <ReactMarkdown
-          children={text}
+          children={content}
           remarkPlugins={[remarkMath, remarkGfm]}
           rehypePlugins={[rehypeKatex, rehypeHighlight]}
           components={{
