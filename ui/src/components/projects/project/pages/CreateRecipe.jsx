@@ -30,38 +30,70 @@ export default function CreateRecipeForm () {
   const { project_id, page_id } = useParams()
   const navigate = useNavigate()
 
-    useEffect(() => {
-      const handlePaste = async e => {
-        if (document.activeElement !== textareaRef.current) return
-        const items = e.clipboardData?.items
-        if (!items) return
-  
-        for (const item of items) {
-          if (item.type.startsWith('image')) {
-            const file = item.getAsFile()
-            if (!file) return
-            const formData = new FormData()
-            formData.append('file', file)
-            try {
-              const response = await fetch('/api/images/image', {
-                method: 'POST',
-                body: formData
-              })
-              const data = await response.json()
-              if (data && data.id) {
-                const markdown = `![image](http://${window.location.hostname}:3000/api/images/image?id=${data.id})`
-                await insertAtCursor(markdown)
-              }
-            } catch (err) {
-              console.error('Image upload failed:', err)
+  // Ref for the textarea input (to manage cursor position)
+  const textareaRef = useRef(null)
+
+  // Handle pasting images as markdown
+  useEffect(() => {
+    const handlePaste = async e => {
+      // Only proceed if focused element is the textarea
+      if (document.activeElement !== textareaRef.current) return
+      const items = e.clipboardData?.items
+      if (!items) return
+
+      for (const item of items) {
+        if (item.type.startsWith('image')) {
+          e.preventDefault() // Prevent default paste for images
+
+          const file = item.getAsFile()
+          if (!file) return
+
+          const formData = new FormData()
+          formData.append('file', file)
+
+          try {
+            const response = await fetch('/api/images/image', {
+              method: 'POST',
+              body: formData
+            })
+            const data = await response.json()
+            if (data && data.id) {
+              const markdown = `![image](http://${window.location.hostname}:3000/api/images/image?id=${data.id})`
+              insertAtCursor(markdown)
             }
+          } catch (err) {
+            console.error('Image upload failed:', err)
           }
         }
       }
-  
-      window.addEventListener('paste', handlePaste)
-      return () => window.removeEventListener('paste', handlePaste)
-    }, [])
+    }
+
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [content])
+
+  // Insert markdown at the current cursor position inside textarea
+  const insertAtCursor = markdown => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+
+    const value = content
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
+
+    // Insert markdown with newlines around for better formatting
+    const insertText = `\n\n${markdown}\n\n`
+    const newValue = value.slice(0, start) + insertText + value.slice(end)
+
+    setContent(newValue)
+
+    // After React updates, restore cursor position after inserted text
+    setTimeout(() => {
+      textarea.focus()
+      const cursorPos = start + insertText.length
+      textarea.setSelectionRange(cursorPos, cursorPos)
+    }, 0)
+  }
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -166,10 +198,12 @@ export default function CreateRecipeForm () {
           value={content}
           onChange={e => setContent(e.target.value)}
           required
+          inputRef={textareaRef} // <-- add this
           InputProps={{
             sx: {
               resize: 'both',
-              overflow: 'auto'
+              overflow: 'auto',
+              fontFamily: 'monospace' // optional for markdown editing
             }
           }}
         />
@@ -195,30 +229,30 @@ export default function CreateRecipeForm () {
         <Typography variant='h6' gutterBottom>
           Preview
         </Typography>
-              <ReactMarkdown
-                children={content}
-                remarkPlugins={[remarkMath, remarkGfm]}
-                rehypePlugins={[rehypeKatex, rehypeHighlight]}
-                components={{
-                  code ({ node, inline, className, children, ...props }) {
-                    return (
-                      <code
-                        style={{
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word',
-                          overflowWrap: 'break-word',
-                          width: '100%',
-                          display: 'inline-block'
-                        }}
-                        className={className}
-                        {...props}
-                      >
-                        {children}
-                      </code>
-                    )
-                  }
-                }}
-              />
+        <ReactMarkdown
+          children={content}
+          remarkPlugins={[remarkMath, remarkGfm]}
+          rehypePlugins={[rehypeKatex, rehypeHighlight]}
+          components={{
+            code ({ node, inline, className, children, ...props }) {
+              return (
+                <code
+                  style={{
+                    whiteSpace: 'pre-wrap',
+                    wordBreak: 'break-word',
+                    overflowWrap: 'break-word',
+                    width: '100%',
+                    display: 'inline-block'
+                  }}
+                  className={className}
+                  {...props}
+                >
+                  {children}
+                </code>
+              )
+            }
+          }}
+        />
       </Box>
     </Box>
   )
