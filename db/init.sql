@@ -126,6 +126,17 @@ CREATE TABLE equations (
     FOREIGN KEY (PageID) REFERENCES pages(PageID) ON DELETE CASCADE
 );
 
+CREATE TABLE recipes (
+    RecipeID SERIAL PRIMARY KEY,
+    PageID INTEGER NOT NULL,
+    name VARCHAR (64) NOT NULL,
+    description VARCHAR (255) NOT NULL,
+    content TEXT NOT NULL,
+    timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    lastEditTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (PageID) REFERENCES pages(PageID) ON DELETE CASCADE
+);
+
 CREATE TABLE codesnippets (
     CodeID SERIAL PRIMARY KEY,
     PageID INTEGER NOT NULL,
@@ -178,6 +189,15 @@ CREATE TABLE equationsrequests (
     accessGranted BOOLEAN DEFAULT FALSE,
     notes TEXT,
     FOREIGN KEY (EquationID) REFERENCES equations(EquationID) ON DELETE CASCADE
+);
+
+CREATE TABLE reciperequests (
+    RequestID SERIAL PRIMARY KEY,
+    RecipeID INTEGER NOT NULL,
+    accessTime TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    accessGranted BOOLEAN DEFAULT FALSE,
+    notes TEXT,
+    FOREIGN KEY (RecipeID) REFERENCES recipes(RecipeID) ON DELETE CASCADE
 );
 
 CREATE TABLE codesnippetsrequests (
