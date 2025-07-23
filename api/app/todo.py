@@ -136,10 +136,10 @@ def update_todo(todo_id, name, description, due=None, recurring=False, recurrenc
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        UPDATE todo SET name = %s, description = %s, dueTime = %s, recurring=%s, recurrence=%n
+        UPDATE todo SET name = %s, description = %s, dueTime = %s, recurring=%s, recurrenceInterval=%s
         WHERE todoID = %s
         RETURNING *;
-    """, (name, description, due, todo_id, recurring, recurrence))
+    """, (name, description, due, recurring, recurrence,todo_id))
     updated_todo = cursor.fetchone()
     conn.commit()
     cursor.close()
@@ -280,7 +280,7 @@ def update_ep():
     if not authorized_project_access(token, todo['ProjectID']):
         return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
-    updated_todo = update_todo(todo_id, todo_name, todo_description, todo_due)
+    updated_todo = update_todo(todo_id, todo_name, todo_description, todo_due, recurring, recurrence_interval)
 
     if updated_todo is None:
         return make_response({'status': 'error', 'message': "Failed To Update Todo"}, STATUS.FORBIDDEN)

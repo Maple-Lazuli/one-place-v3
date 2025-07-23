@@ -30,13 +30,33 @@ export default function Todos() {
     setTodos((prev) => prev.filter((todo) => todo.TodoID !== deletedId))
   }
 
-    const handleComplete = (completedTodoId) => {
-    setTodos((prevTodos) =>
-      prevTodos.map((todo) =>
-        todo.TodoID === completedTodoId ? { ...todo, completed: true, timeCompleted: Math.floor(Date.now() / 1000) } : todo
-      )
+const handleComplete = async (completedTodoId) => {
+  const completedTodo = todos.find((todo) => todo.TodoID === completedTodoId)
+
+  // Mark as completed locally
+  setTodos((prevTodos) =>
+    prevTodos.map((todo) =>
+      todo.TodoID === completedTodoId
+        ? { ...todo, completed: true, timeCompleted: Math.floor(Date.now() / 1000) }
+        : todo
     )
+  )
+
+  // If the todo is recurring, refetch from server
+  if (completedTodo?.recurring) {
+    try {
+      const res = await fetch(`/api/todo/get_project_todo?project_id=${project_id}`, {
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (data.status === 'success') {
+        setTodos(data.message)
+      }
+    } catch (err) {
+      console.error('Failed to refetch todos after recurring complete:', err)
+    }
   }
+}
 
 const now = Math.floor(Date.now() / 1000)
 const in24Hours = now + 24 * 60 * 60
