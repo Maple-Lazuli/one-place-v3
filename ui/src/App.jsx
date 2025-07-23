@@ -48,6 +48,12 @@ import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
 import Equations from './components/projects/project/Equations'
 import ProjectCalendar from './components/ProjectCalendar'
+import PageRecipes from './components/projects/project/pages/Recipes'
+import CreateRecipe from './components/projects/project/pages/CreateRecipe'
+import ViewRecipe from './components/projects/project/pages/ViewRecipe'
+import UpdateRecipe from './components/projects/project/pages/UpdateRecipe'
+import CreateRecipeForm from './components/projects/project/pages/CreateRecipe'
+import UpdateRecipeForm from './components/projects/project/pages/UpdateRecipe'
 // // PublicLayout for routes without navbar
 function PublicLayout() {
   return <Outlet />  // just render the child routes
@@ -110,6 +116,10 @@ export default function App() {
                   <Route path="equations/create" element={<CreateEquationForm />} />
                   <Route path="equations/update/:equation_id" element={<UpdateEquationForm />} />
                   <Route path="equations/view/:equation_id" element={<ViewEquation />} />
+                  <Route path="recipes" element={<PageRecipes />} />
+                  <Route path="recipes/create" element={<CreateRecipeForm />} />
+                  <Route path="recipes/update/:recipe_id" element={<UpdateRecipeForm />} />
+                  <Route path="recipes/view/:recipe_id" element={<ViewRecipe />} />
                   <Route path="files" element={<PageFiles />} />
                   <Route path="files/upload" element={<UploadFileForm />} />
                   <Route path="translations" element={<PageTranslations />} />

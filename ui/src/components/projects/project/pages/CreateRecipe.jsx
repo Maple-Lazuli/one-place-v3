@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import {
@@ -29,6 +29,39 @@ export default function CreateRecipeForm () {
 
   const { project_id, page_id } = useParams()
   const navigate = useNavigate()
+
+    useEffect(() => {
+      const handlePaste = async e => {
+        if (document.activeElement !== textareaRef.current) return
+        const items = e.clipboardData?.items
+        if (!items) return
+  
+        for (const item of items) {
+          if (item.type.startsWith('image')) {
+            const file = item.getAsFile()
+            if (!file) return
+            const formData = new FormData()
+            formData.append('file', file)
+            try {
+              const response = await fetch('/api/images/image', {
+                method: 'POST',
+                body: formData
+              })
+              const data = await response.json()
+              if (data && data.id) {
+                const markdown = `![image](http://${window.location.hostname}:3000/api/images/image?id=${data.id})`
+                await insertAtCursor(markdown)
+              }
+            } catch (err) {
+              console.error('Image upload failed:', err)
+            }
+          }
+        }
+      }
+  
+      window.addEventListener('paste', handlePaste)
+      return () => window.removeEventListener('paste', handlePaste)
+    }, [])
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -65,7 +98,7 @@ export default function CreateRecipeForm () {
       } catch {}
 
       if (!res.ok) {
-        throw new Error(data.message || 'Failed to create recipe.')
+        throw new Error(data.message || 'Failed to create Recipe.')
       }
 
       setSuccess(data.message || 'Recipe created successfully!')
@@ -104,7 +137,7 @@ export default function CreateRecipeForm () {
         }}
       >
         <Typography variant='h5' component='h2' gutterBottom>
-          Create New Recipes
+          Create New Recipe
         </Typography>
 
         {error && <Alert severity='error'>{error}</Alert>}
@@ -142,7 +175,7 @@ export default function CreateRecipeForm () {
         />
 
         <Button variant='contained' type='submit' disabled={loading}>
-          {loading ? <CircularProgress size={24} /> : 'Create Recipes'}
+          {loading ? <CircularProgress size={24} /> : 'Create Recipe'}
         </Button>
       </Box>
 
@@ -162,30 +195,30 @@ export default function CreateRecipeForm () {
         <Typography variant='h6' gutterBottom>
           Preview
         </Typography>
-        <ReactMarkdown
-          children={text}
-          remarkPlugins={[remarkMath, remarkGfm]}
-          rehypePlugins={[rehypeKatex, rehypeHighlight]}
-          components={{
-            code ({ node, inline, className, children, ...props }) {
-              return (
-                <code
-                  style={{
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                    width: '100%',
-                    display: 'inline-block'
-                  }}
-                  className={className}
-                  {...props}
-                >
-                  {children}
-                </code>
-              )
-            }
-          }}
-        />
+              <ReactMarkdown
+                children={content}
+                remarkPlugins={[remarkMath, remarkGfm]}
+                rehypePlugins={[rehypeKatex, rehypeHighlight]}
+                components={{
+                  code ({ node, inline, className, children, ...props }) {
+                    return (
+                      <code
+                        style={{
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                          overflowWrap: 'break-word',
+                          width: '100%',
+                          display: 'inline-block'
+                        }}
+                        className={className}
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    )
+                  }
+                }}
+              />
       </Box>
     </Box>
   )

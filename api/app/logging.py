@@ -186,7 +186,7 @@ def get_project_history(project_id, start_time, end_time):
     AND files.timeCreated BETWEEN %s AND %s
     """, (project_id, start_time, end_time, project_id, start_time, end_time, project_id, start_time, end_time,
           project_id, start_time, end_time, project_id, start_time, end_time, project_id, start_time, end_time,
-          project_id, start_time, end_time,))
+          project_id, start_time, end_time, project_id, start_time, end_time,))
     logs = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -293,7 +293,7 @@ def get_user_history(user_id, start_time, end_time):
     AND files.timeCreated BETWEEN %s AND %s
     """, (user_id, start_time, end_time, user_id, start_time, end_time, user_id, start_time, end_time, user_id,
           start_time, end_time, user_id, start_time, end_time, user_id, start_time, end_time, user_id, start_time,
-          end_time,))
+          end_time, user_id, start_time, end_time,))
     logs = cursor.fetchall()
     cursor.close()
     conn.close()

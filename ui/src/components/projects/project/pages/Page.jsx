@@ -10,6 +10,7 @@ export default function Page () {
     { label: 'Content', path: '' },
     { label: 'Editor', path: 'editor' },
     { label: 'Code Snippets', path: 'snippets' },
+    { label: 'Recipes', path: 'recipes' },
     { label: 'Equations', path: 'equations' },
     { label: 'Canvases', path: 'canvases' },
     { label: 'Files', path: 'files' },
@@ -42,7 +43,7 @@ export default function Page () {
         p: 2
       }}
     >
-      <Typography variant='h5' fontWeight='bold' sx={{ mb: 2, flexShrink: 0 }}>
+      <Typography variant='h5' fontWeight='bold' sx={{ mb: 1, flexShrink: 0 }}>
         Page {page_id}
       </Typography>
 
@@ -51,7 +52,7 @@ export default function Page () {
         onChange={handleChange}
         textColor='primary'
         indicatorColor='primary'
-        sx={{ mb: 2, flexShrink: 0 }}
+        sx={{ mb: 1, flexShrink: 0 }}
         variant='scrollable'
         scrollButtons='auto'
         allowScrollButtonsMobile
@@ -67,7 +68,7 @@ export default function Page () {
           flexGrow: 1,
           display: 'flex',
           flexDirection: 'column',
-          p: 2,
+          p: 1,
           minHeight: 0
         }}
       >
