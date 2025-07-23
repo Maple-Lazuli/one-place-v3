@@ -10,7 +10,7 @@ from .sessions import verify_session_for_access
 from .projects import authorized_project_access
 
 todo_fields = ['TodoID', 'ProjectID', 'name', 'description', 'timeCreated', 'dueTime', 'completed', 'timeCompleted',
-               'lastUpdate']
+               'recurring', 'interval', 'lastUpdate']
 
 
 def convert_time(object):
@@ -35,14 +35,14 @@ def get_last_update(todo_id):
     return None
 
 
-def create_todo(project_id, name, description, due=None):
+def create_todo(project_id, name, description, due=None, recurring=False, recurrence=None):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO todo (ProjectID, name, description, dueTime)
-        VALUES (%s, %s, %s, %s)
+        INSERT INTO todo (ProjectID, name, description, dueTime, recurring, recurrenceInterval)
+        VALUES (%s, %s, %s, %s, %s, %s)
         RETURNING *;
-    """, (project_id, name, description, due))
+    """, (project_id, name, description, due, recurring, recurrence))
     new_todo = cursor.fetchone()
     conn.commit()
     cursor.close()
@@ -132,14 +132,14 @@ def delete_todo(todo_id):
     conn.close()
 
 
-def update_todo(todo_id, name, description, due=None):
+def update_todo(todo_id, name, description, due=None, recurring=False, recurrence=None):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        UPDATE todo SET name = %s, description = %s, dueTime = %s  
+        UPDATE todo SET name = %s, description = %s, dueTime = %s, recurring=%s, recurrence=%n
         WHERE todoID = %s
         RETURNING *;
-    """, (name, description, due, todo_id))
+    """, (name, description, due, todo_id, recurring, recurrence))
     updated_todo = cursor.fetchone()
     conn.commit()
     cursor.close()
@@ -162,6 +162,8 @@ def create_ep():
     todo_name = data.get("name").strip()
     todo_description = data.get("description").strip()
     todo_due = data.get("dueTime", None)
+    recurring = data.get("recurring", False)
+    recurrence_interval = data.get("interval", None)
 
     if todo_due is not None:
         todo_due = float(todo_due)
@@ -177,7 +179,7 @@ def create_ep():
     if not authorized_project_access(token, project_id):
         return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
-    new_todo = create_todo(project_id, todo_name, todo_description, todo_due)
+    new_todo = create_todo(project_id, todo_name, todo_description, todo_due, recurring, recurrence_interval)
     if new_todo is None:
         return make_response({'status': 'error', 'message': "Failed To Create Todo"}, STATUS.INTERNAL_SERVER_ERROR)
 
@@ -259,6 +261,8 @@ def update_ep():
     todo_name = data.get("new_name").strip()
     todo_description = data.get("new_description").strip()
     todo_due = data.get("dueTime", None)
+    recurring = data.get("recurring", False)
+    recurrence_interval = data.get("interval", None)
 
     if todo_due is not None:
         todo_due = float(todo_due)
@@ -307,8 +311,25 @@ def complete_ep():
     if completed_todo is None:
         return make_response({'status': 'error', 'message': "Failed To Complete Todo"}, STATUS.FORBIDDEN)
 
-    response = make_response({'status': 'success', 'message': f'Completed {completed_todo["name"]}'}, STATUS.OK)
-    return response
+    if completed_todo['recurring'] and completed_todo['interval'] is not None:
+        due = datetime.now() + timedelta(days=completed_todo['interval'])
+        new_todo = create_todo(completed_todo['ProjectID'], completed_todo['name'], completed_todo['description'],
+                               due, completed_todo['recurring'], completed_todo['interval'])
+
+        if new_todo is not None:
+            response = make_response(
+                {'status': 'success', 'message': f'Completed {completed_todo["name"]} and made new recurring todo'},
+                STATUS.OK)
+            return response
+        else:
+            response = make_response({'status': 'success',
+                                      'message': f'Completed {completed_todo["name"]} and failed to make new recurring todo'},
+                                     STATUS.OK)
+            return response
+
+    else:
+        response = make_response({'status': 'success', 'message': f'Completed {completed_todo["name"]}'}, STATUS.OK)
+        return response
 
 
 @todo_bp.route('/delete', methods=['DELETE'])

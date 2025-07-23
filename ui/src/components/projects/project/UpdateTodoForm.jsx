@@ -6,7 +6,9 @@ import {
   TextField,
   Typography,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Checkbox,
+  FormControlLabel
 } from '@mui/material'
 
 export default function UpdateTodoForm () {
@@ -16,6 +18,9 @@ export default function UpdateTodoForm () {
   const [title, setTitle] = useState('')
   const [dateTime, setDateTime] = useState('')
   const [description, setDescription] = useState('')
+  const [recurring, setRecurring] = useState(false)
+  const [intervalDays, setIntervalDays] = useState('')
+
   const [loading, setLoading] = useState(true)
   const [submitLoading, setSubmitLoading] = useState(false)
   const [error, setError] = useState('')
@@ -31,7 +36,6 @@ export default function UpdateTodoForm () {
     return `${yyyy}-${MM}-${dd}T${hh}:${mm}`
   }
 
-  // Fetch todo details on mount
   useEffect(() => {
     async function fetchTodo () {
       setLoading(true)
@@ -49,6 +53,9 @@ export default function UpdateTodoForm () {
         const todo = data.message
 
         setTitle(todo.name || '')
+        setDescription(todo.description || '')
+        setRecurring(!!todo.recurring)
+        setIntervalDays(todo.intervalDays?.toString() || '')
 
         if (todo.dueTime) {
           const dt = new Date(todo.dueTime * 1000)
@@ -56,14 +63,13 @@ export default function UpdateTodoForm () {
         } else {
           setDateTime('')
         }
-
-        setDescription(todo.description || '')
       } catch (err) {
         setError(err.message)
       } finally {
         setLoading(false)
       }
     }
+
     fetchTodo()
   }, [todo_id])
 
@@ -77,14 +83,25 @@ export default function UpdateTodoForm () {
       return
     }
 
+    if (recurring && (!intervalDays || isNaN(intervalDays) || Number(intervalDays) <= 0)) {
+      setError('Please enter a valid interval in days for recurring todos')
+      return
+    }
+
     setSubmitLoading(true)
 
     try {
       const payload = {
-        todo_id: todo_id,
+        todo_id,
         new_name: title,
-        new_description: description
+        new_description: description,
+        recurring
       }
+
+      if (recurring) {
+        payload.interval = Number(intervalDays)
+      }
+
       if (dateTime) {
         const timestamp = new Date(dateTime).getTime() / 1000
         payload.dueTime = timestamp
@@ -112,12 +129,13 @@ export default function UpdateTodoForm () {
     }
   }
 
-  if (loading)
+  if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
         <CircularProgress />
       </Box>
     )
+  }
 
   return (
     <Box
@@ -147,7 +165,7 @@ export default function UpdateTodoForm () {
       />
 
       <TextField
-        label='Date & Time Due (Optional'
+        label='Date & Time Due (Optional)'
         type='datetime-local'
         value={dateTime}
         onChange={e => setDateTime(e.target.value)}
@@ -160,6 +178,25 @@ export default function UpdateTodoForm () {
         rows={4}
         value={description}
         onChange={e => setDescription(e.target.value)}
+      />
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={recurring}
+            onChange={e => setRecurring(e.target.checked)}
+          />
+        }
+        label='Recurring'
+      />
+
+      <TextField
+        label='Interval in Days'
+        type='number'
+        value={intervalDays}
+        onChange={e => setIntervalDays(e.target.value)}
+        disabled={!recurring}
+        inputProps={{ min: 1 }}
       />
 
       <Button variant='contained' type='submit' disabled={submitLoading}>

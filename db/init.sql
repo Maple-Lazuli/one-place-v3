@@ -60,6 +60,8 @@ CREATE TABLE todo (
     dueTime TIMESTAMP,
     completed BOOLEAN DEFAULT FALSE,
     timeCompleted TIMESTAMP,
+    recurring BOOLEAN DEFAULT FALSE,
+    recurrenceInterval FLOAT8 DEFAULT 0, -- in days
     lastUpdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
 );

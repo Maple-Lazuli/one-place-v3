@@ -1,25 +1,28 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-
 import {
   Box,
   Button,
   TextField,
   Typography,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Checkbox,
+  FormControlLabel
 } from '@mui/material'
 
 export default function CreateTodoForm () {
   const [title, setTitle] = useState('')
   const [dateTime, setDateTime] = useState('')
   const [description, setDescription] = useState('')
+  const [recurring, setRecurring] = useState(false)
+  const [intervalDays, setIntervalDays] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
   const { project_id } = useParams()
-    const navigate = useNavigate()
+  const navigate = useNavigate()
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -31,18 +34,28 @@ export default function CreateTodoForm () {
       return
     }
 
+    if (recurring && (!intervalDays || isNaN(intervalDays) || Number(intervalDays) <= 0)) {
+      setError('Please enter a valid interval in days for recurring todos')
+      return
+    }
+
     setLoading(true)
 
     try {
-
       const payload = {
-        project_id: Number(project_id), // convert string param to number
+        project_id: Number(project_id),
         name: title,
-        description,
+        description
       }
+
       if (dateTime) {
-        const timestamp = new Date(dateTime).getTime() / 1000 
+        const timestamp = new Date(dateTime).getTime() / 1000
         payload.dueTime = timestamp
+      }
+
+      if (recurring) {
+        payload.recurring = true
+        payload.interval = Number(intervalDays)
       }
 
       const res = await fetch('/api/todo/create', {
@@ -51,20 +64,20 @@ export default function CreateTodoForm () {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(payload),
-        credentials: 'include' // send cookies (token)
+        credentials: 'include'
       })
 
-      // parse JSON safely
       let data = {}
       try {
         data = await res.json()
       } catch {
-        // response might not be JSON, ignore
+        // ignore
       }
 
       if (!res.ok) {
         throw new Error(data.message || 'Failed to create todo.')
       }
+
       setSuccess(data.message || 'Todo created successfully!')
       setTimeout(() => navigate(`/projects/project/${project_id}/todos`), 1000)
     } catch (err) {
@@ -115,6 +128,25 @@ export default function CreateTodoForm () {
         rows={4}
         value={description}
         onChange={e => setDescription(e.target.value)}
+      />
+
+      <FormControlLabel
+        control={
+          <Checkbox
+            checked={recurring}
+            onChange={e => setRecurring(e.target.checked)}
+          />
+        }
+        label='Recurring'
+      />
+
+      <TextField
+        label='Interval in Days'
+        type='number'
+        value={intervalDays}
+        onChange={e => setIntervalDays(e.target.value)}
+        disabled={!recurring}
+        inputProps={{ min: 1 }}
       />
 
       <Button variant='contained' type='submit' disabled={loading}>
