@@ -6,9 +6,9 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
-
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
+import { replaceImageHosts } from '../../../../utils/scripts'
 
 export default function ViewRecipe () {
   const { recipe_id } = useParams()
@@ -82,7 +82,7 @@ return (
       }}
     >
       <ReactMarkdown
-        children={recipe.content}
+        children={replaceImageHosts(recipe.content)}
         remarkPlugins={[remarkMath, remarkGfm]}
         rehypePlugins={[rehypeKatex, rehypeHighlight]}
         components={{

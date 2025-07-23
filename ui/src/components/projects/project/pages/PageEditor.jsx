@@ -33,7 +33,8 @@ export default function PageEditor () {
       })
       const data = await res.json()
       if (res.ok && data.status === 'success') {
-        setText(data.message.content || '')
+        const uncleaned_content = data.message.content || ''
+        setText(replaceImageHosts(uncleaned_content))
         lastEditTimeRef.current = (data.message.lastEditTime || 0) * 1000
         if (lastSaveTimeRef.current < lastEditTimeRef.current) {
           lastSaveTimeRef.current = lastEditTimeRef.current
@@ -180,6 +181,7 @@ export default function PageEditor () {
   }
 
   const handleChange = e => {
+    
     setText(e.target.value)
     lastEditTimeRef.current = Date.now()
   }

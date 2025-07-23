@@ -15,9 +15,9 @@ import {
   Button,
   Typography
 } from '@mui/material'
-
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
+import { replaceImageHosts } from '../../../../utils/scripts'
 
 export default function PageContent() {
   const { page_id } = useParams()
@@ -39,7 +39,8 @@ export default function PageContent() {
       })
       const data = await res.json()
       if (res.ok && data.status === 'success') {
-        setText(data.message.content || '')
+        const uncleaned_content = data.message.content || ''
+        setText(replaceImageHosts(uncleaned_content))
         lastEditTimeRef.current = data.message.lastEditTime || 0
       } else {
         console.error('Failed to load page:', data.message)
@@ -56,7 +57,8 @@ export default function PageContent() {
       })
       const data = await res.json()
       if (res.ok && data.status === 'success') {
-        setText(data.message.content || '')
+        const uncleaned_content = data.message.content || ''
+        setText(replaceImageHosts(uncleaned_content))
         lastEditTimeRef.current = data.message.lastEditTime || 0
       }
     } catch (err) {

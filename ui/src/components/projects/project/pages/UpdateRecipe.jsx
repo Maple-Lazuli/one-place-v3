@@ -14,9 +14,9 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
-
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
+import { replaceImageHosts } from '../../../../utils/scripts'
 
 export default function UpdateRecipeForm () {
   const [title, setTitle] = useState('')
@@ -48,7 +48,8 @@ export default function UpdateRecipeForm () {
 
         setTitle(data.message.name || '')
         setDescription(data.message.description || '')
-        setContent(data.message.content || '')
+        const uncleaned_content = data.message.content || ''
+        setContent(replaceImageHosts(uncleaned_content))
       } catch (err) {
         setError(err.message)
       } finally {

@@ -11,6 +11,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
+import { replaceImageHosts } from '../../../../utils/scripts'
 
 export default function UpdateTranslation () {
   const [content, setContent] = useState('')
@@ -41,7 +42,8 @@ export default function UpdateTranslation () {
 
       if (!res.ok) throw new Error(data.message || 'Failed to load Translation.')
 
-      setContent(data.message.content || '')
+
+      setContent(replaceImageHosts(data.message.content || ''))
       setLanguage(data.message.language || '')
 
       lastEditTimeRef.current = (data.message.lastEditTime || 0) * 1000
@@ -62,7 +64,7 @@ export default function UpdateTranslation () {
       })
       const data = await res.json()
       if (res.ok && data.message) {
-        setCurrentPageContent(data.message.content)
+        setCurrentPageContent(replaceImageHosts(data.message.content))
         setLastCurrentPageUpdate(Number(data.message.lastUpdate) * 1000)
         lastCurrentPagePollRef.current = data.message.lastUpdate * 1000
       }
