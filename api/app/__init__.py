@@ -25,6 +25,7 @@ def create_app():
     from .main import main_bp
     from .pages import pages_bp
     from .projects import projects_bp
+    from .recipes import recipe_bp
     from .sessions import sessions_bp
     from .tags import tags_bp
     from .todo import todo_bp
@@ -42,6 +43,7 @@ def create_app():
     app.register_blueprint(main_bp)
     app.register_blueprint(pages_bp)
     app.register_blueprint(projects_bp)
+    app.register_blueprint(recipe_bp)
     app.register_blueprint(sessions_bp)
     app.register_blueprint(tags_bp)
     app.register_blueprint(todo_bp)

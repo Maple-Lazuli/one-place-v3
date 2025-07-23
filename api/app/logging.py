@@ -159,6 +159,15 @@ def get_project_history(project_id, start_time, end_time):
     pages.pageID = equations.pageID
     where pages.ProjectID = %s AND accessGranted = TRUE
     AND accessTime BETWEEN %s AND %s
+    --Recipes
+    UNION
+    SELECT recipes.name, notes, 'recipe', accessTime FROM reciperequests
+    inner join recipes on
+    recipes.recipeID = reciperequests.recipeID
+    inner join pages on
+    pages.pageID = recipes.pageID
+    where pages.ProjectID = %s AND accessGranted = TRUE
+    AND accessTime BETWEEN %s AND %s
     --Canvas
     UNION
     SELECT canvas.name, notes, 'canvas', accessTime FROM canvasrequests
@@ -244,6 +253,18 @@ def get_user_history(user_id, start_time, end_time):
     equations.EquationID = equationsrequests.EquationID
     inner join pages on
     pages.pageID = equations.pageID
+    inner join projects on
+    projects.projectID = pages.projectID
+    where projects.UserID = %s AND accessGranted = TRUE
+    AND accessTime BETWEEN %s AND %s
+    AND notes != 'GET'
+    --Recipes
+    UNION
+    SELECT recipes.name, notes, 'recipe', accessTime FROM reciperequests
+    inner join recipes on
+    recipes.recipeID = reciperequests.recipeID
+    inner join pages on
+    pages.pageID = recipes.pageID
     inner join projects on
     projects.projectID = pages.projectID
     where projects.UserID = %s AND accessGranted = TRUE
