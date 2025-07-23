@@ -60,51 +60,52 @@ export default function ViewRecipe () {
     return null
   }
 
-  return (
-    <Box sx={{ maxWidth: '100%', mx: 'right', mt: 4 }}>
-      <Typography variant='h4' gutterBottom>
-        {recipe.name}
-      </Typography>
-      <Typography variant='body1' gutterBottom>
-        {recipe.description}
-      </Typography>
+return (
+  <Box sx={{ maxWidth: '100%', mx: 'auto', mt: 4 }}>
+    <Typography variant='h4' gutterBottom>
+      {recipe.name}
+    </Typography>
+    <Typography variant='body1' gutterBottom>
+      {recipe.description}
+    </Typography>
 
-      <Paper
-        variant='outlined'
-        sx={{
-          mt: 2,
-          p: 2,
-          backgroundColor: '#f6f8fa',
-          overflowX: 'auto',
-          whiteSpace: 'pre-wrap',
-          fontFamily: 'monospace'
+    <Paper
+      variant='outlined'
+      sx={{
+        mt: 2,
+        p: 2,
+        backgroundColor: '#f6f8fa',
+        overflowY: 'auto',
+        maxHeight: '75vh', // fixed max height in px or use '60vh' etc
+        whiteSpace: 'pre-wrap',
+        fontFamily: 'monospace'
+      }}
+    >
+      <ReactMarkdown
+        children={recipe.content}
+        remarkPlugins={[remarkMath, remarkGfm]}
+        rehypePlugins={[rehypeKatex, rehypeHighlight]}
+        components={{
+          code ({ node, inline, className, children, ...props }) {
+            return (
+              <code
+                style={{
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  overflowWrap: 'break-word',
+                  width: '100%',
+                  display: 'inline-block'
+                }}
+                className={className}
+                {...props}
+              >
+                {children}
+              </code>
+            )
+          }
         }}
-      >
-        <ReactMarkdown
-          children={recipe.content}
-          remarkPlugins={[remarkMath, remarkGfm]}
-          rehypePlugins={[rehypeKatex, rehypeHighlight]}
-          components={{
-            code ({ node, inline, className, children, ...props }) {
-              return (
-                <code
-                  style={{
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                    width: '100%',
-                    display: 'inline-block'
-                  }}
-                  className={className}
-                  {...props}
-                >
-                  {children}
-                </code>
-              )
-            }
-          }}
-        />
-      </Paper>
-    </Box>
-  )
+      />
+    </Paper>
+  </Box>
+)
 }

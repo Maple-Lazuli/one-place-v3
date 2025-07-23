@@ -77,7 +77,7 @@ export default function Page () {
             flexGrow: 1,
             overflowY: 'hidden',
             minHeight: 0,
-            maxHeight: '80vh'
+            maxHeight: '95vh'
           }}
         >
           <Outlet />

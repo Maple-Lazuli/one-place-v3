@@ -245,6 +245,7 @@ export default function UpdateRecipeForm () {
           border: '1px solid #ccc',
           borderRadius: 2,
           overflow: 'auto',
+          
           whiteSpace: 'pre-wrap',
           backgroundColor: '#fafafa',
           height: '90%'
