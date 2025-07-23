@@ -7,7 +7,14 @@ export default function AppLayout() {
   return (
     <>
       <NavigationBar />
-      <Box sx={{ flexGrow: 1, overflow:'hidden', height: '95vh', width: '100vw', margin: 0}}>
+      <Box
+        sx={{
+          pt: '4vh', // Add padding to avoid overlap
+          height: '96vh', // adjust based on header height
+          overflow: 'auto',
+          width: '100vw',
+        }}
+      >
         <Outlet />
       </Box>
     </>
