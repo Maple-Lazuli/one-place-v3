@@ -3,7 +3,7 @@ import React, {
   useState,
   useEffect,
   useImperativeHandle,
-  forwardRef,
+  forwardRef
 } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import {
@@ -11,14 +11,17 @@ import {
   Layer,
   Line,
   Image as KonvaImage,
-  Transformer,
+  Transformer
 } from 'react-konva'
 import useImage from 'use-image'
 import jsPDF from 'jspdf'
 
 // Draggable & transformable image with forwarded ref
 const DraggableImage = forwardRef(
-  ({ id, x, y, scaleX = 1, scaleY = 1, isSelected, onSelect, onChange }, ref) => {
+  (
+    { id, x, y, scaleX = 1, scaleY = 1, isSelected, onSelect, onChange },
+    ref
+  ) => {
     const imageUrl = `/api/images/image?id=${id}`
     const [image] = useImage(imageUrl)
     const shapeRef = useRef()
@@ -36,17 +39,17 @@ const DraggableImage = forwardRef(
         onClick={onSelect}
         onTap={onSelect}
         ref={shapeRef}
-        onDragEnd={(e) => {
+        onDragEnd={e => {
           onChange && onChange({ x: e.target.x(), y: e.target.y() })
         }}
-        onTransformEnd={(e) => {
+        onTransformEnd={e => {
           const node = shapeRef.current
           onChange &&
             onChange({
               x: node.x(),
               y: node.y(),
               scaleX: node.scaleX(),
-              scaleY: node.scaleY(),
+              scaleY: node.scaleY()
             })
         }}
       />
@@ -54,10 +57,10 @@ const DraggableImage = forwardRef(
   }
 )
 
-export default function CanvasEditor() {
+export default function CanvasEditor () {
   const stageRef = useRef()
   const transformerRef = useRef()
-  const {project_id, page_id, canvas_id } = useParams()
+  const { project_id, page_id, canvas_id } = useParams()
   const navigate = useNavigate()
 
   const [tool, setTool] = useState('pen') // pen, eraser, pan
@@ -81,12 +84,12 @@ export default function CanvasEditor() {
   const lastSaveTimeRef = useRef(0)
 
   // Upload image to backend and get image ID
-  async function uploadImage(blob) {
+  async function uploadImage (blob) {
     const formData = new FormData()
     formData.append('file', blob)
     const res = await fetch('/api/images/image', {
       method: 'POST',
-      body: formData,
+      body: formData
     })
     if (!res.ok) throw new Error('Image upload failed')
     const data = await res.json()
@@ -95,7 +98,7 @@ export default function CanvasEditor() {
 
   // Load canvas content on mount
   useEffect(() => {
-    async function loadCanvas() {
+    async function loadCanvas () {
       try {
         const res = await fetch(`/api/canvas/get?id=${canvas_id}`)
         if (res.ok) {
@@ -112,16 +115,16 @@ export default function CanvasEditor() {
   }, [canvas_id])
 
   // Save canvas helper
-  async function saveCanvas() {
+  async function saveCanvas () {
     try {
       const payload = {
         canvas_id: Number(canvas_id),
-        new_content: JSON.stringify({ lines, images }),
+        new_content: JSON.stringify({ lines, images })
       }
       await fetch(`/api/canvas/content`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       })
       lastSaveTimeRef.current = Date.now()
     } catch (e) {
@@ -129,10 +132,10 @@ export default function CanvasEditor() {
     }
   }
 
-  async function deleteImageFromBackend(imageId) {
+  async function deleteImageFromBackend (imageId) {
     try {
       const res = await fetch(`/api/images/image?id=${imageId}`, {
-        method: 'DELETE',
+        method: 'DELETE'
       })
       if (!res.ok) {
         console.warn('Failed to delete image from backend')
@@ -145,14 +148,14 @@ export default function CanvasEditor() {
   const handleDeleteSelectedImage = () => {
     if (selectedImageIndex === null) return
     const imageToDelete = images[selectedImageIndex]
-    setImages((prev) => prev.filter((_, i) => i !== selectedImageIndex))
+    setImages(prev => prev.filter((_, i) => i !== selectedImageIndex))
     setSelectedImageIndex(null)
     deleteImageFromBackend(imageToDelete.id)
     saveCanvas()
   }
 
   useEffect(() => {
-    const handlePaste = async (e) => {
+    const handlePaste = async e => {
       const items = e.clipboardData.items
       for (const item of items) {
         if (item.type.includes('image')) {
@@ -162,9 +165,9 @@ export default function CanvasEditor() {
             const stage = stageRef.current
             if (!stage) return
             const rel = stage.getRelativePointerPosition()
-            setImages((prev) => [
+            setImages(prev => [
               ...prev,
-              { id: imageId, x: rel.x, y: rel.y, scaleX: 1, scaleY: 1 },
+              { id: imageId, x: rel.x, y: rel.y, scaleX: 1, scaleY: 1 }
             ])
             saveCanvas()
           } catch (err) {
@@ -190,8 +193,65 @@ export default function CanvasEditor() {
     }
   }, [selectedImageIndex])
 
-  function updateImagePosition(index, changes) {
-    setImages((prev) => {
+const handleTouchStart = (e) => {
+  const stage = stageRef.current
+  const touch = e.evt.touches[0]
+  const pos = stage.getPointerPosition()
+  lastPanPos.current = pos
+
+  if (tool === 'pan') return
+
+  setDrawing(true)
+  setLines((prev) => [
+    ...prev,
+    {
+      points: [pos.x, pos.y],
+      stroke: tool === 'eraser' ? '#f0f0f0' : strokeColor,
+      strokeWidth,
+    },
+  ])
+  setSelectedImageIndex(null)
+}
+
+const handleTouchMove = (e) => {
+  const stage = stageRef.current
+  const pos = stage.getPointerPosition()
+
+  if (!pos) return
+
+  if (tool === 'pan') {
+    const dx = pos.x - lastPanPos.current.x
+    const dy = pos.y - lastPanPos.current.y
+    setStagePosition((prev) => ({ x: prev.x + dx, y: prev.y + dy }))
+    lastPanPos.current = pos
+    return
+  }
+
+  if (!drawing) return
+
+  setLines((prevLines) => {
+    const lastLine = prevLines[prevLines.length - 1]
+    const newLines = prevLines.slice(0, -1)
+    return [
+      ...newLines,
+      { ...lastLine, points: [...lastLine.points, pos.x, pos.y] },
+    ]
+  })
+}
+
+const handleTouchEnd = () => {
+  if (drawing) {
+    setDrawing(false)
+    setHistory((prev) => [...prev, [...lines]])
+    setRedoStack([])
+    saveCanvas()
+  }
+  lastPanPos.current = null
+}
+
+
+  function updateImagePosition (index, changes) {
+    setImages(prev => {
       const updated = [...prev]
       updated[index] = { ...updated[index], ...changes }
       return updated
@@ -199,7 +259,7 @@ export default function CanvasEditor() {
     saveCanvas()
   }
 
-  const handleMouseDown = (e) => {
+  const handleMouseDown = e => {
     const stage = e.target.getStage()
     if (e.evt.button === 1) {
       e.evt.preventDefault()
@@ -214,18 +274,18 @@ export default function CanvasEditor() {
     if (middleMouseDown) return
     const pos = stage.getRelativePointerPosition()
     setDrawing(true)
-    setLines((prev) => [
+    setLines(prev => [
       ...prev,
       {
         points: [pos.x, pos.y],
         stroke: tool === 'eraser' ? '#f0f0f0' : strokeColor,
-        strokeWidth,
-      },
+        strokeWidth
+      }
     ])
     setSelectedImageIndex(null)
   }
 
-  const handleMouseMove = (e) => {
+  const handleMouseMove = e => {
     const stage = stageRef.current
     if (!stage) return
 
@@ -233,7 +293,7 @@ export default function CanvasEditor() {
       const pointer = stage.getPointerPosition()
       const dx = pointer.x - lastPanPos.current.x
       const dy = pointer.y - lastPanPos.current.y
-      setStagePosition((pos) => ({ x: pos.x + dx, y: pos.y + dy }))
+      setStagePosition(pos => ({ x: pos.x + dx, y: pos.y + dy }))
       lastPanPos.current = pointer
       return
     }
@@ -241,17 +301,17 @@ export default function CanvasEditor() {
     if (!drawing) return
 
     const point = stage.getRelativePointerPosition()
-    setLines((prevLines) => {
+    setLines(prevLines => {
       const lastLine = prevLines[prevLines.length - 1]
       const newLines = prevLines.slice(0, -1)
       return [
         ...newLines,
-        { ...lastLine, points: [...lastLine.points, point.x, point.y] },
+        { ...lastLine, points: [...lastLine.points, point.x, point.y] }
       ]
     })
   }
 
-  const handleMouseUp = (e) => {
+  const handleMouseUp = e => {
     if (e.evt.button === 1) {
       setMiddleMouseDown(false)
       lastPanPos.current = null
@@ -259,7 +319,7 @@ export default function CanvasEditor() {
     }
     if (drawing) {
       setDrawing(false)
-      setHistory((prev) => [...prev, [...lines]])
+      setHistory(prev => [...prev, [...lines]])
       setRedoStack([])
       saveCanvas()
     }
@@ -270,7 +330,7 @@ export default function CanvasEditor() {
     if (history.length === 0) return
     const prev = [...history]
     const last = prev.pop()
-    setRedoStack((r) => [...r, lines])
+    setRedoStack(r => [...r, lines])
     setLines(last || [])
     setHistory(prev)
     saveCanvas()
@@ -280,13 +340,13 @@ export default function CanvasEditor() {
     if (redoStack.length === 0) return
     const redo = [...redoStack]
     const restored = redo.pop()
-    setHistory((h) => [...h, lines])
+    setHistory(h => [...h, lines])
     setLines(restored)
     setRedoStack(redo)
     saveCanvas()
   }
 
-  const handleWheel = (e) => {
+  const handleWheel = e => {
     e.evt.preventDefault()
     const scaleBy = 1.05
     const stage = stageRef.current
@@ -294,7 +354,7 @@ export default function CanvasEditor() {
     const pointer = stage.getPointerPosition()
     const mousePointTo = {
       x: (pointer.x - stage.x()) / oldScale,
-      y: (pointer.y - stage.y()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale
     }
 
     const direction = e.evt.deltaY > 0 ? -1 : 1
@@ -303,7 +363,7 @@ export default function CanvasEditor() {
     setScale(newScale)
     setStagePosition({
       x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale,
+      y: pointer.y - mousePointTo.y * newScale
     })
   }
 
@@ -340,7 +400,7 @@ export default function CanvasEditor() {
     const interval = setInterval(async () => {
       try {
         const res = await fetch(`/api/canvas/last_update?id=${canvas_id}`, {
-          credentials: 'include',
+          credentials: 'include'
         })
         const data = await res.json()
         if (res.ok && data.last_update && data.last_update !== 'Null') {
@@ -376,7 +436,7 @@ export default function CanvasEditor() {
         background: '#fff',
         display: 'flex',
         flexDirection: 'column',
-        overflow: 'hidden',
+        overflow: 'hidden'
       }}
     >
       {/* Toolbar */}
@@ -385,33 +445,33 @@ export default function CanvasEditor() {
           position: 'absolute',
           top: 10,
           left: 10,
-          zIndex: 1000,
+          zIndex: 1300,
           background: 'rgba(255,255,255,0.9)',
           borderRadius: 6,
           padding: 8,
           display: 'flex',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 8,
+          gap: 8
         }}
       >
         <label>
           Color:{' '}
           <input
-            type="color"
+            type='color'
             value={strokeColor}
-            onChange={(e) => setStrokeColor(e.target.value)}
+            onChange={e => setStrokeColor(e.target.value)}
             disabled={tool === 'eraser'}
           />
         </label>
         <label>
           Size:{' '}
           <input
-            type="range"
-            min="1"
-            max="30"
+            type='range'
+            min='1'
+            max='30'
             value={strokeWidth}
-            onChange={(e) => setStrokeWidth(parseInt(e.target.value, 10))}
+            onChange={e => setStrokeWidth(parseInt(e.target.value, 10))}
           />
         </label>
         <button
@@ -441,9 +501,15 @@ export default function CanvasEditor() {
         <button onClick={exportAsImage}>Export Image</button>
         <button onClick={exportAsPDF}>Export PDF</button>
         <button onClick={handleClear}>Clear Canvas</button>
-        <button onClick={() =>         navigate(
-          `/projects/project/${project_id}/pages/page/${page_id}/canvases`
-        )}>Close</button>
+        <button
+          onClick={() =>
+            navigate(
+              `/projects/project/${project_id}/pages/page/${page_id}/canvases`
+            )
+          }
+        >
+          Close
+        </button>
 
         {selectedImageIndex !== null && (
           <button
@@ -468,6 +534,9 @@ export default function CanvasEditor() {
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         draggable={tool === 'pan' || middleMouseDown}
         style={{ backgroundColor: '#fff', flexGrow: 1 }}
       >
@@ -479,8 +548,8 @@ export default function CanvasEditor() {
               stroke={line.stroke}
               strokeWidth={line.strokeWidth}
               tension={0.5}
-              lineCap="round"
-              lineJoin="round"
+              lineCap='round'
+              lineJoin='round'
               globalCompositeOperation={
                 line.stroke === '#f0f0f0' ? 'destination-out' : 'source-over'
               }
@@ -496,8 +565,8 @@ export default function CanvasEditor() {
               scaleY={img.scaleY || 1}
               isSelected={selectedImageIndex === i}
               onSelect={() => setSelectedImageIndex(i)}
-              onChange={(changes) => updateImagePosition(i, changes)}
-              ref={(el) => (imageRefs.current[i] = el)}
+              onChange={changes => updateImagePosition(i, changes)}
+              ref={el => (imageRefs.current[i] = el)}
             />
           ))}
           <Transformer
@@ -507,7 +576,7 @@ export default function CanvasEditor() {
               'top-left',
               'top-right',
               'bottom-left',
-              'bottom-right',
+              'bottom-right'
             ]}
           />
         </Layer>
