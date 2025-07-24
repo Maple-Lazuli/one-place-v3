@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import {
   Box,
   Typography,
+  TextField,
   Alert,
   CircularProgress,
   Button
@@ -27,7 +28,7 @@ export default function UpdateTranslation () {
   const lastSaveTimeRef = useRef(0)
   const lastCurrentPagePollRef = useRef(null)
   const textareaRef = useRef(null)
-  const updateTimeout = 1000 // 1 second delay for auto-save  
+  const updateTimeout = 1000 // 1 second delay for auto-save
   const autoSaveTimeout = 500 // 500ms delay for auto-save
 
   const { project_id, page_id, translation_id } = useParams()
@@ -40,8 +41,8 @@ export default function UpdateTranslation () {
       })
       const data = await res.json()
 
-      if (!res.ok) throw new Error(data.message || 'Failed to load Translation.')
-
+      if (!res.ok)
+        throw new Error(data.message || 'Failed to load Translation.')
 
       setContent(replaceImageHosts(data.message.content || ''))
       setLanguage(data.message.language || '')
@@ -81,14 +82,20 @@ export default function UpdateTranslation () {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/translations/last_update?id=${translation_id}`, {
-          credentials: 'include'
-        })
+        const res = await fetch(
+          `/api/translations/last_update?id=${translation_id}`,
+          {
+            credentials: 'include'
+          }
+        )
         const data = await res.json()
 
         if (res.ok && data.last_update && data.last_update !== 'Null') {
           const lastUpdate = Number(data.last_update) * 1000
-          if (lastUpdate > lastEditTimeRef.current && lastUpdate > lastSaveTimeRef.current) {
+          if (
+            lastUpdate > lastEditTimeRef.current &&
+            lastUpdate > lastSaveTimeRef.current
+          ) {
             fetchTranslation()
           }
         }
@@ -138,85 +145,84 @@ export default function UpdateTranslation () {
     return () => clearTimeout(timeout)
   }, [content, translation_id])
 
-useEffect(() => {
-  const handlePaste = async (e) => {
-    if (document.activeElement !== textareaRef.current) return
-    const items = e.clipboardData?.items
-    if (!items) return
+  useEffect(() => {
+    const handlePaste = async e => {
+      if (document.activeElement !== textareaRef.current) return
+      const items = e.clipboardData?.items
+      if (!items) return
 
-    for (const item of items) {
-      if (item.type.startsWith('image')) {
-        const file = item.getAsFile()
-        if (!file) return
+      for (const item of items) {
+        if (item.type.startsWith('image')) {
+          const file = item.getAsFile()
+          if (!file) return
 
-        const formData = new FormData()
-        formData.append('file', file)
+          const formData = new FormData()
+          formData.append('file', file)
 
-        try {
-          const response = await fetch('/api/images/image', {
-            method: 'POST',
-            body: formData,
-          })
-          const data = await response.json()
-          if (data && data.id) {
-            const markdown = `![image](http://${window.location.hostname}:3000/api/images/image?id=${data.id})`
-            await insertAtCursor(markdown)
+          try {
+            const response = await fetch('/api/images/image', {
+              method: 'POST',
+              body: formData
+            })
+            const data = await response.json()
+            if (data && data.id) {
+              const markdown = `![image](http://${window.location.hostname}:3000/api/images/image?id=${data.id})`
+              await insertAtCursor(markdown)
+            }
+          } catch (err) {
+            console.error('Image upload failed:', err)
           }
-        } catch (err) {
-          console.error('Image upload failed:', err)
         }
       }
     }
-  }
 
-  window.addEventListener('paste', handlePaste)
-  return () => window.removeEventListener('paste', handlePaste)
-}, [translation_id])
+    window.addEventListener('paste', handlePaste)
+    return () => window.removeEventListener('paste', handlePaste)
+  }, [translation_id])
 
-const insertAtCursor = async (markdown) => {
-  const textarea = textareaRef.current
-  if (!textarea) return
+  const insertAtCursor = async markdown => {
+    const textarea = textareaRef.current
+    if (!textarea) return
 
-  const currentValue = textarea.value
-  const start = textarea.selectionStart
-  const end = textarea.selectionEnd
+    const currentValue = textarea.value
+    const start = textarea.selectionStart
+    const end = textarea.selectionEnd
 
-  const before = currentValue.slice(0, start)
-  const after = currentValue.slice(end)
+    const before = currentValue.slice(0, start)
+    const after = currentValue.slice(end)
 
-  const spacedMarkdown = `\n\n${markdown}\n\n`
-  const newText = before + spacedMarkdown + after
+    const spacedMarkdown = `\n\n${markdown}\n\n`
+    const newText = before + spacedMarkdown + after
 
-  textarea.value = newText
-  setContent(newText)
+    textarea.value = newText
+    setContent(newText)
 
-  requestAnimationFrame(() => {
-    textarea.focus()
-    const cursor = start + spacedMarkdown.length
-    textarea.setSelectionRange(cursor, cursor)
-  })
-
-  lastEditTimeRef.current = Date.now()
-
-  try {
-    setSaving(true)
-    await fetch('/api/translations/update', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({
-        translation_id: Number(translation_id),
-        new_content: newText,
-      }),
+    requestAnimationFrame(() => {
+      textarea.focus()
+      const cursor = start + spacedMarkdown.length
+      textarea.setSelectionRange(cursor, cursor)
     })
-    lastSaveTimeRef.current = Date.now()
-  } catch (err) {
-    console.error('Auto-save after paste failed:', err)
-  } finally {
-    setSaving(false)
-  }
-}
 
+    lastEditTimeRef.current = Date.now()
+
+    try {
+      setSaving(true)
+      await fetch('/api/translations/update', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          translation_id: Number(translation_id),
+          new_content: newText
+        })
+      })
+      lastSaveTimeRef.current = Date.now()
+    } catch (err) {
+      console.error('Auto-save after paste failed:', err)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   const handleChange = e => {
     setContent(e.target.value)
@@ -225,7 +231,13 @@ const insertAtCursor = async (markdown) => {
 
   return (
     <Box sx={{ p: 1 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}
+      >
         <Typography variant='h5' component='h2' gutterBottom>
           Updating {language} Translation
         </Typography>
@@ -236,6 +248,15 @@ const insertAtCursor = async (markdown) => {
           {showCurrentPage ? 'Show Translation' : 'Show Current Page'}
         </Button>
       </Box>
+      <div
+        style={{
+          alignSelf: 'flex-start',
+          fontSize: '0.9rem',
+          color: saving ? '#1976d2' : '#4caf50'
+        }}
+      >
+        {saving ? 'Saving...' : '✓ Saved'}
+      </div>
 
       <Box
         sx={{
@@ -247,44 +268,38 @@ const insertAtCursor = async (markdown) => {
           flexGrow: 1
         }}
       >
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Box
+          sx={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+            height: '70vh',
+            overflow: 'auto'
+          }}
+        >
           {fetching && <CircularProgress />}
           {error && <Alert severity='error'>{error}</Alert>}
-
           {!fetching && (
-            <textarea
-              ref={textareaRef}
-              lang='auto'
+            <TextField
+              inputRef={textareaRef}
+              multiline
+              fullWidth
+              // rows={20}
               value={content}
               onChange={handleChange}
               placeholder='Type your translation...'
-              style={{
-                width: '100%',
-                height: '70vh',
+              variant='outlined'
+              sx={{
                 fontFamily: 'monospace',
                 fontSize: '1rem',
-                padding: '1rem',
-                margin: 0,
-                border: '1px solid #ccc',
-                borderRadius: '8px',
-                resize: 'vertical',
-                overflow: 'auto',
-                boxSizing: 'border-box',
-                whiteSpace: 'pre-wrap',
-                wordWrap: 'break-word'
+                '& .MuiInputBase-input': {
+                  whiteSpace: 'pre-wrap',
+                  wordWrap: 'break-word'
+                }
               }}
             />
           )}
-
-          <div
-            style={{
-              alignSelf: 'flex-end',
-              fontSize: '0.9rem',
-              color: saving ? '#1976d2' : '#4caf50'
-            }}
-          >
-            {saving ? 'Saving...' : '✓ Saved'}
-          </div>
         </Box>
 
         <Box
@@ -295,7 +310,7 @@ const insertAtCursor = async (markdown) => {
             borderRadius: 2,
             overflow: 'auto',
             whiteSpace: 'pre-wrap',
-            backgroundColor: '#fafafa',
+            // backgroundColor: '#fafafa',
             height: '70vh'
           }}
         >
