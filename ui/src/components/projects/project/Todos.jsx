@@ -3,6 +3,7 @@ import {
   Typography,
   Box,
   Button,
+  Divider,
   Grid
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -89,7 +90,7 @@ const in24Hours = now + 24 * 60 * 60
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>
-        Todos for Project {project_id}
+        Todos
       </Typography>
 
       <Typography variant="body1" sx={{ mb: 2 }}>
@@ -105,7 +106,7 @@ const in24Hours = now + 24 * 60 * 60
         Create New Todo
       </Button>
 
-      <Typography variant="h6" gutterBottom>Pending Todos</Typography>
+      <Divider sx={{ my: 2 }}>Pending Todos</Divider>
       <Grid container spacing={2}>
         {pendingTodo.map((todo) => (
           <Grid key={todo.TodoID}>
@@ -122,7 +123,7 @@ const in24Hours = now + 24 * 60 * 60
         ))}
       </Grid>
 
-      <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>Completed Todos</Typography>
+       <Divider sx={{ my: 2 }}>Completed Todos</Divider>
       <Grid container spacing={2}>
         {completedTodo.map((todo) => (
           <Grid key={todo.TodoID}>

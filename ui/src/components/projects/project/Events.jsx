@@ -3,6 +3,7 @@ import {
   Typography,
   Box,
   Button,
+  Divider,
   Grid
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -52,13 +53,11 @@ export default function Events() {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>
-        Events for Project {project_id}
+        Events
       </Typography>
-
       <Typography variant="body1" sx={{ mb: 2 }}>
         Track or create events associated with this project.
       </Typography>
-
       <Button
         component={Link}
         to={`/projects/project/${project_id}/events/create`}
@@ -68,7 +67,7 @@ export default function Events() {
         Create New Event
       </Button>
 
-      <Typography variant="h6" gutterBottom>Future Events</Typography>
+      <Divider sx={{ my: 2 }}>Future Events</Divider>
       <Grid container spacing={2}>
         {futureEvents.map((event) => (
           <Grid key={event.EventID}>
@@ -84,7 +83,7 @@ export default function Events() {
         ))}
       </Grid>
 
-      <Typography variant="h6" gutterBottom sx={{ mt: 4 }}>Past Events</Typography>
+      <Divider sx={{ my: 2 }}>Past Events</Divider>
       <Grid container spacing={2}>
         {pastEvents.map((event) => (
           <Grid key={event.EventID}>

@@ -55,9 +55,14 @@ const formattedDate = new Date(date * 1000).toLocaleString(undefined, {
         <Card
       sx={{
         maxWidth: 400,
+        minWidth:200,
         mb: 2,
         opacity: isPast ? 0.5 : 1,
-        border: borderColor ? `3px solid ${borderColor}` : undefined
+        border: borderColor
+          ? `3px solid ${borderColor}`
+          : '2px solid rgba(0, 0, 0, 0.2)',
+        borderRadius: 2,
+        boxShadow: 3
       }}
     >
       <CardContent>

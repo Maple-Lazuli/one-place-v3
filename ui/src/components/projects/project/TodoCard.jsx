@@ -9,20 +9,20 @@ import {
 } from '@mui/material'
 import { Link, useParams } from 'react-router-dom'
 
-export default function TodoCard({
+export default function TodoCard ({
   name,
   date,
   description,
   todo_id,
   onDelete,
-  onComplete, 
+  onComplete,
   isPast = false,
   completedTime,
   borderColor
 }) {
   const { project_id } = useParams()
 
-  const formatUnixTime = (unix) => {
+  const formatUnixTime = unix => {
     if (!unix) return 'undefined'
     try {
       return new Date(unix * 1000).toLocaleString(undefined, {
@@ -40,7 +40,7 @@ export default function TodoCard({
   const formattedDueDate = formatUnixTime(date)
   const formattedCompletedTime = formatUnixTime(completedTime)
 
-  const handleDelete = async (todo_id) => {
+  const handleDelete = async todo_id => {
     try {
       const res = await fetch('/api/todo/delete', {
         method: 'DELETE',
@@ -59,7 +59,7 @@ export default function TodoCard({
     }
   }
 
-  const handleComplete = async (todo_id) => {
+  const handleComplete = async todo_id => {
     try {
       const res = await fetch('/api/todo/complete', {
         method: 'PATCH',
@@ -82,9 +82,14 @@ export default function TodoCard({
     <Card
       sx={{
         maxWidth: 400,
+        minWidth:200,
         mb: 2,
         opacity: isPast ? 0.5 : 1,
-        border: borderColor ? `3px solid ${borderColor}` : undefined
+        border: borderColor
+          ? `3px solid ${borderColor}`
+          : '2px solid rgba(0, 0, 0, 0.2)',
+        borderRadius: 2,
+        boxShadow: 3
       }}
     >
       <CardContent>
