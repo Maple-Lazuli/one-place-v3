@@ -18,6 +18,12 @@ import remarkGfm from 'remark-gfm'
 
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import {
+  oneDark,
+  oneLight
+} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import Cookies from 'js-cookie'
 
 export default function CreateRecipeForm () {
   const [title, setTitle] = useState('')
@@ -26,10 +32,11 @@ export default function CreateRecipeForm () {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-
+  const [coloring, setColoring] = useState(
+    Cookies.get('preferences') === 'dark' ? oneDark : oneLight
+  )
   const { project_id, page_id } = useParams()
   const navigate = useNavigate()
-
   // Ref for the textarea input (to manage cursor position)
   const textareaRef = useRef(null)
 
@@ -229,30 +236,47 @@ export default function CreateRecipeForm () {
         <Typography variant='h6' gutterBottom>
           Preview
         </Typography>
-        <ReactMarkdown
-          children={content}
-          remarkPlugins={[remarkMath, remarkGfm]}
-          rehypePlugins={[rehypeKatex, rehypeHighlight]}
-          components={{
-            code ({ node, inline, className, children, ...props }) {
-              return (
-                <code
-                  style={{
-                    whiteSpace: 'pre-wrap',
-                    wordBreak: 'break-word',
-                    overflowWrap: 'break-word',
-                    width: '100%',
-                    display: 'inline-block'
-                  }}
-                  className={className}
-                  {...props}
-                >
-                  {children}
-                </code>
-              )
-            }
-          }}
-        />
+              <ReactMarkdown
+                children={content}
+                remarkPlugins={[remarkMath, remarkGfm]}
+                rehypePlugins={[rehypeKatex]}
+                components={{
+                  code ({ node, inline, className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || '')
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        language={match[1]}
+                        showLineNumbers
+                        style={coloring}
+                        PreTag='div'
+                        customStyle={{
+                          // background: 'transparent',
+                          margin: 0,
+                          padding: 0,
+                          maxheight: 300,
+                          overflowX: 'auto'
+                        }}
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, '')}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code
+                        className={className}
+                        style={{
+                          backgroundColor: '#eee',
+                          padding: '0.2em 0.4em',
+                          borderRadius: '4px',
+                          fontSize: '0.95em'
+                        }}
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    )
+                  }
+                }}
+              />
       </Box>
     </Box>
   )
