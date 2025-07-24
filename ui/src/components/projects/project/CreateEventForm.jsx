@@ -19,8 +19,11 @@ export default function CreateEventForm () {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const eventNameLimit = 64
+  const eventDescriptionLimit = 255
+
   const { project_id } = useParams()
-    const navigate = useNavigate()
+  const navigate = useNavigate()
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -101,6 +104,9 @@ export default function CreateEventForm () {
         value={title}
         onChange={e => setTitle(e.target.value)}
         required
+        inputProps={{ maxLength: eventNameLimit }}
+        helperText={`${title.length}/${eventNameLimit} characters`}
+        error={title.length > eventNameLimit}
       />
 
       <TextField
@@ -126,6 +132,9 @@ export default function CreateEventForm () {
         rows={4}
         value={description}
         onChange={e => setDescription(e.target.value)}
+        inputProps={{ maxLength: eventDescriptionLimit }}
+        helperText={`${description.length}/${eventDescriptionLimit} characters`}
+        error={description.length > eventDescriptionLimit}
       />
 
       <Button variant='contained' type='submit' disabled={loading}>

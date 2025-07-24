@@ -9,7 +9,7 @@ import {
   CircularProgress
 } from '@mui/material'
 
-export default function UpdateEventForm() {
+export default function UpdateEventForm () {
   const { project_id, event_id } = useParams()
   const navigate = useNavigate()
 
@@ -22,14 +22,17 @@ export default function UpdateEventForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const eventNameLimit = 64
+  const eventDescriptionLimit = 255
+
   // Fetch event details on mount
   useEffect(() => {
-    async function fetchEvent() {
+    async function fetchEvent () {
       setLoading(true)
       setError('')
       try {
         const res = await fetch(`/api/events/get?id=${event_id}`, {
-          credentials: 'include',
+          credentials: 'include'
         })
         const data = await res.json()
 
@@ -54,7 +57,7 @@ export default function UpdateEventForm() {
     fetchEvent()
   }, [event_id])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault()
     setError('')
     setSuccess('')
@@ -73,7 +76,7 @@ export default function UpdateEventForm() {
         event_id,
         new_name: title,
         new_description: description,
-        new_time: timestamp,
+        new_time: timestamp
       }
 
       if (duration) {
@@ -84,7 +87,7 @@ export default function UpdateEventForm() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: 'include'
       })
 
       const data = await res.json()
@@ -102,11 +105,16 @@ export default function UpdateEventForm() {
     }
   }
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>
+  if (loading)
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    )
 
   return (
     <Box
-      component="form"
+      component='form'
       onSubmit={handleSubmit}
       sx={{
         maxWidth: 400,
@@ -114,49 +122,55 @@ export default function UpdateEventForm() {
         mt: 4,
         display: 'flex',
         flexDirection: 'column',
-        gap: 2,
+        gap: 2
       }}
     >
-      <Typography variant="h5" component="h2" gutterBottom>
+      <Typography variant='h5' component='h2' gutterBottom>
         Update Event
       </Typography>
 
-      {error && <Alert severity="error">{error}</Alert>}
-      {success && <Alert severity="success">{success}</Alert>}
+      {error && <Alert severity='error'>{error}</Alert>}
+      {success && <Alert severity='success'>{success}</Alert>}
 
       <TextField
-        label="Event Title"
+        label='Event Title'
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={e => setTitle(e.target.value)}
         required
+        inputProps={{ maxLength: eventNameLimit }}
+        helperText={`${title.length}/${eventNameLimit} characters`}
+        error={title.length > eventNameLimit}
       />
 
       <TextField
-        label="Date & Time"
-        type="datetime-local"
+        label='Date & Time'
+        type='datetime-local'
         value={dateTime}
-        onChange={(e) => setDateTime(e.target.value)}
+        onChange={e => setDateTime(e.target.value)}
         InputLabelProps={{ shrink: true }}
         required
       />
 
       <TextField
-        label="Duration (minutes)"
-        type="number"
+        label='Duration (minutes)'
+        type='number'
         inputProps={{ min: 0 }}
         value={duration}
-        onChange={(e) => setDuration(e.target.value)}
+        onChange={e => setDuration(e.target.value)}
       />
 
       <TextField
-        label="Description"
+        label='Description'
         multiline
         rows={4}
         value={description}
-        onChange={(e) => setDescription(e.target.value)}
+        onChange={e => setDescription(e.target.value)}
+        inputProps={{ maxLength: eventDescriptionLimit }}
+        helperText={`${description.length}/${eventDescriptionLimit} characters`}
+        error={description.length > eventDescriptionLimit}
       />
 
-      <Button variant="contained" type="submit" disabled={submitLoading}>
+      <Button variant='contained' type='submit' disabled={submitLoading}>
         {submitLoading ? <CircularProgress size={24} /> : 'Update Event'}
       </Button>
     </Box>
