@@ -74,6 +74,7 @@ export default function SnippetCard ({
           </Button>
           <Button
             variant='outlined'
+            color='warning'
             component={Link}
             to={`/projects/project/${project_id}/pages/page/${page_id}/snippets/update/${code_id}`}
           >

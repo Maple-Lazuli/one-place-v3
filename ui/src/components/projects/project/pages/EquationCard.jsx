@@ -71,6 +71,7 @@ export default function EquationCard ({
           <Button
             variant='outlined'
             component={Link}
+            color='warning'
             to={`/projects/project/${project_id}/pages/page/${page_id}/equations/update/${equation_id}`}
           >
             Edit

@@ -79,6 +79,7 @@ export default function CanvasCard ({
           <Button
             variant='outlined'
             component={Link}
+            color='warning'
             to={`/projects/project/${project_id}/pages/page/${page_id}/canvases/update_fields/${canvas_id}`}
           >
             Fix

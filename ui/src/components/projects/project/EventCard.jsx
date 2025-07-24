@@ -82,6 +82,7 @@ const formattedDate = new Date(date * 1000).toLocaleString(undefined, {
           <Button
             variant='outlined'
             component={Link}
+            color='warning'
             to={`/projects/project/${project_id}/events/update/${event_id}`}
           >
             Edit

@@ -158,7 +158,7 @@ export default function ProjectOverview () {
               <EventCard
                 name={event.name}
                 description={event.description}
-                time={event.eventTime}
+                date={event.eventTime}
                 event_id={event.EventID}
               />
             </Grid>

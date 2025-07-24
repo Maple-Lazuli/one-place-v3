@@ -70,6 +70,7 @@ export default function RecipeCard ({
           </Button>
           <Button
             variant='outlined'
+            color='warning'
             component={Link}
             to={`/projects/project/${project_id}/pages/page/${page_id}/recipes/update/${recipe_id}`}
           >
