@@ -158,7 +158,7 @@ export default function CreateTodoForm () {
         value={intervalDays}
         onChange={e => setIntervalDays(e.target.value)}
         disabled={!recurring}
-        inputProps={{ min: 1 }}
+        inputProps={{ min: 0 }}
       />
 
       <Button variant='contained' type='submit' disabled={loading}>

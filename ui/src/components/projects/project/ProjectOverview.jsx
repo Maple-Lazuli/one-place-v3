@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { useParams, Link as RouterLink } from 'react-router-dom'
 import {
+  Snackbar,
+  Alert,
   Typography,
   Box,
   Grid,
@@ -20,6 +22,7 @@ export default function ProjectOverview () {
   const [todos, setTodos] = useState([])
   const [events, setEvents] = useState([])
   const [loading, setLoading] = useState(true)
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
 
   useEffect(() => {
     async function fetchAllData () {
@@ -97,6 +100,18 @@ export default function ProjectOverview () {
     setTodos(prev => prev.filter(todo => todo.TodoID !== deletedId))
   }
 
+    const now = Math.floor(Date.now() / 1000)
+  const in24Hours = now + 24 * 60 * 60
+
+    const getBorderColor = dueTime => {
+    if (!dueTime) return undefined
+
+    if (dueTime < now) return 'red'
+    if (dueTime >= now && dueTime <= in24Hours) return 'orange'
+
+    return undefined
+  }
+
   const handleComplete = async completedTodoId => {
     const now = Math.floor(Date.now() / 1000)
     const in7Days = now + 7 * 24 * 60 * 60
@@ -134,6 +149,7 @@ export default function ProjectOverview () {
             todo => !todo.completed && todo.dueTime && todo.dueTime <= in7Days
           )
           setTodos(refreshed)
+          setSnackbarOpen(true)
         }
       } catch (err) {
         console.error('Failed to refetch todos after recurring complete:', err)
@@ -142,7 +158,7 @@ export default function ProjectOverview () {
   }
 
   return (
-    <Box sx={{ p: 2, height: '100%', overflowY:'auto' }}>
+    <Box sx={{ p: 2, height: '100%', overflowY: 'auto' }}>
       <Typography variant='h5' gutterBottom>
         Overview
       </Typography>
@@ -191,7 +207,7 @@ export default function ProjectOverview () {
                 recurring={todo.recurring}
                 interval={todo.interval}
                 todo_id={todo.TodoID}
-                // borderColor='orange'
+                borderColor={getBorderColor(todo.dueTime)}
               />
             </Grid>
           ))}
@@ -217,6 +233,20 @@ export default function ProjectOverview () {
           ))}
         </Grid>
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity='success'
+          sx={{ width: '100%' }}
+        >
+          New recurring todo created!
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }

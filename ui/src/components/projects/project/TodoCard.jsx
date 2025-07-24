@@ -85,6 +85,7 @@ export default function TodoCard ({
       sx={{
         maxWidth: 400,
         minWidth: 200,
+        minHeight: 200,
         mb: 2,
         opacity: isPast ? 0.5 : 1,
         border: borderColor

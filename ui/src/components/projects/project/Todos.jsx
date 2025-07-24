@@ -1,11 +1,21 @@
 import { useParams, Link } from 'react-router-dom'
-import { Typography, Box, Button, Divider, Grid } from '@mui/material'
+import {
+  Typography,
+  Box,
+  Button,
+  Divider,
+  Grid,
+  Snackbar,
+  Alert
+} from '@mui/material'
+
 import { useEffect, useState } from 'react'
 import TodoCard from './TodoCard'
 
 export default function Todos () {
   const { project_id } = useParams()
   const [todos, setTodos] = useState([])
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
 
   useEffect(() => {
     async function fetchTodos () {
@@ -56,6 +66,7 @@ export default function Todos () {
         const data = await res.json()
         if (data.status === 'success') {
           setTodos(data.message)
+          setSnackbarOpen(true)
         }
       } catch (err) {
         console.error('Failed to refetch todos after recurring complete:', err)
@@ -92,7 +103,7 @@ export default function Todos () {
     })
 
   return (
-    <Box sx={{ p: 2, height: '100%', overflowY:'auto' }}>
+    <Box sx={{ p: 2, height: '100%', overflowY: 'auto' }}>
       <Typography variant='h5' gutterBottom>
         Todos
       </Typography>
@@ -147,6 +158,20 @@ export default function Todos () {
           </Grid>
         ))}
       </Grid>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity='success'
+          sx={{ width: '100%' }}
+        >
+          New recurring todo created!
+        </Alert>
+      </Snackbar>
     </Box>
   )
 }
