@@ -10,6 +10,9 @@ import {
 } from '@mui/material'
 
 export default function UploadFileForm () {
+  const maxNameCharLimit = 64
+  const maxDescriptionLimit = 255
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [file, setFile] = useState(null)
@@ -56,9 +59,7 @@ export default function UploadFileForm () {
 
       setSuccess(data.message || 'File uploaded successfully!')
       setTimeout(() => {
-        navigate(
-          `/projects/project/${project_id}/pages/page/${page_id}/files`
-        )
+        navigate(`/projects/project/${project_id}/pages/page/${page_id}/files`)
       }, 1000)
     } catch (err) {
       setError(err.message)
@@ -101,6 +102,9 @@ export default function UploadFileForm () {
           value={title}
           onChange={e => setTitle(e.target.value)}
           required
+          inputProps={{ maxLength: maxNameCharLimit }}
+          helperText={`${title.length}/${maxNameCharLimit} characters`}
+          error={title.length > maxNameCharLimit}
         />
 
         <TextField
@@ -110,6 +114,9 @@ export default function UploadFileForm () {
           value={description}
           onChange={e => setDescription(e.target.value)}
           required
+          inputProps={{ maxLength: maxDescriptionLimit }}
+          helperText={`${description.length}/${maxDescriptionLimit} characters`}
+          error={description.length > maxDescriptionLimit}
         />
 
         <Button variant='outlined' component='label'>

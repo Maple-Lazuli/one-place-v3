@@ -15,6 +15,8 @@ import 'katex/dist/katex.min.css'
 import { replaceImageHosts } from '../../../../utils/scripts.js'
 
 export default function UpdateTranslation () {
+
+
   const [content, setContent] = useState('')
   const [language, setLanguage] = useState('')
   const [error, setError] = useState('')

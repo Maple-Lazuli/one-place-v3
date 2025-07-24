@@ -10,8 +10,9 @@ import {
   CircularProgress
 } from '@mui/material'
 
-
 export default function StartTranslationForm () {
+  const maxLanguageCharLimit = 64
+
   const [language, setLanguage] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
@@ -30,7 +31,7 @@ export default function StartTranslationForm () {
     try {
       const payload = {
         page_id: Number(page_id),
-        language: language,
+        language: language
       }
 
       const res = await fetch('/api/translations/create', {
@@ -98,6 +99,9 @@ export default function StartTranslationForm () {
           value={language}
           onChange={e => setLanguage(e.target.value)}
           required
+          inputProps={{ maxLength: maxLanguageCharLimit }}
+          helperText={`${language.length}/${maxLanguageCharLimit} characters`}
+          error={language.length > maxLanguageCharLimit}
         />
 
         <Button variant='contained' type='submit' disabled={loading}>
