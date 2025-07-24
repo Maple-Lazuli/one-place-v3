@@ -23,7 +23,8 @@ export default function CreateProject() {
   const [tagError, setTagError] = useState("")
 
   const navigate = useNavigate()
-  const maxChars = 250
+  const maxNameChars = 64
+  const maxDescriptionChars = 255
 
   useEffect(() => {
     fetchTags()
@@ -43,7 +44,9 @@ export default function CreateProject() {
 
   const handleTagChange = (tagId) => {
     setSelectedTags((prev) =>
-      prev.includes(tagId) ? prev.filter((id) => id !== tagId) : [...prev, tagId]
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId]
     )
   }
 
@@ -63,7 +66,6 @@ export default function CreateProject() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tag: newTagName }),
       })
-
       const data = await res.json()
       if (data.status === "success") {
         setNewTagName("")
@@ -85,8 +87,13 @@ export default function CreateProject() {
       return
     }
 
-    if (description.length > maxChars) {
-      setError(`Description cannot exceed ${maxChars} characters`)
+    if (name.length > maxNameChars) {
+      setError(`Project name cannot exceed ${maxNameChars} characters`)
+      return
+    }
+
+    if (description.length > maxDescriptionChars) {
+      setError(`Description cannot exceed ${maxDescriptionChars} characters`)
       return
     }
 
@@ -95,13 +102,21 @@ export default function CreateProject() {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ project_name: name, project_description: description }),
+        body: JSON.stringify({
+          project_name: name,
+          project_description: description,
+        }),
       })
 
       const data = await response.json()
 
       if (data.status === "success") {
-        const projectId = data.project_id || data.message?.project_id
+        const projectId = data.id
+
+        if (!projectId) {
+          setError("Project created but no project ID returned.")
+          return
+        }
 
         for (const tagId of selectedTags) {
           await fetch("/api/tags/assign", {
@@ -122,7 +137,7 @@ export default function CreateProject() {
   }
 
   return (
-    <Container sx={{ maxWidth: 600, mx: "auto", mt: 4 }}  >
+    <Container sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
       <Typography variant="h4" gutterBottom>Create New Project</Typography>
 
       <form onSubmit={handleSubmitProject}>
@@ -135,6 +150,9 @@ export default function CreateProject() {
           margin="normal"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          inputProps={{ maxLength: maxNameChars }}
+          helperText={`${name.length}/${maxNameChars} characters`}
+          error={name.length > maxNameChars}
         />
 
         <TextField
@@ -145,9 +163,9 @@ export default function CreateProject() {
           margin="normal"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          inputProps={{ maxLength: maxChars }}
-          helperText={`${description.length}/${maxChars} characters`}
-          error={description.length > maxChars}
+          inputProps={{ maxLength: maxDescriptionChars }}
+          helperText={`${description.length}/${maxDescriptionChars} characters`}
+          error={description.length > maxDescriptionChars}
         />
 
         <Box sx={{ mt: 2 }}>
@@ -186,7 +204,9 @@ export default function CreateProject() {
           />
           <Button type="submit" variant="outlined">Create Tag</Button>
         </Box>
-        {tagError && <Typography color="error" sx={{ mt: 1 }}>{tagError}</Typography>}
+        {tagError && (
+          <Typography color="error" sx={{ mt: 1 }}>{tagError}</Typography>
+        )}
       </form>
     </Container>
   )
