@@ -292,12 +292,14 @@ export default function PageEditor () {
                     return !inline && match ? (
                       <SyntaxHighlighter
                         language={match[1]}
+                        showLineNumbers
                         style={coloring}
                         PreTag='div'
                         customStyle={{
                           // background: 'transparent',
                           margin: 0,
                           padding: 0,
+                          maxheight: 300,
                           overflowX: 'auto'
                         }}
                         {...props}

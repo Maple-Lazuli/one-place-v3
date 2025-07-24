@@ -257,10 +257,12 @@ const fetchLastReviewed = async () => {
                         language={match[1]}
                         style={coloring}
                         PreTag='div'
+                        showLineNumbers
                         customStyle={{
                           // background: 'transparent',
                           margin: 0,
                           padding: 0,
+                          maxheight: 300,
                           overflowX: 'auto'
                         }}
                         {...props}
