@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { TextField } from '@mui/material'
+import { TextField, Button, Box } from '@mui/material'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -196,35 +196,54 @@ export default function PageEditor () {
   }
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem',
-        height: '100%',
-        boxSizing: 'border-box',
-        padding: '1rem',
-        overflow: 'hidden'
-      }}
-    >
-      <button
-        onClick={() => setShowPreview(prev => !prev)}
-        style={{
-          marginBottom: '0.5rem',
-          alignSelf: 'flex-start',
-          padding: '0.5rem 1rem',
-          cursor: 'pointer'
+  <Box
+    ref={containerRef}
+    sx={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '1rem',
+      height: '84vh',
+      boxSizing: 'border-box',
+      p: 2,
+      overflow: 'hidden'
+    }}
+  >
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          width: '100%',
+          mb: 2
         }}
       >
-        {showPreview ? 'Hide Preview' : 'Show Preview'}
-      </button>
+        <Button
+          variant='outlined'
+          color='primary'
+          size='medium'
+          onClick={() => setShowPreview(prev => !prev)}
+          sx={{
+            textTransform: 'none' // optional: keeps normal casing
+          }}
+        >
+          {showPreview ? 'Hide Preview' : 'Show Preview'}
+        </Button>
 
-      <div
-        style={{
+        <Box
+          sx={{
+            fontSize: '0.9rem',
+            color: saving ? '#1976d2' : '#4caf50'
+          }}
+        >
+          {saving ? 'Saving...' : '✓ Saved'}
+        </Box>
+      </Box>
+
+      <Box
+        sx={{
           display: 'flex',
-          gap: '1rem',
-          height: showPreview ? 'calc(100% - 2rem)' : '100%',
+          gap: 2,
+          // height: '100%',
           flexGrow: 1,
           overflow: 'hidden',
           boxSizing: 'border-box'
@@ -326,17 +345,7 @@ export default function PageEditor () {
             </div>
           </div>
         )}
-      </div>
-
-      <div
-        style={{
-          alignSelf: 'flex-end',
-          fontSize: '0.9rem',
-          color: saving ? '#1976d2' : '#4caf50'
-        }}
-      >
-        {saving ? 'Saving...' : '✓ Saved'}
-      </div>
-    </div>
+      </Box>
+    </Box>
   )
 }
