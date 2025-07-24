@@ -18,6 +18,8 @@ export default function TodoCard ({
   onComplete,
   isPast = false,
   completedTime,
+  recurring = false,
+  interval = 0,
   borderColor
 }) {
   const { project_id } = useParams()
@@ -82,7 +84,7 @@ export default function TodoCard ({
     <Card
       sx={{
         maxWidth: 400,
-        minWidth:200,
+        minWidth: 200,
         mb: 2,
         opacity: isPast ? 0.5 : 1,
         border: borderColor
@@ -104,9 +106,14 @@ export default function TodoCard ({
             Completed On: {formattedCompletedTime}
           </Typography>
         )}
-        <Box sx={{ whiteSpace: 'pre-line', mb: 2 }}>
+        <Box sx={{ whiteSpace: 'pre-line', mb: 1 }}>
           <Typography variant='body2' color='text.primary'>
             {description}
+          </Typography>
+        </Box>
+        <Box sx={{ whiteSpace: 'pre-line', mb: 1 }}>
+          <Typography variant='caption' color='text.primary'>
+            {recurring? `(recurring: ${interval} day${interval === 1? "" : 's'})`: undefined}
           </Typography>
         </Box>
 

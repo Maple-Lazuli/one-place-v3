@@ -1,23 +1,20 @@
 import { useParams, Link } from 'react-router-dom'
-import {
-  Typography,
-  Box,
-  Button,
-  Divider,
-  Grid
-} from '@mui/material'
+import { Typography, Box, Button, Divider, Grid } from '@mui/material'
 import { useEffect, useState } from 'react'
 import TodoCard from './TodoCard'
 
-export default function Todos() {
+export default function Todos () {
   const { project_id } = useParams()
   const [todos, setTodos] = useState([])
 
   useEffect(() => {
-    async function fetchTodos() {
-      const res = await fetch(`/api/todo/get_project_todo?project_id=${project_id}`, {
-        credentials: 'include',
-      })
+    async function fetchTodos () {
+      const res = await fetch(
+        `/api/todo/get_project_todo?project_id=${project_id}`,
+        {
+          credentials: 'include'
+        }
+      )
       const data = await res.json()
       if (data.status === 'success') {
         setTodos(data.message)
@@ -27,52 +24,59 @@ export default function Todos() {
     fetchTodos()
   }, [project_id])
 
-  const handleDelete = (deletedId) => {
-    setTodos((prev) => prev.filter((todo) => todo.TodoID !== deletedId))
+  const handleDelete = deletedId => {
+    setTodos(prev => prev.filter(todo => todo.TodoID !== deletedId))
   }
 
-const handleComplete = async (completedTodoId) => {
-  const completedTodo = todos.find((todo) => todo.TodoID === completedTodoId)
+  const handleComplete = async completedTodoId => {
+    const completedTodo = todos.find(todo => todo.TodoID === completedTodoId)
 
-  // Mark as completed locally
-  setTodos((prevTodos) =>
-    prevTodos.map((todo) =>
-      todo.TodoID === completedTodoId
-        ? { ...todo, completed: true, timeCompleted: Math.floor(Date.now() / 1000) }
-        : todo
+    // Mark as completed locally
+    setTodos(prevTodos =>
+      prevTodos.map(todo =>
+        todo.TodoID === completedTodoId
+          ? {
+              ...todo,
+              completed: true,
+              timeCompleted: Math.floor(Date.now() / 1000)
+            }
+          : todo
+      )
     )
-  )
 
-  // If the todo is recurring, refetch from server
-  if (completedTodo?.recurring) {
-    try {
-      const res = await fetch(`/api/todo/get_project_todo?project_id=${project_id}`, {
-        credentials: 'include',
-      })
-      const data = await res.json()
-      if (data.status === 'success') {
-        setTodos(data.message)
+    // If the todo is recurring, refetch from server
+    if (completedTodo?.recurring) {
+      try {
+        const res = await fetch(
+          `/api/todo/get_project_todo?project_id=${project_id}`,
+          {
+            credentials: 'include'
+          }
+        )
+        const data = await res.json()
+        if (data.status === 'success') {
+          setTodos(data.message)
+        }
+      } catch (err) {
+        console.error('Failed to refetch todos after recurring complete:', err)
       }
-    } catch (err) {
-      console.error('Failed to refetch todos after recurring complete:', err)
     }
   }
-}
 
-const now = Math.floor(Date.now() / 1000)
-const in24Hours = now + 24 * 60 * 60
+  const now = Math.floor(Date.now() / 1000)
+  const in24Hours = now + 24 * 60 * 60
 
-  const getBorderColor = (dueTime) => {
-  if (!dueTime) return undefined 
+  const getBorderColor = dueTime => {
+    if (!dueTime) return undefined
 
-  if (dueTime < now) return 'red' 
-  if (dueTime >= now && dueTime <= in24Hours) return 'orange' 
+    if (dueTime < now) return 'red'
+    if (dueTime >= now && dueTime <= in24Hours) return 'orange'
 
-  return undefined 
-}
+    return undefined
+  }
 
   const pendingTodo = [...todos]
-    .filter((t) => !t.completed)
+    .filter(t => !t.completed)
     .sort((a, b) => {
       if (!a.dueTime) return 1
       if (!b.dueTime) return -1
@@ -80,7 +84,7 @@ const in24Hours = now + 24 * 60 * 60
     })
 
   const completedTodo = [...todos]
-    .filter((t) => t.completed)
+    .filter(t => t.completed)
     .sort((a, b) => {
       if (!a.timeCompleted) return 1
       if (!b.timeCompleted) return -1
@@ -89,18 +93,18 @@ const in24Hours = now + 24 * 60 * 60
 
   return (
     <Box sx={{ p: 2 }}>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant='h5' gutterBottom>
         Todos
       </Typography>
 
-      <Typography variant="body1" sx={{ mb: 2 }}>
+      <Typography variant='body1' sx={{ mb: 2 }}>
         Track or create todos associated with this project.
       </Typography>
 
       <Button
         component={Link}
         to={`/projects/project/${project_id}/todos/create`}
-        variant="contained"
+        variant='contained'
         sx={{ mb: 3 }}
       >
         Create New Todo
@@ -108,7 +112,7 @@ const in24Hours = now + 24 * 60 * 60
 
       <Divider sx={{ my: 2 }}>Pending Todos</Divider>
       <Grid container spacing={2}>
-        {pendingTodo.map((todo) => (
+        {pendingTodo.map(todo => (
           <Grid key={todo.TodoID}>
             <TodoCard
               name={todo.name}
@@ -116,16 +120,18 @@ const in24Hours = now + 24 * 60 * 60
               description={todo.description}
               todo_id={todo.TodoID}
               onDelete={handleDelete}
-              onComplete={handleComplete} 
-              borderColor={getBorderColor(todo.dueTime)} 
+              onComplete={handleComplete}
+              recurring={todo.recurring}
+              interval={todo.interval}
+              borderColor={getBorderColor(todo.dueTime)}
             />
           </Grid>
         ))}
       </Grid>
 
-       <Divider sx={{ my: 2 }}>Completed Todos</Divider>
+      <Divider sx={{ my: 2 }}>Completed Todos</Divider>
       <Grid container spacing={2}>
-        {completedTodo.map((todo) => (
+        {completedTodo.map(todo => (
           <Grid key={todo.TodoID}>
             <TodoCard
               name={todo.name}
@@ -134,6 +140,8 @@ const in24Hours = now + 24 * 60 * 60
               todo_id={todo.TodoID}
               onDelete={handleDelete}
               isPast={true}
+              recurring={todo.recurring}
+              interval={todo.interval}
               completedTime={todo.timeCompleted}
             />
           </Grid>

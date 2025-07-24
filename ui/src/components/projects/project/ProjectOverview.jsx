@@ -93,6 +93,54 @@ export default function ProjectOverview () {
     )
   }
 
+  const handleDelete = deletedId => {
+    setTodos(prev => prev.filter(todo => todo.TodoID !== deletedId))
+  }
+
+  const handleComplete = async completedTodoId => {
+    const now = Math.floor(Date.now() / 1000)
+    const in7Days = now + 7 * 24 * 60 * 60
+
+    const completedTodo = todos.find(todo => todo.TodoID === completedTodoId)
+
+    // Mark as completed locally
+    setTodos(prevTodos =>
+      prevTodos
+        .map(todo =>
+          todo.TodoID === completedTodoId
+            ? {
+                ...todo,
+                completed: true,
+                timeCompleted: now
+              }
+            : todo
+        )
+        // Filter to keep only those still incomplete or newly valid recurring ones
+        .filter(
+          todo => !todo.completed && todo.dueTime && todo.dueTime <= in7Days
+        )
+    )
+
+    // If recurring, refetch from server to include the next recurrence
+    if (completedTodo?.recurring) {
+      try {
+        const res = await fetch(
+          `/api/todo/get_project_todo?project_id=${project_id}`,
+          { credentials: 'include' }
+        )
+        const data = await res.json()
+        if (data.status === 'success') {
+          const refreshed = data.message.filter(
+            todo => !todo.completed && todo.dueTime && todo.dueTime <= in7Days
+          )
+          setTodos(refreshed)
+        }
+      } catch (err) {
+        console.error('Failed to refetch todos after recurring complete:', err)
+      }
+    }
+  }
+
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant='h5' gutterBottom>
@@ -138,6 +186,10 @@ export default function ProjectOverview () {
                 name={todo.name}
                 date={todo.dueTime}
                 description={todo.description}
+                onComplete={handleComplete}
+                onDelete={handleDelete}
+                recurring={todo.recurring}
+                interval={todo.interval}
                 todo_id={todo.TodoID}
                 borderColor='orange'
               />
