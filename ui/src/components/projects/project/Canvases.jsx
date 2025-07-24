@@ -36,7 +36,7 @@ export default function Canvases () {
     .sort((a, b) => b.lastEditTime - a.lastEditTime)
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, height: '100%', overflowY:'auto' }}>
       <Typography variant="h5" gutterBottom>
       All Project Canvases
       </Typography>

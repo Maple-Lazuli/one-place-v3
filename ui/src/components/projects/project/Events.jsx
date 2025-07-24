@@ -51,7 +51,7 @@ export default function Events() {
     .sort((a, b) => b.eventTime - a.eventTime)
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, height: '100%', overflowY:'auto' }}>
       <Typography variant="h5" gutterBottom>
         Events
       </Typography>

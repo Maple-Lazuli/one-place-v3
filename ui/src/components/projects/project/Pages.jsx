@@ -26,7 +26,7 @@ export default function Pages () {
   }
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, height: '100%', overflowY:'auto' }}>
       <Button
         component={Link}
         to={`/projects/project/${project_id}/pages/create`}

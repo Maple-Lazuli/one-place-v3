@@ -26,7 +26,7 @@ export default function Attachments () {
   const sortedFiles = [...files].sort((a, b) => b.upload_date - a.upload_date)
 
   return (
-    <Box sx={{ p: 2 }}>
+    <Box sx={{ p: 2, height: '100%', overflowY:'auto' }}>
       <Typography variant='h5' gutterBottom>
         All Project Files
       </Typography>
