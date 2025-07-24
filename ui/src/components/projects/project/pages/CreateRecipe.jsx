@@ -67,7 +67,7 @@ export default function CreateRecipeForm () {
             })
             const data = await response.json()
             if (data && data.id) {
-              const markdown = `![image](http://${window.location.hostname}:3000/api/images/image?id=${data.id})`
+              const markdown = `![image](http://${window.location.host}/api/images/image?id=${data.id})`
               insertAtCursor(markdown)
             }
           } catch (err) {

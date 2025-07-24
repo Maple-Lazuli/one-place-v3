@@ -22,7 +22,7 @@ def create_image(image_handle, dst_address, dst_ip, cookie):
     else:
         print("Uploaded Image")
     image_id = res.json()['id']
-    return f"http://{dst_ip}:3000/api/images/image?id={image_id}"
+    return f"http://{dst_ip}/api/images/image?id={image_id}"
 
 
 def process_markdown_images(markdown_text, source_file, dst_address, dst_ip, cookie):
