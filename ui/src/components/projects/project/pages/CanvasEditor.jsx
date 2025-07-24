@@ -82,6 +82,7 @@ export default function CanvasEditor () {
   const lastPanPos = useRef(null)
   const lastEditTimeRef = useRef(Date.now())
   const lastSaveTimeRef = useRef(0)
+  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
 
   // Upload image to backend and get image ID
   async function uploadImage (blob) {
@@ -106,6 +107,7 @@ export default function CanvasEditor () {
           const parsed = JSON.parse(data.message.content)
           setLines(parsed.lines || [])
           setImages(parsed.images || [])
+          setBackgroundColor(parsed.backgroundColor || '#ffffff')
         }
       } catch (e) {
         console.error('Failed to load canvas:', e)
@@ -119,7 +121,7 @@ export default function CanvasEditor () {
     try {
       const payload = {
         canvas_id: Number(canvas_id),
-        new_content: JSON.stringify({ lines, images })
+        new_content: JSON.stringify({ lines, images, backgroundColor })
       }
       await fetch(`/api/canvas/content`, {
         method: 'PUT',
@@ -193,62 +195,61 @@ export default function CanvasEditor () {
     }
   }, [selectedImageIndex])
 
-const handleTouchStart = (e) => {
-  const stage = stageRef.current
-  const touch = e.evt.touches[0]
-  const pos = stage.getPointerPosition()
-  lastPanPos.current = pos
-
-  if (tool === 'pan') return
-
-  setDrawing(true)
-  setLines((prev) => [
-    ...prev,
-    {
-      points: [pos.x, pos.y],
-      stroke: tool === 'eraser' ? '#f0f0f0' : strokeColor,
-      strokeWidth,
-    },
-  ])
-  setSelectedImageIndex(null)
-}
-
-const handleTouchMove = (e) => {
-  const stage = stageRef.current
-  const pos = stage.getPointerPosition()
-
-  if (!pos) return
-
-  if (tool === 'pan') {
-    const dx = pos.x - lastPanPos.current.x
-    const dy = pos.y - lastPanPos.current.y
-    setStagePosition((prev) => ({ x: prev.x + dx, y: prev.y + dy }))
+  const handleTouchStart = e => {
+    const stage = stageRef.current
+    const touch = e.evt.touches[0]
+    const pos = stage.getPointerPosition()
     lastPanPos.current = pos
-    return
+
+    if (tool === 'pan') return
+
+    setDrawing(true)
+    setLines(prev => [
+      ...prev,
+      {
+        points: [pos.x, pos.y],
+        stroke: tool === 'eraser' ? '#f0f0f0' : strokeColor,
+        strokeWidth
+      }
+    ])
+    setSelectedImageIndex(null)
   }
 
-  if (!drawing) return
+  const handleTouchMove = e => {
+    const stage = stageRef.current
+    const pos = stage.getPointerPosition()
 
-  setLines((prevLines) => {
-    const lastLine = prevLines[prevLines.length - 1]
-    const newLines = prevLines.slice(0, -1)
-    return [
-      ...newLines,
-      { ...lastLine, points: [...lastLine.points, pos.x, pos.y] },
-    ]
-  })
-}
+    if (!pos) return
 
-const handleTouchEnd = () => {
-  if (drawing) {
-    setDrawing(false)
-    setHistory((prev) => [...prev, [...lines]])
-    setRedoStack([])
-    saveCanvas()
+    if (tool === 'pan') {
+      const dx = pos.x - lastPanPos.current.x
+      const dy = pos.y - lastPanPos.current.y
+      setStagePosition(prev => ({ x: prev.x + dx, y: prev.y + dy }))
+      lastPanPos.current = pos
+      return
+    }
+
+    if (!drawing) return
+
+    setLines(prevLines => {
+      const lastLine = prevLines[prevLines.length - 1]
+      const newLines = prevLines.slice(0, -1)
+      return [
+        ...newLines,
+        { ...lastLine, points: [...lastLine.points, pos.x, pos.y] }
+      ]
+    })
   }
-  lastPanPos.current = null
-}
 
+  const handleTouchEnd = () => {
+    if (drawing) {
+      setDrawing(false)
+      setHistory(prev => [...prev, [...lines]])
+      setRedoStack([])
+      saveCanvas()
+    }
+    lastPanPos.current = null
+  }
 
   function updateImagePosition (index, changes) {
     setImages(prev => {
@@ -465,6 +466,14 @@ const handleTouchEnd = () => {
           />
         </label>
         <label>
+          Background:{' '}
+          <input
+            type='color'
+            value={backgroundColor}
+            onChange={e => setBackgroundColor(e.target.value)}
+          />
+        </label>
+        <label>
           Size:{' '}
           <input
             type='range'
@@ -538,7 +547,7 @@ const handleTouchEnd = () => {
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
         draggable={tool === 'pan' || middleMouseDown}
-        style={{ backgroundColor: '#fff', flexGrow: 1 }}
+        style={{ backgroundColor: backgroundColor, flexGrow: 1 }}
       >
         <Layer>
           {lines.map((line, i) => (
