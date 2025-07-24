@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
-import { Typography, Box, Button, Grid } from '@mui/material'
+import { Typography, Box, Button,Divider, Grid } from '@mui/material'
 import { useEffect, useState } from 'react'
 import FileCard from './pages/FileCard'
 
@@ -28,17 +28,9 @@ export default function Attachments () {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant='h5' gutterBottom>
-        Files For Project
+        All Project Files
       </Typography>
-
-      <Typography variant='body1' sx={{ mb: 2 }}>
-        Files Stuff
-      </Typography>
-
-
-      <Typography variant='h6' gutterBottom>
-        Files
-      </Typography>
+ <Divider sx={{ my: 2 }}>Uploads</Divider>
       <Grid container spacing={2}>
         {sortedFiles.map(file => (
           <Grid key={file.FileID}>

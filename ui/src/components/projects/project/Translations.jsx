@@ -7,7 +7,7 @@ export default function Translations() {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>
-        Translations for {project_id}
+        Translations
       </Typography>
       <Typography variant="body1">Translations for the project</Typography>
     </Box>

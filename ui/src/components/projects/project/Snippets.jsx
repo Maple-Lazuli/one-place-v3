@@ -3,6 +3,7 @@ import {
   Typography,
   Box,
   Button,
+  Divider,
   Grid
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -37,14 +38,9 @@ export default function Snippets() {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>
-        Snippets for Rpa
+        All Project Code Snippets
       </Typography>
-
-      <Typography variant="body1" sx={{ mb: 2 }}>
-        Snippet Stuff
-      </Typography>
-
-      <Typography variant="h6" gutterBottom>Snippets</Typography>
+       <Divider sx={{ my: 2 }}>Snippets</Divider>
       <Grid container spacing={2}>
         {sortedSnippets.map((snippet) => (
           <Grid key={snippet.CodeID}>

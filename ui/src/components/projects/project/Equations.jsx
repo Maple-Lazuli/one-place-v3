@@ -3,6 +3,7 @@ import {
   Typography,
   Box,
   Button,
+  Divider,
   Grid
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -37,14 +38,10 @@ export default function Equations () {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>
-        Equations for Project
+        All Project Equations
       </Typography>
 
-      <Typography variant="body1" sx={{ mb: 2 }}>
-        Equations Stuff
-      </Typography>
-
-      <Typography variant="h6" gutterBottom>Equations</Typography>
+      <Divider sx={{ my: 2 }}>Equations</Divider>
       <Grid container spacing={2}>
         {sortedEquations.map((equation) => (
           <Grid key={equation.EquationID}>

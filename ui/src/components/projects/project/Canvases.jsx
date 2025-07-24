@@ -3,6 +3,7 @@ import {
   Typography,
   Box,
   Button,
+  Divider,
   Grid
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -37,14 +38,10 @@ export default function Canvases () {
   return (
     <Box sx={{ p: 2 }}>
       <Typography variant="h5" gutterBottom>
-        Canvases for Project
+      All Project Canvases
       </Typography>
 
-      <Typography variant="body1" sx={{ mb: 2 }}>
-        Canvas Stuff
-      </Typography>
-      
-      <Typography variant="h6" gutterBottom>Canvas</Typography>
+ <Divider sx={{ my: 2 }}>Canvases</Divider>
       <Grid container spacing={2}>
         {sortedCanvases.map((canvas) => (
           <Grid key={canvas.CanvasID}>

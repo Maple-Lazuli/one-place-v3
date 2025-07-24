@@ -25,9 +25,11 @@ export default function Project () {
     { label: 'Todos', path: 'todos' },
     { label: 'Events', path: 'events' },
     { label: 'All Code Snippets', path: 'snippets' },
+    { label: 'All Recipes', path: 'recipes' },
     { label: 'All Equations', path: 'equations' },
     { label: 'All Canvases', path: 'canvases' },
     { label: 'All Attachments', path: 'attachments' }
+
   ]
 
   return (
