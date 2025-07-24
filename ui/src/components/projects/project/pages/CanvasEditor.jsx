@@ -15,6 +15,7 @@ import {
 } from 'react-konva'
 import useImage from 'use-image'
 import jsPDF from 'jspdf'
+import Cookies from 'js-cookie'
 
 // Draggable & transformable image with forwarded ref
 const DraggableImage = forwardRef(
@@ -82,7 +83,9 @@ export default function CanvasEditor () {
   const lastPanPos = useRef(null)
   const lastEditTimeRef = useRef(Date.now())
   const lastSaveTimeRef = useRef(0)
-  const [backgroundColor, setBackgroundColor] = useState('#ffffff')
+  const [backgroundColor, setBackgroundColor] =  useState(
+    Cookies.get('preferences') === 'dark' ? '#000000' : '#ffffff'
+  )
 
   // Upload image to backend and get image ID
   async function uploadImage (blob) {
