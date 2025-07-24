@@ -87,7 +87,8 @@ export default function Page () {
           display: 'flex',
           flexDirection: 'column',
           p: 1,
-          minHeight: 0
+          minHeight: 0,
+          boxShadow: 10
         }}
       >
         <Box
