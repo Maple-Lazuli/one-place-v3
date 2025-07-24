@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, make_response
 from http import HTTPStatus as STATUS
-from datetime import datetime
+from datetime import datetime, timezone
 
 pages_bp = Blueprint('pages', __name__, url_prefix='/pages')
 from .db import get_db_connection
@@ -26,11 +26,11 @@ def get_last_review_by_project_id(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT max(accessTime), pagerequests.pageID, pages.name FROM pagerequests
+        SELECT %s - max(accessTime), pagerequests.pageID, pages.name FROM pagerequests
         inner join pages on pages.pageid = pagerequests.pageid
         where accessGranted = TRUE AND pages.projectID = %s
         group by pagerequests.pageID, pages.name
-    """, (project_id,))
+    """, (datetime.now().astimezone(), project_id,))
     review_deltas = cursor.fetchall()
     conn.commit()
     cursor.close()
@@ -39,8 +39,9 @@ def get_last_review_by_project_id(project_id):
         review_deltas_list = []
         for review_delta in review_deltas:
             review_delta = {k: v for k, v in zip(['days', 'page_id', 'name'], review_delta)}
-            review_delta['days'] = (datetime.now() - review_delta['days']).days
+            review_delta['days'] = review_delta['days'].days
             review_deltas_list.append(review_delta)
+        return review_deltas_list
     return review_deltas
 
 
@@ -373,7 +374,7 @@ def get_pages_review_by_project_ep():
         return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     pages = get_last_review_by_project_id(project_id)
-
+    print(pages)
     if pages is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 

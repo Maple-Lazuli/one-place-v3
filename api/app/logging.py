@@ -1,6 +1,6 @@
 from flask import Blueprint, jsonify, request, make_response
 from http import HTTPStatus as STATUS
-from datetime import datetime, timezone
+from datetime import datetime, timezone,timedelta
 
 logging_bp = Blueprint('logging', __name__, url_prefix='/logging')
 from .db import get_db_connection
@@ -78,7 +78,7 @@ def create_page_access_request(session_id, page_id, allowed, notes):
     cursor.execute("""
         INSERT INTO pagerequests (sessionID, pageID, accessGranted, notes)
         VALUES (%s, %s, %s, %s);
-    """, (session_id, page_id, allowed, notes))
+    """, (session_id, page_id, allowed, notes,))
     conn.commit()
     cursor.close()
     conn.close()

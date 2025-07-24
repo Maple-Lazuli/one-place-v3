@@ -12,11 +12,23 @@ import {
   Link as MUILink,
   CircularProgress
 } from '@mui/material'
+
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell
+} from 'recharts'
+
 import TodoCard from './TodoCard'
 import EventCard from './EventCard'
 
 export default function ProjectOverview () {
   const { project_id } = useParams()
+  const [reviewData, setReviewData] = useState([])
 
   const [lastEditedPage, setLastEditedPage] = useState(null)
   const [todos, setTodos] = useState([])
@@ -46,6 +58,17 @@ export default function ProjectOverview () {
           }
         }
 
+        const reviewRes = await fetch(
+          `/api/pages/get_project_pages_review_list?id=${project_id}`,
+          { credentials: 'include' }
+        )
+        const reviewDataJson = await reviewRes.json()
+        if (reviewDataJson.status === 'success') {
+          setReviewData(reviewDataJson.message)
+        }
+
+        console.log('review_data')
+        console.log(reviewData)
         // 2. Fetch todos
         const todoRes = await fetch(
           `/api/todo/get_project_todo?project_id=${project_id}`,
@@ -100,10 +123,10 @@ export default function ProjectOverview () {
     setTodos(prev => prev.filter(todo => todo.TodoID !== deletedId))
   }
 
-    const now = Math.floor(Date.now() / 1000)
+  const now = Math.floor(Date.now() / 1000)
   const in24Hours = now + 24 * 60 * 60
 
-    const getBorderColor = dueTime => {
+  const getBorderColor = dueTime => {
     if (!dueTime) return undefined
 
     if (dueTime < now) return 'red'
@@ -157,10 +180,15 @@ export default function ProjectOverview () {
     }
   }
 
+  const mostStalePage = reviewData.reduce(
+    (max, page) => (page.days > (max?.days ?? -1) ? page : max),
+    null
+  )
+
   return (
     <Box sx={{ p: 2, height: '100%', overflowY: 'auto' }}>
-      <Typography variant='h5' gutterBottom>
-        Overview
+      <Typography variant='h4' gutterBottom>
+        Project Overview
       </Typography>
 
       {lastEditedPage ? (
@@ -187,6 +215,56 @@ export default function ProjectOverview () {
           No pages found
         </Typography>
       )}
+
+      {reviewData.length === 0 ? (
+  <Typography variant='body2' color='text.secondary'>
+    No review data available
+  </Typography>
+) : (
+  <Box sx={{ width: '100%', maxWidth: '100%', overflowY: 'hidden', mb: 3 }}>
+    <Divider sx={{ my: 2 }}>Days Since Last Review</Divider>
+
+    {mostStalePage && (
+      <Box sx={{ mb: 1 }}>
+        <Typography variant='body'>
+          Most in need of review:{' '}
+          <MUILink
+            component={RouterLink}
+            to={`/projects/project/${project_id}/pages/page/${mostStalePage.page_id}/editor`}
+            underline='hover'
+            sx={{ fontWeight: 500 }}
+          >
+            {mostStalePage.name}
+          </MUILink>{' '}
+          ({mostStalePage.days} day{mostStalePage.days !== 1 ? 's' : ''})
+        </Typography>
+      </Box>
+    )}
+
+    <ResponsiveContainer
+      width='100%'
+      height={Math.max(200, reviewData.length * 50)}
+    >
+      <BarChart
+        data={[...reviewData].sort((a, b) => b.days - a.days)}
+        layout='vertical'
+        margin={{ top: 10, right: 30, left: 100, bottom: 10 }}
+      >
+        <XAxis type='number' />
+        <YAxis type='category' dataKey='name' width={150} />
+        <Tooltip />
+        <Bar dataKey='days' fill='#1976d2'>
+          {reviewData.map((entry, index) => {
+            const intensity = Math.min(1, entry.days / 30)
+            const color = `rgba(25, 118, 210, ${0.4 + 0.6 * intensity})`
+            return <Cell key={`cell-${index}`} fill={color} />
+          })}
+        </Bar>
+      </BarChart>
+    </ResponsiveContainer>
+  </Box>
+)}
+
 
       {/* Upcoming/Overdue Todos */}
       <Divider sx={{ my: 2 }}>Upcomming or Overdue Todos</Divider>
