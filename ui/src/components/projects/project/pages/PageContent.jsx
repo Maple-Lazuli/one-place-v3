@@ -12,12 +12,21 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  Divider,
   Button,
-  Typography
+  Typography,
+  Container,
+  CardContent
 } from '@mui/material'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
 import { replaceImageHosts } from '../../../../utils/scripts.js'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
+import {
+  oneDark,
+  oneLight
+} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import Cookies from 'js-cookie'
 
 export default function PageContent() {
   const { page_id } = useParams()
@@ -25,7 +34,9 @@ export default function PageContent() {
   const [translations, setTranslations] = useState([])
   const [selectedTranslationId, setSelectedTranslationId] = useState('original')
   const [lastReviewed, setLastReviewed] = useState(null)
-
+  const [coloring, setColoring] = useState(
+    Cookies.get('preferences') === 'dark' ? oneDark : oneLight
+  )
   const lastEditTimeRef = useRef(0)
   const pollingRef = useRef(null)
   const containerRef = useRef(null)
@@ -223,7 +234,7 @@ const fetchLastReviewed = async () => {
           {lastReviewed ? lastReviewed : 'Never'}
         </Typography>
       </Box>
-
+<Divider sx={{ my: 2 }}></Divider>
       <div
         style={{
           maxWidth: containerWidth ? containerWidth * 0.9 : '90%',
@@ -233,11 +244,47 @@ const fetchLastReviewed = async () => {
           overflowY: 'auto'
         }}
       >
-        <ReactMarkdown
-          children={text}
-          remarkPlugins={[remarkMath, remarkGfm]}
-          rehypePlugins={[rehypeKatex, rehypeHighlight]}
-        />
+      
+              <ReactMarkdown
+                children={text}
+                remarkPlugins={[remarkMath, remarkGfm]}
+                rehypePlugins={[rehypeKatex]}
+                components={{
+                  code ({ node, inline, className, children, ...props }) {
+                    const match = /language-(\w+)/.exec(className || '')
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        language={match[1]}
+                        style={coloring}
+                        PreTag='div'
+                        customStyle={{
+                          // background: 'transparent',
+                          margin: 0,
+                          padding: 0,
+                          overflowX: 'auto'
+                        }}
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, '')}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code
+                        className={className}
+                        style={{
+                          backgroundColor: '#eee',
+                          padding: '0.2em 0.4em',
+                          borderRadius: '4px',
+                          fontSize: '0.95em'
+                        }}
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    )
+                  }
+                }}
+              />
+
       </div>
     </div>
   )
