@@ -17,7 +17,7 @@ import {
 } from '@mui/material'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
-import { replaceImageHosts } from '../../../../utils/scripts'
+import { replaceImageHosts } from '../../../../utils/scripts.js'
 
 export default function PageContent() {
   const { page_id } = useParams()

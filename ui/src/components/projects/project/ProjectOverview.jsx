@@ -100,7 +100,7 @@ export default function ProjectOverview () {
       </Typography>
 
       {lastEditedPage ? (
-
+        <>
           <Typography variant='body' gutterBottom>
             Continue Where You Left Off:{'  '}
             <MUILink
@@ -113,7 +113,11 @@ export default function ProjectOverview () {
               {lastEditedPage.name}
             </MUILink>
           </Typography>
-
+          <Typography variant='body2' color='text.secondary'>
+            (Last edited:{' '}
+            {new Date(lastEditedPage.lastEditTime * 1000).toLocaleString()})
+          </Typography>
+        </>
       ) : (
         <Typography variant='body2' color='text.secondary'>
           No pages found

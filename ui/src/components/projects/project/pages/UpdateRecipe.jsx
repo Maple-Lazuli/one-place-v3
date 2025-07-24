@@ -16,7 +16,7 @@ import rehypeHighlight from 'rehype-highlight'
 import remarkGfm from 'remark-gfm'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
-import { replaceImageHosts } from '../../../../utils/scripts'
+import { replaceImageHosts } from '../../../../utils/scripts.js'
 
 export default function UpdateRecipeForm () {
   const [title, setTitle] = useState('')
