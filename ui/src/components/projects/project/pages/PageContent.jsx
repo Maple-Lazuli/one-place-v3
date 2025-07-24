@@ -237,7 +237,7 @@ const fetchLastReviewed = async () => {
 <Divider sx={{ my: 2 }}></Divider>
       <div
         style={{
-          maxWidth: containerWidth ? containerWidth * 0.9 : '90%',
+          maxWidth: containerWidth ? containerWidth * 0.99 : '90%',
           wordBreak: 'break-word',
           height: '80vh',
           margin: 'auto',

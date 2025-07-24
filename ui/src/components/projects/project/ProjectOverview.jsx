@@ -191,7 +191,7 @@ export default function ProjectOverview () {
                 recurring={todo.recurring}
                 interval={todo.interval}
                 todo_id={todo.TodoID}
-                borderColor='orange'
+                // borderColor='orange'
               />
             </Grid>
           ))}
