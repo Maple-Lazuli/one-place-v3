@@ -28,7 +28,7 @@ import {
 } from '@mui/material'
 import StrokeSizeStepper from '../StrokeSizeStepper'
 // Draggable & transformable image with forwarded ref
-
+import throttle from 'lodash/throttle'
 
 const DraggableImage = forwardRef(
   (
@@ -100,6 +100,25 @@ export default function CanvasEditor () {
   const [backgroundColor, setBackgroundColor] = useState(
     Cookies.get('preferences') === 'dark' ? '#111111' : '#ffffff'
   )
+
+  const throttledUpdateLine = useRef(
+    throttle(newLine => {
+      setLines(prevLines => {
+        const lastLine = prevLines[prevLines.length - 1]
+        const newLines = prevLines.slice(0, -1)
+        return [
+          ...newLines,
+          { ...lastLine, points: [...lastLine.points, ...newLine] }
+        ]
+      })
+    }, 50)
+  ).current
+
+  useEffect(() => {
+  return () => {
+    throttledUpdateLine.cancel()
+  }
+}, [])
 
   // Upload image to backend and get image ID
   async function uploadImage (blob) {
@@ -319,14 +338,7 @@ export default function CanvasEditor () {
     if (!drawing) return
 
     const point = stage.getRelativePointerPosition()
-    setLines(prevLines => {
-      const lastLine = prevLines[prevLines.length - 1]
-      const newLines = prevLines.slice(0, -1)
-      return [
-        ...newLines,
-        { ...lastLine, points: [...lastLine.points, point.x, point.y] }
-      ]
-    })
+    throttledUpdateLine([point.x, point.y])
   }
 
   const handleMouseUp = e => {
