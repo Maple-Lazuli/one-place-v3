@@ -10,9 +10,16 @@ import {
 } from '@mui/material'
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import Cookies from 'js-cookie';
+import {
+  oneDark,
+  oneLight
+} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import Cookies from 'js-cookie'
 export default function UpdateSnippetForm () {
+  const maxNameCharLimit = 64
+  const maxLanguageCharLimit = 64
+  const maxDescriptionLimit = 255
+
   const [title, setTitle] = useState('')
   const [language, setLanguage] = useState('')
   const [description, setDescription] = useState('')
@@ -21,7 +28,9 @@ export default function UpdateSnippetForm () {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
-  const [coloring, setColoring] = useState(Cookies.get('preferences') === 'dark'? oneDark : oneLight)
+  const [coloring, setColoring] = useState(
+    Cookies.get('preferences') === 'dark' ? oneDark : oneLight
+  )
 
   const { project_id, page_id, snippet_id } = useParams()
   const navigate = useNavigate()
@@ -54,7 +63,7 @@ export default function UpdateSnippetForm () {
     fetchSnippet()
   }, [snippet_id])
 
-  const handleTabKey = (e) => {
+  const handleTabKey = e => {
     if (e.key === 'Tab') {
       e.preventDefault()
       const el = e.target
@@ -155,6 +164,9 @@ export default function UpdateSnippetForm () {
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
+              inputProps={{ maxLength: maxNameCharLimit }}
+              helperText={`${title.length}/${maxNameCharLimit} characters`}
+              error={title.length > maxNameCharLimit}
             />
 
             <TextField
@@ -164,6 +176,9 @@ export default function UpdateSnippetForm () {
               value={description}
               onChange={e => setDescription(e.target.value)}
               required
+              inputProps={{ maxLength: maxDescriptionLimit }}
+              helperText={`${description.length}/${maxDescriptionLimit} characters`}
+              error={description.length > maxDescriptionLimit}
             />
 
             <TextField
@@ -171,6 +186,9 @@ export default function UpdateSnippetForm () {
               value={language}
               onChange={e => setLanguage(e.target.value)}
               required
+              inputProps={{ maxLength: maxLanguageCharLimit }}
+              helperText={`${language.length}/${maxLanguageCharLimit} characters`}
+              error={language.length > maxLanguageCharLimit}
             />
 
             <TextField
@@ -205,7 +223,7 @@ export default function UpdateSnippetForm () {
           p: 2,
           border: '1px solid #ccc',
           borderRadius: 2,
-          overflowY: 'auto',
+          overflowY: 'auto'
           // backgroundColor: '#1e1e1e'
         }}
       >

@@ -11,9 +11,16 @@ import {
 } from '@mui/material'
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import Cookies from 'js-cookie';
+import {
+  oneDark,
+  oneLight
+} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import Cookies from 'js-cookie'
 export default function CreateSnippetForm () {
+  const maxNameCharLimit = 64
+  const maxLanguageCharLimit = 64
+  const maxDescriptionLimit = 255
+
   const [title, setTitle] = useState('')
   const [language, setLanguage] = useState('')
   const [description, setDescription] = useState('')
@@ -21,7 +28,9 @@ export default function CreateSnippetForm () {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-  const [coloring, setColoring] = useState(Cookies.get('preferences') === 'dark'? oneDark : oneLight)
+  const [coloring, setColoring] = useState(
+    Cookies.get('preferences') === 'dark' ? oneDark : oneLight
+  )
 
   const { project_id, page_id } = useParams()
   const navigate = useNavigate()
@@ -122,10 +131,13 @@ export default function CreateSnippetForm () {
         {success && <Alert severity='success'>{success}</Alert>}
 
         <TextField
-          label='Title'
+          label='Name'
           value={title}
           onChange={e => setTitle(e.target.value)}
           required
+          inputProps={{ maxLength: maxNameCharLimit }}
+          helperText={`${title.length}/${maxNameCharLimit} characters`}
+          error={title.length > maxNameCharLimit}
         />
 
         <TextField
@@ -135,6 +147,9 @@ export default function CreateSnippetForm () {
           value={description}
           onChange={e => setDescription(e.target.value)}
           required
+          inputProps={{ maxLength: maxDescriptionLimit }}
+          helperText={`${description.length}/${maxDescriptionLimit} characters`}
+          error={description.length > maxDescriptionLimit}
         />
 
         <TextField
@@ -142,6 +157,9 @@ export default function CreateSnippetForm () {
           value={language}
           onChange={e => setLanguage(e.target.value)}
           required
+          inputProps={{ maxLength: maxLanguageCharLimit }}
+          helperText={`${language.length}/${maxLanguageCharLimit} characters`}
+          error={language.length > maxLanguageCharLimit}
         />
 
         <TextField
