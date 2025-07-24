@@ -15,8 +15,8 @@ import {
   Divider,
   Button,
   Typography,
-  Container,
-  CardContent
+  Snackbar,
+  Alert
 } from '@mui/material'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
@@ -28,7 +28,9 @@ import {
 } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import Cookies from 'js-cookie'
 
-export default function PageContent() {
+export default function PageContent () {
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
+
   const { page_id } = useParams()
   const [text, setText] = useState('')
   const [translations, setTranslations] = useState([])
@@ -61,7 +63,7 @@ export default function PageContent() {
     }
   }
 
-  const fetchTranslationContent = async (translationId) => {
+  const fetchTranslationContent = async translationId => {
     try {
       const res = await fetch(`/api/translations/get?id=${translationId}`, {
         credentials: 'include'
@@ -79,9 +81,12 @@ export default function PageContent() {
 
   const fetchTranslations = async () => {
     try {
-      const res = await fetch(`/api/translations/get_all_by_page?id=${page_id}`, {
-        credentials: 'include'
-      })
+      const res = await fetch(
+        `/api/translations/get_all_by_page?id=${page_id}`,
+        {
+          credentials: 'include'
+        }
+      )
       const data = await res.json()
       if (res.ok && data.status === 'success') {
         setTranslations(data.message || [])
@@ -91,31 +96,34 @@ export default function PageContent() {
     }
   }
 
-const fetchLastReviewed = async () => {
-  try {
-    const res = await fetch(`/api/logging/get_page_last_review?id=${page_id}`, {
-      credentials: 'include'
-    })
-    const data = await res.json()
+  const fetchLastReviewed = async () => {
+    try {
+      const res = await fetch(
+        `/api/logging/get_page_last_review?id=${page_id}`,
+        {
+          credentials: 'include'
+        }
+      )
+      const data = await res.json()
 
-    if (res.ok && data.message !== '0') {
-      const utcSeconds = Number(data.message)
-      const utcDate = new Date(utcSeconds * 1000)
+      if (res.ok && data.message !== '0') {
+        const utcSeconds = Number(data.message)
+        const utcDate = new Date(utcSeconds * 1000)
 
-      // Get local time by subtracting the timezone offset (in minutes)
-      const offsetMs = utcDate.getTimezoneOffset() * 60 * 1000
-      const localDate = new Date(utcDate.getTime() - offsetMs)
+        // Get local time by subtracting the timezone offset (in minutes)
+        const offsetMs = utcDate.getTimezoneOffset() * 60 * 1000
+        const localDate = new Date(utcDate.getTime() - offsetMs)
 
-      const formatted = localDate.toLocaleString()
+        const formatted = localDate.toLocaleString()
 
-      setLastReviewed(formatted)
-    } else {
-      setLastReviewed(null)
+        setLastReviewed(formatted)
+      } else {
+        setLastReviewed(null)
+      }
+    } catch (err) {
+      console.error('Error fetching last review:', err)
     }
-  } catch (err) {
-    console.error('Error fetching last review:', err)
   }
-}
 
   const startPolling = (id, type) => {
     stopPolling()
@@ -159,7 +167,8 @@ const fetchLastReviewed = async () => {
         credentials: 'include'
       })
       if (res.ok) {
-        console.log('Page marked as reviewed successfully.')
+        setSnackbarOpen(true)
+        // console.log('Page marked as reviewed successfully.')
         fetchLastReviewed() // Refresh the timestamp after review
       } else {
         alert('Failed to mark as reviewed.')
@@ -202,17 +211,26 @@ const fetchLastReviewed = async () => {
         boxSizing: 'border-box'
       }}
     >
-      <Box sx={{ px: 2, mb: 2, paddingTop: 2, display: 'flex', gap: 2, alignItems: 'center' }}>
-        <FormControl size="small">
-          <InputLabel id="translation-select-label">Language</InputLabel>
+      <Box
+        sx={{
+          px: 2,
+          mb: 2,
+          paddingTop: 2,
+          display: 'flex',
+          gap: 2,
+          alignItems: 'center'
+        }}
+      >
+        <FormControl size='small'>
+          <InputLabel id='translation-select-label'>Language</InputLabel>
           <Select
-            labelId="translation-select-label"
+            labelId='translation-select-label'
             value={selectedTranslationId}
-            label="Language"
-            onChange={(e) => setSelectedTranslationId(e.target.value)}
+            label='Language'
+            onChange={e => setSelectedTranslationId(e.target.value)}
           >
-            <MenuItem value="original">Original</MenuItem>
-            {translations.map((t) => (
+            <MenuItem value='original'>Original</MenuItem>
+            {translations.map(t => (
               <MenuItem key={t.TranslationID} value={t.TranslationID}>
                 {t.language}
               </MenuItem>
@@ -221,20 +239,19 @@ const fetchLastReviewed = async () => {
         </FormControl>
 
         <Button
-          variant="outlined"
-          color="success"
+          variant='outlined'
+          color='success'
           onClick={handleReviewed}
           disabled={selectedTranslationId !== 'original'}
         >
           Reviewed
         </Button>
 
-        <Typography variant="body2" sx={{ ml: 2, color: 'text.secondary' }}>
-          Last Reviewed:{' '}
-          {lastReviewed ? lastReviewed : 'Never'}
+        <Typography variant='body2' sx={{ ml: 2, color: 'text.secondary' }}>
+          Last Reviewed: {lastReviewed ? lastReviewed : 'Never'}
         </Typography>
       </Box>
-<Divider sx={{ my: 2 }}></Divider>
+      <Divider sx={{ my: 2 }}></Divider>
       <div
         style={{
           maxWidth: containerWidth ? containerWidth * 0.99 : '90%',
@@ -244,50 +261,62 @@ const fetchLastReviewed = async () => {
           overflowY: 'auto'
         }}
       >
-      
-              <ReactMarkdown
-                children={text}
-                remarkPlugins={[remarkMath, remarkGfm]}
-                rehypePlugins={[rehypeKatex]}
-                components={{
-                  code ({ node, inline, className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || '')
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        language={match[1]}
-                        style={coloring}
-                        PreTag='div'
-                        showLineNumbers
-                        customStyle={{
-                          // background: 'transparent',
-                          margin: 0,
-                          padding: 0,
-                          maxheight: 300,
-                          overflowX: 'auto'
-                        }}
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, '')}
-                      </SyntaxHighlighter>
-                    ) : (
-                      <code
-                        className={className}
-                        style={{
-                          backgroundColor: '#eee',
-                          padding: '0.2em 0.4em',
-                          borderRadius: '4px',
-                          fontSize: '0.95em'
-                        }}
-                        {...props}
-                      >
-                        {children}
-                      </code>
-                    )
-                  }
-                }}
-              />
-
+        <ReactMarkdown
+          children={text}
+          remarkPlugins={[remarkMath, remarkGfm]}
+          rehypePlugins={[rehypeKatex]}
+          components={{
+            code ({ node, inline, className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '')
+              return !inline && match ? (
+                <SyntaxHighlighter
+                  language={match[1]}
+                  style={coloring}
+                  PreTag='div'
+                  showLineNumbers
+                  customStyle={{
+                    // background: 'transparent',
+                    margin: 0,
+                    padding: 0,
+                    maxheight: 300,
+                    overflowX: 'auto'
+                  }}
+                  {...props}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              ) : (
+                <code
+                  className={className}
+                  style={{
+                    backgroundColor: '#eee',
+                    padding: '0.2em 0.4em',
+                    borderRadius: '4px',
+                    fontSize: '0.95em'
+                  }}
+                  {...props}
+                >
+                  {children}
+                </code>
+              )
+            }
+          }}
+        />
       </div>
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={() => setSnackbarOpen(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbarOpen(false)}
+          severity='success'
+          sx={{ width: '100%' }}
+        >
+          Page marked as reviewed successfully.
+        </Alert>
+      </Snackbar>
     </div>
   )
 }
