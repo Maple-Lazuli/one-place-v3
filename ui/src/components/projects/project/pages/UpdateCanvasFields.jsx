@@ -12,6 +12,10 @@ import {
 
 
 export default function UpdateCanvasForm () {
+
+  const maxNameCharLimit = 64
+  const maxDescriptionLimit = 255
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [error, setError] = useState('')
@@ -127,10 +131,13 @@ export default function UpdateCanvasForm () {
         {!fetching && (
           <>
             <TextField
-              label='Title'
+              label='Name'
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
+                          inputProps={{ maxLength: maxNameCharLimit }}
+        helperText={`${title.length}/${maxNameCharLimit} characters`}
+        error={title.length > maxNameCharLimit}
             />
 
             <TextField
@@ -140,6 +147,9 @@ export default function UpdateCanvasForm () {
               value={description}
               onChange={e => setDescription(e.target.value)}
               required
+                              inputProps={{ maxLength: maxDescriptionLimit }}
+        helperText={`${description.length}/${maxDescriptionLimit} characters`}
+        error={description.length > maxDescriptionLimit}
             />
 
             <Button variant='contained' type='submit' disabled={loading}>

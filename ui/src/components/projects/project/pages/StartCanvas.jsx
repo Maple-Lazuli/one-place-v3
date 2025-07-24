@@ -10,12 +10,10 @@ import {
   CircularProgress
 } from '@mui/material'
 
-import ReactMarkdown from 'react-markdown'
-import remarkMath from 'remark-math'
-import rehypeKatex from 'rehype-katex'
-import 'katex/dist/katex.min.css'
-
 export default function StartCanvas () {
+  const maxNameCharLimit = 64
+  const maxDescriptionLimit = 255
+
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [error, setError] = useState('')
@@ -41,7 +39,7 @@ export default function StartCanvas () {
       const payload = {
         page_id: Number(page_id),
         name: title,
-        description: description,
+        description: description
       }
 
       const res = await fetch('/api/canvas/create', {
@@ -105,10 +103,13 @@ export default function StartCanvas () {
         {success && <Alert severity='success'>{success}</Alert>}
 
         <TextField
-          label='Title'
+          label='Name'
           value={title}
           onChange={e => setTitle(e.target.value)}
           required
+          inputProps={{ maxLength: maxNameCharLimit }}
+          helperText={`${title.length}/${maxNameCharLimit} characters`}
+          error={title.length > maxNameCharLimit}
         />
 
         <TextField
@@ -118,8 +119,10 @@ export default function StartCanvas () {
           value={description}
           onChange={e => setDescription(e.target.value)}
           required
+          inputProps={{ maxLength: maxDescriptionLimit }}
+          helperText={`${description.length}/${maxDescriptionLimit} characters`}
+          error={description.length > maxDescriptionLimit}
         />
-
 
         <Button variant='contained' type='submit' disabled={loading}>
           {loading ? <CircularProgress size={24} /> : 'Create Canvas'}
