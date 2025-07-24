@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, Link, Outlet, useMatch } from 'react-router-dom'
 import {
   Box,
@@ -16,7 +16,26 @@ export default function Project () {
   const { project_id } = useParams()
   const match = useMatch('/projects/project/:project_id/')
   const [drawerOpen, setDrawerOpen] = useState(!!match)
-  // const [drawerOpen, setDrawerOpen] = useState(false)
+  const [projectName, setProjectName] = useState('')
+
+  useEffect(() => {
+    async function fetchProjectName () {
+      try {
+        const res = await fetch(`/api/projects/get?id=${project_id}`)
+        const data = await res.json()
+        if (data.message.name) {
+          setProjectName(data.message.name)
+        } else {
+          setProjectName(`Project ${project_id}`)
+        }
+      } catch (err) {
+        console.error('Error fetching project name:', err)
+        setProjectName(`Project ${project_id}`)
+      }
+    }
+
+    if (project_id) fetchProjectName()
+  }, [project_id])
 
   const links = [
     { label: 'Overview', path: 'overview' },
@@ -29,7 +48,6 @@ export default function Project () {
     { label: 'All Equations', path: 'equations' },
     { label: 'All Canvases', path: 'canvases' },
     { label: 'All Attachments', path: 'attachments' }
-
   ]
 
   return (
@@ -68,23 +86,23 @@ export default function Project () {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         ModalProps={{
-          keepMounted: true // Better open performance on mobile
+          keepMounted: true
         }}
         sx={{
           '& .MuiDrawer-paper': {
-            width: 240,
+            width: 440,
             boxSizing: 'border-box',
-            // bgcolor: 'primary.main',
-            // color: 'primary.contrastText',
             p: 2,
-            pt: '4vh' // Push below navbar
+            pt: '4vh'
           }
         }}
       >
         <Typography variant='h6' gutterBottom>
-          Project {project_id}
+          {projectName}
         </Typography>
-        <Divider sx={{ borderColor: 'text.primary', borderBottomWidth: 2, mb: 2 }} />
+        <Divider
+          sx={{ borderColor: 'text.primary', borderBottomWidth: 2, mb: 2 }}
+        />
         <Stack spacing={1}>
           {links.map(link => (
             <Button
@@ -119,7 +137,6 @@ export default function Project () {
           transition: 'margin-left 0.3s',
           height: '95vh',
           width: '98vw'
-          // pt: '4vh' // Push below navbar
         }}
       >
         <Outlet />
