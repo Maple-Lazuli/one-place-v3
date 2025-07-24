@@ -21,6 +21,9 @@ export default function CreateTodoForm () {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const maxNameCharLimit = 64
+  const maxDescriptionLimit = 255
+
   const { project_id } = useParams()
   const navigate = useNavigate()
 
@@ -34,7 +37,10 @@ export default function CreateTodoForm () {
       return
     }
 
-    if (recurring && (!intervalDays || isNaN(intervalDays) || Number(intervalDays) <= 0)) {
+    if (
+      recurring &&
+      (!intervalDays || isNaN(intervalDays) || Number(intervalDays) <= 0)
+    ) {
       setError('Please enter a valid interval in days for recurring todos')
       return
     }
@@ -108,10 +114,13 @@ export default function CreateTodoForm () {
       {success && <Alert severity='success'>{success}</Alert>}
 
       <TextField
-        label='Todo Title'
+        label='Todo Name'
         value={title}
         onChange={e => setTitle(e.target.value)}
         required
+        inputProps={{ maxLength: maxNameCharLimit }}
+        helperText={`${title.length}/${maxNameCharLimit} characters`}
+        error={title.length > maxNameCharLimit}
       />
 
       <TextField
@@ -128,6 +137,9 @@ export default function CreateTodoForm () {
         rows={4}
         value={description}
         onChange={e => setDescription(e.target.value)}
+        inputProps={{ maxLength: maxDescriptionLimit }}
+        helperText={`${description.length}/${maxDescriptionLimit} characters`}
+        error={description.length > maxDescriptionLimit}
       />
 
       <FormControlLabel

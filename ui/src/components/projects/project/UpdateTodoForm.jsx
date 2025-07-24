@@ -26,6 +26,9 @@ export default function UpdateTodoForm () {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const maxNameCharLimit = 64
+  const maxDescriptionLimit = 255
+
   const formatLocalDateTime = date => {
     const pad = n => String(n).padStart(2, '0')
     const yyyy = date.getFullYear()
@@ -83,7 +86,10 @@ export default function UpdateTodoForm () {
       return
     }
 
-    if (recurring && (!intervalDays || isNaN(intervalDays) || Number(intervalDays) <= 0)) {
+    if (
+      recurring &&
+      (!intervalDays || isNaN(intervalDays) || Number(intervalDays) <= 0)
+    ) {
       setError('Please enter a valid interval in days for recurring todos')
       return
     }
@@ -162,6 +168,9 @@ export default function UpdateTodoForm () {
         value={title}
         onChange={e => setTitle(e.target.value)}
         required
+        inputProps={{ maxLength: maxNameCharLimit }}
+        helperText={`${title.length}/${maxNameCharLimit} characters`}
+        error={title.length > maxNameCharLimit}
       />
 
       <TextField
@@ -178,6 +187,9 @@ export default function UpdateTodoForm () {
         rows={4}
         value={description}
         onChange={e => setDescription(e.target.value)}
+        inputProps={{ maxLength: maxDescriptionLimit }}
+        helperText={`${description.length}/${maxDescriptionLimit} characters`}
+        error={description.length > maxDescriptionLimit}
       />
 
       <FormControlLabel

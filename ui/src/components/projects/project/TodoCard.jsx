@@ -122,6 +122,7 @@ export default function TodoCard ({
           )}
           <Button
             variant='outlined'
+            color='warning'
             component={Link}
             to={`/projects/project/${project_id}/todos/update/${todo_id}`}
           >
