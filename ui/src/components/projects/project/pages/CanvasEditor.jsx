@@ -483,30 +483,55 @@ export default function CanvasEditor () {
     >
       {/* Toolbar */}
       <Box
-        sx={{
+        sx={theme => ({
           position: 'absolute',
-          top: 10,
-          left: 10,
+          top: 5,
+          left: 5,
           zIndex: 1400,
-          // backgroundColor: 'rgba(255,255,255,0.9)',
           borderRadius: 2,
           padding: 2,
           display: 'flex',
           alignItems: 'center',
           flexWrap: 'wrap',
-          gap: 2
-        }}
+          gap: 2,
+
+          // Set the Box's text color from theme.primary.contrastText
+          backgroundColor: theme.palette.background.default,
+          color: theme.palette.primary,
+
+          // For TextField inputs & labels inside, override default colors
+          '& .MuiInputLabel-root': {
+            color: theme.palette.primary
+          },
+          '& .MuiInputBase-input': {
+            color: theme.palette.primary
+          },
+
+          // For ToggleButton text
+          '& .MuiToggleButton-root': {
+            color: theme.palette.primary,
+            borderColor: theme.palette.primary
+          },
+          '& .MuiToggleButton-root.Mui-selected': {
+            backgroundColor: theme.palette.primary.main,
+            color: theme.palette.primary
+          },
+
+          // For Buttons inside
+          '& .MuiButton-root': {
+            color: theme.palette.primary
+          }
+        })}
       >
         {/* Stroke Color Picker */}
         <TextField
           type='color'
           label='Color'
-          value={strokeColor}
           onChange={e => setStrokeColor(e.target.value)}
           disabled={tool === 'eraser'}
           size='small'
           InputLabelProps={{ shrink: true }}
-          sx={{ width: 80 }}
+          sx={{ width: 80, color: 'primary' }}
         />
 
         {/* Background Color Picker */}

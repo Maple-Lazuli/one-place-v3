@@ -16,46 +16,64 @@ export default function StrokeSizeStepper({ strokeWidth, setStrokeWidth }) {
   }
 
   return (
-    <Box display="flex" alignItems="center" gap={1}>
-      <Typography>Size:</Typography>
+<Box
+  display="flex"
+  alignItems="center"
+  gap={1}
+  sx={(theme) => ({
+    color: theme.palette.primary,
 
-      <Tooltip title="Decrease Size">
-        <IconButton onClick={decrease} size="small">
-          <RemoveIcon />
-        </IconButton>
-      </Tooltip>
+    // Typography inside uses the theme text color
+    '& .MuiTypography-root': {
+      color: theme.palette.primary,
+    },
 
-      {/* Preview dot */}
-      <Box
-        sx={{
-          width: 30,
-          height: 30,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
-        <Box
-          sx={{
-            width: strokeWidth,
-            height: strokeWidth,
-            borderRadius: '50%',
-            backgroundColor: '#1976d2',
-            border: '0px solid #ccc',
-          }}
-        />
-      </Box>
+    // IconButtons (icons) color
+    '& .MuiIconButton-root': {
+      color: theme.palette.primary,
+    },
+  })}
+>
+  <Typography>Size:</Typography>
 
-      {/* Size value */}
-      <Typography sx={{ minWidth: 24, textAlign: 'center' }}>
-        {strokeWidth}
-      </Typography>
+  <Tooltip title="Decrease Size">
+    <IconButton onClick={decrease} size="small">
+      <RemoveIcon />
+    </IconButton>
+  </Tooltip>
 
-      <Tooltip title="Increase Size">
-        <IconButton onClick={increase} size="small">
-          <AddIcon />
-        </IconButton>
-      </Tooltip>
-    </Box>
+  {/* Preview dot */}
+  <Box
+    sx={{
+      width: 30,
+      height: 30,
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    <Box
+      sx={{
+        width: strokeWidth,
+        height: strokeWidth,
+        borderRadius: '50%',
+        backgroundColor: '#1976d2', // You could also set this from theme.palette.primary.main if you want
+        border: '0px solid #ccc',
+      }}
+    />
+  </Box>
+
+  {/* Size value */}
+  <Typography sx={{ minWidth: 24, textAlign: 'center' }}>
+    {strokeWidth}
+  </Typography>
+
+  <Tooltip title="Increase Size">
+    <IconButton onClick={increase} size="small">
+      <AddIcon />
+    </IconButton>
+  </Tooltip>
+</Box>
+
   )
 }
