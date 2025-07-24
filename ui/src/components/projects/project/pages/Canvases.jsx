@@ -3,6 +3,7 @@ import {
   Typography,
   Box,
   Button,
+  Divider,
   Grid
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -36,13 +37,6 @@ export default function PageCanvases () {
 
   return (
     <Box sx={{ p: 2, maxHeight: '80vh', overflowY: 'auto' }}>
-      <Typography variant="h5" gutterBottom>
-        Canvases for Page {page_id}
-      </Typography>
-
-      <Typography variant="body1" sx={{ mb: 2 }}>
-        Canvas Stuff
-      </Typography>
 
       <Button
         component={Link}
@@ -52,8 +46,7 @@ export default function PageCanvases () {
       >
         Start New Canvas
       </Button>
-
-      <Typography variant="h6" gutterBottom>Canvas</Typography>
+ <Divider sx={{ my: 2 }}>Canvases</Divider>
       <Grid container spacing={2}>
         {sortedCanvases.map((canvas) => (
           <Grid key={canvas.CanvasID}>

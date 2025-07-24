@@ -47,7 +47,11 @@ export default function TranslationCard ({
     <Card
       sx={{
         maxWidth: 400,
-        mb: 2
+        mb: 2,
+        border: '2px solid rgba(0, 0, 0, 0.2)',
+        borderColor: 'primary.secondary',
+        borderRadius: 2,
+        boxShadow:3
       }}
     >
       <CardContent>

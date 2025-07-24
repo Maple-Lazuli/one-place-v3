@@ -67,7 +67,16 @@ export default function FileCard ({
   ).toLocaleDateString()
 
   return (
-    <Card sx={{ maxWidth: 400, mb: 2 }}>
+        <Card
+          sx={{
+            maxWidth: 400,
+            mb: 2,
+            border: '2px solid rgba(0, 0, 0, 0.2)',
+            borderColor: 'primary.secondary',
+            borderRadius: 2,
+            boxShadow:3
+          }}
+        >
       <CardContent>
         <Typography variant='h6' gutterBottom>
           {name}

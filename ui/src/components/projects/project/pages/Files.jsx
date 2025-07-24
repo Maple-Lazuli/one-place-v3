@@ -1,5 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
-import { Typography, Box, Button, Grid } from '@mui/material'
+import { Typography, Box, Button, Divider, Grid } from '@mui/material'
 import { useEffect, useState } from 'react'
 import FileCard from './FileCard'
 
@@ -27,14 +27,6 @@ export default function PageFiles () {
 
   return (
     <Box sx={{ p: 2, maxHeight: '80vh', overflowY: 'auto' }}>
-      <Typography variant='h5' gutterBottom>
-        Files for Page {page_id}
-      </Typography>
-
-      <Typography variant='body1' sx={{ mb: 2 }}>
-        Files Stuff
-      </Typography>
-
       <Button
         component={Link}
         to={`/projects/project/${project_id}/pages/page/${page_id}/files/upload`}
@@ -42,11 +34,9 @@ export default function PageFiles () {
         sx={{ mb: 3 }}
       >
         Upload New File
-      </Button>
 
-      <Typography variant='h6' gutterBottom>
-        Files
-      </Typography>
+      </Button>
+      <Divider sx={{ my: 2 }}>Files</Divider>
       <Grid container spacing={2}>
         {sortedFiles.map(file => (
           <Grid key={file.FileID}>
