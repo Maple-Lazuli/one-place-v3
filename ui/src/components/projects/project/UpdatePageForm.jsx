@@ -9,7 +9,7 @@ import {
   CircularProgress
 } from '@mui/material'
 
-export default function UpdatePageForm() {
+export default function UpdatePageForm () {
   const { project_id, page_id } = useParams()
   const navigate = useNavigate()
 
@@ -19,14 +19,15 @@ export default function UpdatePageForm() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  const maxPageNameChars = 64
 
   useEffect(() => {
-    async function fetchPage() {
+    async function fetchPage () {
       setLoading(true)
       setError('')
       try {
         const res = await fetch(`/api/pages/get?id=${page_id}`, {
-          credentials: 'include',
+          credentials: 'include'
         })
         const data = await res.json()
 
@@ -34,10 +35,9 @@ export default function UpdatePageForm() {
           throw new Error(data.message || 'Failed to load page data')
         }
 
-        const page = data.message 
+        const page = data.message
 
         setTitle(page.name || '')
-
       } catch (err) {
         setError(err.message)
       } finally {
@@ -47,7 +47,7 @@ export default function UpdatePageForm() {
     fetchPage()
   }, [page_id])
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault()
     setError('')
     setSuccess('')
@@ -62,14 +62,14 @@ export default function UpdatePageForm() {
     try {
       const payload = {
         page_id: page_id,
-        name: title,
+        name: title
       }
 
       const res = await fetch('/api/pages/update', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
-        credentials: 'include',
+        credentials: 'include'
       })
 
       const data = await res.json()
@@ -87,11 +87,16 @@ export default function UpdatePageForm() {
     }
   }
 
-  if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}><CircularProgress /></Box>
+  if (loading)
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    )
 
   return (
     <Box
-      component="form"
+      component='form'
       onSubmit={handleSubmit}
       sx={{
         maxWidth: 400,
@@ -99,24 +104,27 @@ export default function UpdatePageForm() {
         mt: 4,
         display: 'flex',
         flexDirection: 'column',
-        gap: 2,
+        gap: 2
       }}
     >
-      <Typography variant="h5" component="h2" gutterBottom>
+      <Typography variant='h5' component='h2' gutterBottom>
         Update Page
       </Typography>
 
-      {error && <Alert severity="error">{error}</Alert>}
-      {success && <Alert severity="success">{success}</Alert>}
+      {error && <Alert severity='error'>{error}</Alert>}
+      {success && <Alert severity='success'>{success}</Alert>}
 
       <TextField
-        label="Page Title"
+        label='Page Name'
         value={title}
-        onChange={(e) => setTitle(e.target.value)}
+        onChange={e => setTitle(e.target.value)}
         required
+        inputProps={{ maxLength: maxPageNameChars }}
+        helperText={`${title.length}/${maxPageNameChars} characters`}
+        error={title.length > maxPageNameChars}
       />
 
-      <Button variant="contained" type="submit" disabled={submitLoading}>
+      <Button variant='contained' type='submit' disabled={submitLoading}>
         {submitLoading ? <CircularProgress size={24} /> : 'Update Page'}
       </Button>
     </Box>

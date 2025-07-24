@@ -16,8 +16,10 @@ export default function CreatePageForm () {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const maxPageNameChars = 64
+
   const { project_id } = useParams()
-    const navigate = useNavigate()
+  const navigate = useNavigate()
 
   const handleSubmit = async e => {
     e.preventDefault()
@@ -34,7 +36,7 @@ export default function CreatePageForm () {
     try {
       const payload = {
         project_id: Number(project_id), // convert string param to number
-        name: title,
+        name: title
       }
 
       const res = await fetch('/api/pages/create', {
@@ -87,12 +89,14 @@ export default function CreatePageForm () {
       {success && <Alert severity='success'>{success}</Alert>}
 
       <TextField
-        label='Page Title'
+        label='Page Name'
         value={title}
         onChange={e => setTitle(e.target.value)}
         required
+        inputProps={{ maxLength: maxPageNameChars }}
+        helperText={`${title.length}/${maxPageNameChars} characters`}
+        error={title.length > maxPageNameChars}
       />
-
 
       <Button variant='contained' type='submit' disabled={loading}>
         {loading ? <CircularProgress size={24} /> : 'Create PAge'}
