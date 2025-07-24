@@ -45,7 +45,12 @@ export default function ProjectCard ({
   return (
     <Card
       sx={{
-        width: 400,
+        maxWidth: 400,
+        mb: 2,
+        border: '2px solid rgba(0, 0, 0, 0.2)',
+        borderColor: 'primary.secondary',
+        borderRadius: 2,
+        boxShadow: 3,
         height: 200,
         display: 'flex',
         flexDirection: 'column',

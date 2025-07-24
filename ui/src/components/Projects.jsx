@@ -4,6 +4,7 @@ import Snackbar from '@mui/material/Snackbar'
 import Alert from '@mui/material/Alert'
 import Grid from '@mui/material/Grid'
 import Container from '@mui/material/Container'
+import { Divider } from '@mui/material'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
@@ -64,7 +65,7 @@ const handleDelete = (deletedId) => {
       <Box
     sx={{
       width: '100vw',
-      height: '100vh', // take full screen height
+      height: '94vh', // take full screen height
       overflowY: 'auto',
       px: 4,
       py: 4,
@@ -80,7 +81,7 @@ const handleDelete = (deletedId) => {
           Create New Project
         </Button>
       </Link>
-
+<Divider sx={{ my: 2 }}>Projects</Divider>
       <Snackbar
         open={open}
         autoHideDuration={6000}

@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react"
 import { useNavigate, useParams } from "react-router-dom"
+import {
+  Box,
+  TextField,
+  Typography,
+  Checkbox,
+  FormGroup,
+  FormControlLabel,
+  Button,
+  Divider,
+} from "@mui/material"
 
 export default function EditProject() {
   const { project_id } = useParams()
@@ -9,10 +19,8 @@ export default function EditProject() {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [error, setError] = useState("")
-
   const [tags, setTags] = useState([])
   const [selectedTags, setSelectedTags] = useState([])
-
   const [newTagName, setNewTagName] = useState("")
   const [tagError, setTagError] = useState("")
 
@@ -100,7 +108,6 @@ export default function EditProject() {
     }
 
     try {
-      // Update project info
       const res = await fetch("/api/projects/update", {
         method: "PATCH",
         credentials: "include",
@@ -118,7 +125,6 @@ export default function EditProject() {
         return
       }
 
-      // Update tag associations
       await fetch("/api/tags/unassign", {
         method: "POST",
         credentials: "include",
@@ -131,7 +137,7 @@ export default function EditProject() {
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ tag_id: tagId, project_id}),
+          body: JSON.stringify({ tag_id: tagId, project_id }),
         })
       }
 
@@ -142,71 +148,72 @@ export default function EditProject() {
   }
 
   return (
-    <div className="container">
-      <h2>Edit Project</h2>
+    <Box sx={{ maxWidth: 600, mx: "auto", mt: 4 }}>
+      <Typography variant="h4" gutterBottom>Edit Project</Typography>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {error && <Typography color="error">{error}</Typography>}
+
       <form onSubmit={handleSubmit}>
-        <div>
-          <label htmlFor="project_name">Project Name: </label>
-          <input
-            id="project_name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-            autoFocus
-          />
-        </div>
-        <div>
-          <label htmlFor="project_description">Description: </label>
-          <textarea
-            id="project_description"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={maxChars}
-            rows={4}
-          />
-          <p style={{ fontSize: "0.9em", color: description.length > maxChars ? "red" : "gray" }}>
-            {description.length}/{maxChars} characters
-          </p>
-        </div>
+        <TextField
+          label="Project Name"
+          fullWidth
+          required
+          margin="normal"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
 
-        <div>
-          <label>Assign Tags:</label>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+        <TextField
+          label="Description"
+          fullWidth
+          multiline
+          rows={4}
+          margin="normal"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          inputProps={{ maxLength: maxChars }}
+          helperText={`${description.length}/${maxChars} characters`}
+          error={description.length > maxChars}
+        />
+
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="subtitle1">Assign Tags:</Typography>
+          <FormGroup row>
             {tags.map((tag) => (
-              <label key={tag.TagID} style={{ display: "flex", alignItems: "center" }}>
-                <input
-                  type="checkbox"
-                  checked={selectedTags.includes(tag.TagID)}
-                  onChange={() => handleTagChange(tag.TagID)}
-                />
-                <span style={{ marginLeft: 6 }}>{tag.tag}</span>
-              </label>
+              <FormControlLabel
+                key={tag.TagID}
+                control={
+                  <Checkbox
+                    checked={selectedTags.includes(tag.TagID)}
+                    onChange={() => handleTagChange(tag.TagID)}
+                  />
+                }
+                label={tag.tag}
+              />
             ))}
-          </div>
-        </div>
+          </FormGroup>
+        </Box>
 
-        <button type="submit" style={{ marginTop: 16 }}>
+        <Button type="submit" variant="contained" sx={{ mt: 3 }}>
           Update Project
-        </button>
+        </Button>
       </form>
 
-      {/* Separate Tag Creation Form */}
-      <div style={{ marginTop: "2em", borderTop: "1px solid #ccc", paddingTop: "1em" }}>
-        <h4>Create New Tag</h4>
-        <form onSubmit={handleCreateTag}>
-          <input
-            type="text"
+      <Divider sx={{ my: 4 }} />
+
+      <Typography variant="h6">Create New Tag</Typography>
+      <form onSubmit={handleCreateTag}>
+        <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+          <TextField
+            label="New tag name"
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
-            placeholder="New tag name"
+            size="small"
           />
-          <button type="submit">Create Tag</button>
-        </form>
-        {tagError && <p style={{ color: "red" }}>{tagError}</p>}
-      </div>
-    </div>
+          <Button type="submit" variant="outlined">Create Tag</Button>
+        </Box>
+        {tagError && <Typography color="error" sx={{ mt: 1 }}>{tagError}</Typography>}
+      </form>
+    </Box>
   )
 }
