@@ -72,8 +72,8 @@ export default function Project () {
           '& .MuiDrawer-paper': {
             width: 240,
             boxSizing: 'border-box',
-            bgcolor: 'primary.main',
-            color: 'primary.contrastText',
+            // bgcolor: 'primary.main',
+            // color: 'primary.contrastText',
             p: 2,
             pt: '4vh' // Push below navbar
           }

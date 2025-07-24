@@ -3,6 +3,7 @@ import {
   Typography,
   Box,
   Button,
+  Divider,
   Grid
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -36,13 +37,6 @@ export default function PageEquations () {
 
   return (
     <Box sx={{ p: 2, maxHeight: '80vh', overflowY: 'auto' }}>
-      <Typography variant="h5" gutterBottom>
-        Equations for Page {page_id}
-      </Typography>
-
-      <Typography variant="body1" sx={{ mb: 2, overflowY: 'auto' }}>
-        Equations Stuff
-      </Typography>
 
       <Button
         component={Link}
@@ -53,7 +47,7 @@ export default function PageEquations () {
         Create New Equation
       </Button>
 
-      <Typography variant="h6" gutterBottom>Equations</Typography>
+      <Divider sx={{ my: 2 }}>Equations</Divider>
       <Grid container spacing={2}>
         {sortedEquations.map((equation) => (
           <Grid key={equation.EquationID}>

@@ -180,7 +180,7 @@ export default function UpdateEquationForm () {
           borderRadius: 2,
           overflow: 'auto',
           whiteSpace: 'pre-wrap',
-          backgroundColor: '#fafafa',
+          // backgroundColor: '#fafafa',
           height: '90%'
         }}
       >

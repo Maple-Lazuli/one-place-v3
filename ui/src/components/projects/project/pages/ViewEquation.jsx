@@ -76,7 +76,7 @@ export default function ViewEquation () {
         sx={{
           mt: 2,
           p: 2,
-          backgroundColor: '#f6f8fa',
+          // backgroundColor: '#f6f8fa',
           overflowX: 'auto',
           whiteSpace: 'pre-wrap',
           fontFamily: 'monospace'

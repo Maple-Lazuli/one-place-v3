@@ -166,13 +166,13 @@ export default function NavigationBar() {
         {username}
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Button variant="outlined" fullWidth sx={{ mb: 2 }} component={Link} to="/update_account">
+      <Button variant="outlined" color="inherit" fullWidth sx={{ mb: 2 }} component={Link} to="/update_account">
         Edit Account
       </Button>
-            <Button variant="outlined" fullWidth sx={{ mb: 2 }} component={Link} to="/delete_tags">
+            <Button variant="outlined" color="inherit" fullWidth sx={{ mb: 2 }} component={Link} to="/delete_tags">
         Delete Tags
       </Button>
-      <Button variant="outlined" fullWidth sx={{ mb: 2 }} component={Link} to="/db">
+      <Button variant="outlined"  color="inherit" fullWidth sx={{ mb: 2 }} component={Link} to="/db">
         DB Management
       </Button>
       <Button
@@ -191,7 +191,7 @@ export default function NavigationBar() {
 
   return (
     <>
-      <AppBar position="static" color="primary" elevation={2} sx={{ height: '4vh', zIndex: 1250 }}>
+      <AppBar position="static" color="primary" elevation={2} sx={{ height: '4vh' }}>
         <Toolbar>
           <Button component={Link} to="/" color="inherit" sx={{ fontWeight: 'bold', marginLeft: '30px'}}>
             Home
