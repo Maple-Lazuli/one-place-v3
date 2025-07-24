@@ -164,7 +164,7 @@ def create_ep():
     if new_event is None:
         return make_response({'status': 'error', 'message': "Failed To Create Event"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response({'status': 'success', 'message': f'Created {event_name}'}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {event_name}', 'id': new_event['EventID']}, STATUS.OK)
     return response
 
 

@@ -194,7 +194,7 @@ def create_ep():
 
     create_page_access_request(session['SessionID'], new_page['PageID'], True, "CREATE")
 
-    response = make_response({'status': 'success', 'message': f'Created {name}'}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {name}', 'id':new_page['PageID']}, STATUS.OK)
     return response
 
 

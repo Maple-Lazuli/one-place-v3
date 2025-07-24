@@ -167,7 +167,7 @@ def create_user_ep():
     if response is None:
         return make_response({'status': 'error', 'message': "Error Creating Account"}, STATUS.BAD_REQUEST)
 
-    return jsonify({'status': 'success', "message": f"Created: {username}"}), STATUS.OK
+    return jsonify({'status': 'success', "message": f"Created: {username}", "id": response['UserID']}), STATUS.OK
 
 
 @users_bp.route('/update_user_name', methods=['PATCH'])
@@ -314,7 +314,8 @@ def get_session_details_ep():
     if token is None:
         return make_response({'status': 'error', 'message': "Invalid Session"}, STATUS.FORBIDDEN)
 
-    response = make_response({'status': 'success', 'active': session['isActive'], 'endTime': session['endTime'].timestamp()}, STATUS.OK)
+    response = make_response(
+        {'status': 'success', 'active': session['isActive'], 'endTime': session['endTime'].timestamp()}, STATUS.OK)
     return response
 
 

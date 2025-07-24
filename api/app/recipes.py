@@ -169,7 +169,7 @@ def create_ep():
         return make_response({'status': 'error', 'message': "Failed To Create Recipe"}, STATUS.INTERNAL_SERVER_ERROR)
 
     log_access(new_recipe['RecipeID'], True, "CREATE")
-    response = make_response({'status': 'success', 'message': f'Created {name}'}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {name}', 'id':new_recipe['RecipeID']}, STATUS.OK)
     return response
 
 

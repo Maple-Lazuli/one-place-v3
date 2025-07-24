@@ -144,7 +144,7 @@ def create_ep():
     if new_tag is None:
         return make_response({'status': 'error', 'message': "Failed To Create Tag"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response({'status': 'success', 'message': f'Created {tag}'}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {tag}', 'id': new_tag['TagID']}, STATUS.OK)
     return response
 
 

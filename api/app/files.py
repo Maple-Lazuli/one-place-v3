@@ -19,11 +19,16 @@ def create_file(page_id, name, filename, description, content):
     cursor = conn.cursor()
     cursor.execute("""
         INSERT INTO files (PageID, name, hash, filename, description, content)
-        VALUES (%s, %s, %s, %s, %s, %s);
+        VALUES (%s, %s, %s, %s, %s, %s)
+        RETURNING FileID;
     """, (page_id, name, file_hash, filename, description, content))
+    file_id = cursor.fetchone()
     conn.commit()
     cursor.close()
     conn.close()
+    if file_id is not None:
+        file_id = file_id[0]
+    return file_id
 
 
 def convert_time(object):
@@ -119,9 +124,9 @@ def upload_file_ep():
     if not authorized_page_access(token, page_id):
         return make_response("Not Authorized To Access Project", STATUS.FORBIDDEN)
 
-    create_file(page_id, name, filename, description, content)
+    new_file = create_file(page_id, name, filename, description, content)
 
-    response = make_response(f"Uploaded: {name}", STATUS.OK)
+    response = make_response({'status': 'success', 'message':f"Uploaded: {name}", 'id': new_file}, STATUS.OK)
     return response
 
 

@@ -139,7 +139,7 @@ def update_todo(todo_id, name, description, due=None, recurring=False, recurrenc
         UPDATE todo SET name = %s, description = %s, dueTime = %s, recurring=%s, recurrenceInterval=%s
         WHERE todoID = %s
         RETURNING *;
-    """, (name, description, due, recurring, recurrence,todo_id))
+    """, (name, description, due, recurring, recurrence, todo_id))
     updated_todo = cursor.fetchone()
     conn.commit()
     cursor.close()
@@ -183,7 +183,8 @@ def create_ep():
     if new_todo is None:
         return make_response({'status': 'error', 'message': "Failed To Create Todo"}, STATUS.INTERNAL_SERVER_ERROR)
 
-    response = make_response({'status': 'success', 'message': f'Created {todo_name}'}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {todo_name}', 'id': new_todo['TodoID']},
+                             STATUS.OK)
     return response
 
 

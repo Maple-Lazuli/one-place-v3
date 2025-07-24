@@ -7,6 +7,7 @@ from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .pages import authorized_page_access
 from .projects import authorized_project_access
+
 canvas_fields = ['CanvasID', 'PageID', 'name', 'description', 'content', 'timeCreated', 'lastEditTime']
 
 
@@ -176,7 +177,8 @@ def create_ep():
         return make_response({'status': 'error', 'message': "Failed To Create Canvas"}, STATUS.INTERNAL_SERVER_ERROR)
 
     log_access(new_canvas['CanvasID'], True, "CREATE")
-    response = make_response({'status': 'success', 'message': f'Created {name}'}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {name}', 'id': new_canvas['CanvasID']},
+                             STATUS.OK)
     return response
 
 

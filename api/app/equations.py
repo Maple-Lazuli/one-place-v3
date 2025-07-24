@@ -169,7 +169,8 @@ def create_ep():
         return make_response({'status': 'error', 'message': "Failed To Create Equation"}, STATUS.INTERNAL_SERVER_ERROR)
 
     log_access(new_equation['EquationID'], True, "CREATE")
-    response = make_response({'status': 'success', 'message': f'Created {name}'}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {name}', 'id': new_equation['EquationID']},
+                             STATUS.OK)
     return response
 
 

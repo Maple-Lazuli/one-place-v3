@@ -144,7 +144,7 @@ def create_ep():
         return make_response({'status': 'error', 'message': "Failed To Create Translation"}, STATUS.INTERNAL_SERVER_ERROR)
 
     log_access(new_translation['TranslationID'], True, "CREATE")
-    response = make_response({'status': 'success', 'message': f"Created Translation in {new_translation['language']}"}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f"Created Translation in {new_translation['language']}", "id": new_translation['TranslationID']}, STATUS.OK)
     return response
 
 
