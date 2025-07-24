@@ -4,7 +4,8 @@ import {
   Typography,
   Box,
   Button,
-  Stack
+  Stack,
+  Chip
 } from '@mui/material'
 
 import { Link } from 'react-router-dom'
@@ -14,6 +15,7 @@ export default function ProjectCard ({
   description,
   project_id,
   onDelete,
+  tags = [], // default to empty array
   sx
 }) {
   const handleDelete = async project_id => {
@@ -62,7 +64,24 @@ export default function ProjectCard ({
         <Typography variant='h6' gutterBottom>
           {name}
         </Typography>
-        <Typography variant='body2'>{description}</Typography>
+        <Typography variant='body2' gutterBottom>
+          {description}
+        </Typography>
+
+        {/* Tag display */}
+        {tags.length > 0 && (
+          <Stack direction='row' spacing={1} useFlexGap flexWrap='wrap' mt={1}>
+            {tags.map(tag => (
+              <Chip
+                key={tag.TagID || tag}
+                label={tag.tag || "tag"}
+                size='small'
+                color='primary'
+                variant='outlined'
+              />
+            ))}
+          </Stack>
+        )}
       </CardContent>
 
       <Box sx={{ width: '100%', px: 2, pb: 2 }}>

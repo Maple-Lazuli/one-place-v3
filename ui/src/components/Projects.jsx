@@ -1,87 +1,138 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import Snackbar from '@mui/material/Snackbar'
-import Alert from '@mui/material/Alert'
-import Grid from '@mui/material/Grid'
-import Container from '@mui/material/Container'
-import { Divider } from '@mui/material'
-import Box from '@mui/material/Box'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
+import {
+  Snackbar,
+  Alert,
+  Grid,
+  Container,
+  Divider,
+  Box,
+  Button,
+  Typography,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel
+} from '@mui/material'
 import ProjectCard from './ProjectCard'
 
-
-export default function Projects () {
+export default function Projects() {
   const [projects, setProjects] = useState([])
+  const [filteredProjects, setFilteredProjects] = useState([])
+  const [tags, setTags] = useState([])
+  const [selectedTag, setSelectedTag] = useState('')
   const [error, setError] = useState('')
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
-    fetch(`/api/projects/get_all`, {
-      method: 'GET',
-      credentials: 'include'
-    })
-      .then(res => {
-        if (!res.ok) {
-          throw new Error('Unauthorized or failed request')
-        }
-        return res.json()
-      })
-      .then(data => {
-        if (data.status === 'success') {
-          const projectList = data.message
-          if (!projectList || projectList.length === 0) {
-            setError('No projects found.')
-            setProjects([])
-            setOpen(true)
-          } else {
-            setProjects(projectList)
-            setError('')
-            setOpen(false)
-          }
-        } else {
-          setError(data.message || 'Failed to fetch projects')
-          setProjects([])
-          setOpen(true)
-        }
-      })
-      .catch(err => {
-        setError(err.message || 'Network error')
-        setProjects([])
-        setOpen(true)
-      })
+    fetchTags()
+    fetchProjects()
   }, [])
 
-  const handleClose = (event, reason) => {
+  const fetchTags = async () => {
+    try {
+      const res = await fetch('/api/tags/get', { credentials: 'include' })
+      const data = await res.json()
+      if (data.status === 'success') {
+        setTags(data.message)
+      } else {
+        console.error('Failed to load tags')
+      }
+    } catch (err) {
+      console.error('Error loading tags', err)
+    }
+  }
+
+  const fetchProjects = async () => {
+    try {
+      const res = await fetch('/api/projects/get_all', {
+        method: 'GET',
+        credentials: 'include',
+      })
+      if (!res.ok) throw new Error('Unauthorized or failed request')
+      const data = await res.json()
+      if (data.status === 'success') {
+        const projectList = data.message
+        if (!projectList || projectList.length === 0) {
+          setError('No projects found.')
+          setProjects([])
+          setFilteredProjects([])
+          setOpen(true)
+        } else {
+          setProjects(projectList)
+          setFilteredProjects(projectList)
+          setError('')
+          setOpen(false)
+        }
+      } else {
+        setError(data.message || 'Failed to fetch projects')
+        setProjects([])
+        setFilteredProjects([])
+        setOpen(true)
+      }
+    } catch (err) {
+      setError(err.message || 'Network error')
+      setProjects([])
+      setFilteredProjects([])
+      setOpen(true)
+    }
+  }
+
+  const handleTagFilter = (e) => {
+    const tagId = e.target.value
+    setSelectedTag(tagId)
+
+    if (!tagId) {
+      setFilteredProjects(projects)
+      return
+    }
+
+    const filtered = projects.filter(project =>
+      (project.tags || []).some(t => t.TagID === tagId)
+    )
+    setFilteredProjects(filtered)
+  }
+
+  const handleClose = (_, reason) => {
     if (reason === 'clickaway') return
     setOpen(false)
   }
 
-const handleDelete = (deletedId) => {
-  setProjects((prev) => prev.filter((project) => project.ProjectID !== deletedId))
-}
+  const handleDelete = (deletedId) => {
+    const updated = projects.filter(p => p.ProjectID !== deletedId)
+    setProjects(updated)
+    setFilteredProjects(selectedTag
+      ? updated.filter(project => (project.tags || []).some(t => t.TagID === selectedTag))
+      : updated)
+  }
 
   return (
-      <Box
-    sx={{
-      width: '100vw',
-      height: '94vh', // take full screen height
-      overflowY: 'auto',
-      px: 4,
-      py: 4,
-    }}
-  >
-      <Typography variant='h4' gutterBottom>
-        Projects
-      </Typography>
+    <Box sx={{ width: '100vw', height: '94vh', overflowY: 'auto', px: 4, py: 4 }}>
+      <Typography variant='h4' gutterBottom>Projects</Typography>
 
+      <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+        <Link to='/projects/create' style={{ textDecoration: 'none' }}>
+          <Button variant='contained'>Create New Project</Button>
+        </Link>
 
-      <Link to='/projects/create' style={{ textDecoration: 'none' }}>
-        <Button variant='contained' sx={{ mb: 2 }}>
-          Create New Project
-        </Button>
-      </Link>
-<Divider sx={{ my: 2 }}>Projects</Divider>
+        <FormControl sx={{ minWidth: 200, marginLeft: 'auto' }}>
+          <InputLabel id='tag-select-label'>Filter by Tag</InputLabel>
+          <Select
+            labelId='tag-select-label'
+            value={selectedTag}
+            label='Filter by Tag'
+            onChange={handleTagFilter}
+          >
+            <MenuItem value=''>All</MenuItem>
+            {tags.map(tag => (
+              <MenuItem key={tag.TagID} value={tag.TagID}>{tag.tag}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </Box>
+
+      <Divider sx={{ my: 2 }}>Projects</Divider>
+
       <Snackbar
         open={open}
         autoHideDuration={6000}
@@ -93,29 +144,18 @@ const handleDelete = (deletedId) => {
         </Alert>
       </Snackbar>
 
-      {projects.length === 0 && !open ? (
-        <Typography>
-          No projects available. Create one to get started.
-        </Typography>
+      {filteredProjects.length === 0 && !open ? (
+        <Typography>No projects available. Create one to get started.</Typography>
       ) : (
         <Grid container spacing={3}>
-          {projects.map(p => (
-            <Grid
-              key={p.ProjectID}
-              sx={{ display: 'flex', height: '100%', minWidth: 0 }}
-            >
+          {filteredProjects.map(p => (
+            <Grid item key={p.ProjectID} xs={12} sm={6} md={4} lg={3}>
               <ProjectCard
-                name={`${p.name}`}
+                name={p.name}
                 description={p.description}
                 project_id={p.ProjectID}
                 onDelete={handleDelete}
-                sx={{
-                  flexGrow: 1,
-                  width: 400,
-                  height:200,
-                  display: 'flex',
-                  flexDirection: 'column'
-                }}
+                tags={p.tags}
               />
             </Grid>
           ))}
