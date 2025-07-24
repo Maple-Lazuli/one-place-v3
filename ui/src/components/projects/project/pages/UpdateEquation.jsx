@@ -24,6 +24,9 @@ export default function UpdateEquationForm () {
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(true)
 
+  const maxNameCharLimit = 64
+  const maxDescriptionLimit = 255
+
   const { project_id, page_id, equation_id } = useParams()
   const navigate = useNavigate()
 
@@ -134,10 +137,13 @@ export default function UpdateEquationForm () {
         {!fetching && (
           <>
             <TextField
-              label='Title'
+              label='Name'
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
+              inputProps={{ maxLength: maxNameCharLimit }}
+              helperText={`${title.length}/${maxNameCharLimit} characters`}
+              error={title.length > maxNameCharLimit}
             />
 
             <TextField
@@ -147,6 +153,9 @@ export default function UpdateEquationForm () {
               value={description}
               onChange={e => setDescription(e.target.value)}
               required
+              inputProps={{ maxLength: maxDescriptionLimit }}
+              helperText={`${description.length}/${maxDescriptionLimit} characters`}
+              error={description.length > maxDescriptionLimit}
             />
 
             <TextField

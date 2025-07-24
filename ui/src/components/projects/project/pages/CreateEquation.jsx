@@ -23,6 +23,9 @@ export default function CreateEquationForm () {
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
 
+  const maxNameCharLimit = 64
+  const maxDescriptionLimit = 255
+
   const { project_id, page_id } = useParams()
   const navigate = useNavigate()
 
@@ -107,10 +110,13 @@ export default function CreateEquationForm () {
         {success && <Alert severity='success'>{success}</Alert>}
 
         <TextField
-          label='Title'
+          label='Name'
           value={title}
           onChange={e => setTitle(e.target.value)}
           required
+          inputProps={{ maxLength: maxNameCharLimit }}
+          helperText={`${title.length}/${maxNameCharLimit} characters`}
+          error={title.length > maxNameCharLimit}
         />
 
         <TextField
@@ -120,6 +126,9 @@ export default function CreateEquationForm () {
           value={description}
           onChange={e => setDescription(e.target.value)}
           required
+          inputProps={{ maxLength: maxDescriptionLimit }}
+          helperText={`${description.length}/${maxDescriptionLimit} characters`}
+          error={description.length > maxDescriptionLimit}
         />
 
         <TextField
