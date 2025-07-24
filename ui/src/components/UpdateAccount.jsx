@@ -9,7 +9,7 @@ import {
   Divider
 } from '@mui/material'
 
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'
 import { useNavigate } from 'react-router-dom'
 
 export default function UpdateUserAccount () {
@@ -18,12 +18,11 @@ export default function UpdateUserAccount () {
   const [password1, setPassword1] = useState('')
   const [password2, setPassword2] = useState('')
   const [password3, setPassword3] = useState('')
-  
 
   const [newUsername, setNewUsername] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
-  const [preferences, setPreferences] = useState(Cookies.get('preferences')|| '')
+  const [preferences, setPreferences] = useState(Cookies.get('preferences') || '')
 
   const [deletePassword, setDeletePassword] = useState('')
 
@@ -32,6 +31,8 @@ export default function UpdateUserAccount () {
     severity: 'info',
     message: ''
   })
+
+  const maxUsernameChars = 25
 
   useEffect(() => {
     async function fetchUsername () {
@@ -68,6 +69,8 @@ export default function UpdateUserAccount () {
     e.preventDefault()
     if (!newUsername.trim())
       return showSnack('Please enter a new username', 'warning')
+    if (newUsername.length > maxUsernameChars)
+      return showSnack(`Username cannot exceed ${maxUsernameChars} characters`, 'warning')
     if (!password1)
       return showSnack('Please enter your current password', 'warning')
 
@@ -214,6 +217,9 @@ export default function UpdateUserAccount () {
           onChange={e => setNewUsername(e.target.value)}
           sx={{ mb: 2 }}
           required
+          inputProps={{ maxLength: maxUsernameChars }}
+          helperText={`${newUsername.length}/${maxUsernameChars} characters`}
+          error={newUsername.length > maxUsernameChars}
         />
         <Typography variant='caption'>
           *Enter current password to authorize change.
