@@ -115,10 +115,22 @@ export default function CanvasEditor () {
   ).current
 
   useEffect(() => {
-  return () => {
-    throttledUpdateLine.cancel()
-  }
-}, [])
+    return () => {
+      throttledUpdateLine.cancel()
+    }
+  }, [])
+
+  const throttledPan = useRef(
+    throttle((dx, dy) => {
+      setStagePosition(pos => ({ x: pos.x + dx, y: pos.y + dy }))
+    }, 50) // ~60fps
+  ).current
+
+  useEffect(() => {
+    return () => {
+      throttledPan.cancel()
+    }
+  }, [])
 
   // Upload image to backend and get image ID
   async function uploadImage (blob) {
@@ -330,7 +342,7 @@ export default function CanvasEditor () {
       const pointer = stage.getPointerPosition()
       const dx = pointer.x - lastPanPos.current.x
       const dy = pointer.y - lastPanPos.current.y
-      setStagePosition(pos => ({ x: pos.x + dx, y: pos.y + dy }))
+      throttledPan(dx, dy)
       lastPanPos.current = pointer
       return
     }
