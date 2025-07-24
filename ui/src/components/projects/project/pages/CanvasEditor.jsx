@@ -25,9 +25,11 @@ import {
   Typography,
   ToggleButton,
   ToggleButtonGroup
-} from '@mui/material';
-
+} from '@mui/material'
+import StrokeSizeStepper from '../StrokeSizeStepper'
 // Draggable & transformable image with forwarded ref
+
+
 const DraggableImage = forwardRef(
   (
     { id, x, y, scaleX = 1, scaleY = 1, isSelected, onSelect, onChange },
@@ -95,7 +97,7 @@ export default function CanvasEditor () {
   const lastPanPos = useRef(null)
   const lastEditTimeRef = useRef(Date.now())
   const lastSaveTimeRef = useRef(0)
-  const [backgroundColor, setBackgroundColor] =  useState(
+  const [backgroundColor, setBackgroundColor] = useState(
     Cookies.get('preferences') === 'dark' ? '#111111' : '#ffffff'
   )
 
@@ -456,99 +458,94 @@ export default function CanvasEditor () {
       }}
     >
       {/* Toolbar */}
-  <Box
-      sx={{
-        position: 'absolute',
-        top: 10,
-        left: 10,
-        zIndex: 1400,
-        // backgroundColor: 'rgba(255,255,255,0.9)',
-        borderRadius: 2,
-        padding: 2,
-        display: 'flex',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 2
-      }}
-    >
-      {/* Stroke Color Picker */}
-      <TextField
-        type="color"
-        label="Color"
-        value={strokeColor}
-        onChange={e => setStrokeColor(e.target.value)}
-        disabled={tool === 'eraser'}
-        size="small"
-        InputLabelProps={{ shrink: true }}
-        sx={{ width: 80 }}
-      />
-
-      {/* Background Color Picker */}
-      <TextField
-        type="color"
-        label="Background"
-        value={backgroundColor}
-        onChange={e => setBackgroundColor(e.target.value)}
-        size="small"
-        InputLabelProps={{ shrink: true }}
-        sx={{ width: 110 }}
-      />
-
-      {/* Stroke Width Slider */}
-      <Box display="flex" alignItems="center" gap={1} width={150}>
-        <Typography>Size:</Typography>
-        <Slider
-          value={strokeWidth}
-          onChange={(e, newValue) => setStrokeWidth(newValue)}
-          min={1}
-          max={30}
-        />
-      </Box>
-
-      {/* Tool Selector */}
-      <ToggleButtonGroup
-        value={tool}
-        exclusive
-        onChange={(e, newTool) => {
-          if (newTool !== null) setTool(newTool);
+      <Box
+        sx={{
+          position: 'absolute',
+          top: 10,
+          left: 10,
+          zIndex: 1400,
+          // backgroundColor: 'rgba(255,255,255,0.9)',
+          borderRadius: 2,
+          padding: 2,
+          display: 'flex',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: 2
         }}
-        size="small"
       >
-        <ToggleButton value="pen">Pencil</ToggleButton>
-        <ToggleButton value="eraser">Eraser</ToggleButton>
-        <ToggleButton value="pan">Pan</ToggleButton>
-      </ToggleButtonGroup>
+        {/* Stroke Color Picker */}
+        <TextField
+          type='color'
+          label='Color'
+          value={strokeColor}
+          onChange={e => setStrokeColor(e.target.value)}
+          disabled={tool === 'eraser'}
+          size='small'
+          InputLabelProps={{ shrink: true }}
+          sx={{ width: 80 }}
+        />
 
-      {/* Action Buttons */}
-      <Button onClick={handleUndo} disabled={history.length === 0}>
-        Undo
-      </Button>
-      <Button onClick={handleRedo} disabled={redoStack.length === 0}>
-        Redo
-      </Button>
-      <Button onClick={exportAsImage}>Export Image</Button>
-      <Button onClick={exportAsPDF}>Export PDF</Button>
-      <Button onClick={handleClear}>Clear Canvas</Button>
-      <Button
-        onClick={() =>
-          navigate(
-            `/projects/project/${project_id}/pages/page/${page_id}/canvases`
-          )
-        }
-      >
-        Close
-      </Button>
+        {/* Background Color Picker */}
+        <TextField
+          type='color'
+          label='Background'
+          value={backgroundColor}
+          onChange={e => setBackgroundColor(e.target.value)}
+          size='small'
+          InputLabelProps={{ shrink: true }}
+          sx={{ width: 110 }}
+        />
 
-      {/* Delete Selected Image */}
-      {selectedImageIndex !== null && (
-        <Button
-          onClick={handleDeleteSelectedImage}
-          sx={{ backgroundColor: 'red', color: 'white' }}
+        {/* Stroke Width Slider */}
+        <StrokeSizeStepper
+          strokeWidth={strokeWidth}
+          setStrokeWidth={setStrokeWidth}
+        />
+
+        {/* Tool Selector */}
+        <ToggleButtonGroup
+          value={tool}
+          exclusive
+          onChange={(e, newTool) => {
+            if (newTool !== null) setTool(newTool)
+          }}
+          size='small'
         >
-          Delete Selected Image
+          <ToggleButton value='pen'>Pencil</ToggleButton>
+          <ToggleButton value='eraser'>Eraser</ToggleButton>
+          <ToggleButton value='pan'>Pan</ToggleButton>
+        </ToggleButtonGroup>
+
+        {/* Action Buttons */}
+        <Button onClick={handleUndo} disabled={history.length === 0}>
+          Undo
         </Button>
-      )}
-    </Box>
+        <Button onClick={handleRedo} disabled={redoStack.length === 0}>
+          Redo
+        </Button>
+        <Button onClick={exportAsImage}>Export Image</Button>
+        <Button onClick={exportAsPDF}>Export PDF</Button>
+        <Button onClick={handleClear}>Clear Canvas</Button>
+        <Button
+          onClick={() =>
+            navigate(
+              `/projects/project/${project_id}/pages/page/${page_id}/canvases`
+            )
+          }
+        >
+          Close
+        </Button>
+
+        {/* Delete Selected Image */}
+        {selectedImageIndex !== null && (
+          <Button
+            onClick={handleDeleteSelectedImage}
+            sx={{ backgroundColor: 'red', color: 'white' }}
+          >
+            Delete Selected Image
+          </Button>
+        )}
+      </Box>
 
       {/* Canvas Stage */}
       <Stage
