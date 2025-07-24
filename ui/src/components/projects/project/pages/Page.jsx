@@ -47,20 +47,38 @@ export default function Page () {
         Page {page_id}
       </Typography>
 
-      <Tabs
-        value={tabIndex}
-        onChange={handleChange}
-        textColor='primary'
-        indicatorColor='primary'
-        sx={{ mb: 1, flexShrink: 0 }}
-        variant='scrollable'
-        scrollButtons='auto'
-        allowScrollButtonsMobile
-      >
-        {navLinks.map(({ label }) => (
-          <Tab key={label} label={label} />
-        ))}
-      </Tabs>
+<Tabs
+  value={tabIndex}
+  onChange={handleChange}
+  textColor="inherit"
+  indicatorColor="primary"
+  sx={{ mb: 1, flexShrink: 0 }}
+  variant="scrollable"
+  scrollButtons="auto"
+  allowScrollButtonsMobile
+>
+  {navLinks.map(({ label }) => (
+    <Tab
+      key={label}
+      label={label}
+      sx={{
+        color: 'text.primary',
+        '&.Mui-selected': {
+          color: 'primary.main',
+          fontWeight: 'bold',
+        },
+        '&:hover': {
+          color: 'primary.light',
+        },
+        '&:focus': {
+          outline: '2px solid',
+          outlineColor: 'primary.main',
+          outlineOffset: '2px',
+        },
+      }}
+    />
+  ))}
+</Tabs>
 
       <Paper
         elevation={1}
