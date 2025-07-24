@@ -10,8 +10,9 @@ import {
 } from '@mui/material'
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar'
 import moment from 'moment'
+import Cookies from 'js-cookie';
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-
+import './Calendar.css'
 const localizer = momentLocalizer(moment)
 
 const typeColors = {
@@ -34,11 +35,18 @@ const toUnixSecondsUTC = date => {
   return utcUnixTime
 }
 
+if (Cookies.get('preferences') == 'dark'){
+  import('./Calendar_dark.css');
+}
+
+
 const allTypes = Object.keys(typeColors)
 const logTypes = ['CREATE', 'DELETE', 'UPDATE', 'UPLOAD', 'REVIEW']
 
 // Custom Event component to hide time text on week/day views
 function EventComponent ({ event, title, view }) {
+
+
   if (view === Views.WEEK || view === Views.DAY) {
     return (
       <div
