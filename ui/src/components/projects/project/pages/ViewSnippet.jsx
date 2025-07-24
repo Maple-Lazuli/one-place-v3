@@ -2,7 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Box, Typography, CircularProgress, Alert, Paper } from '@mui/material'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import Cookies from 'js-cookie';
 
 import 'highlight.js/styles/github.css' // or your preferred highlight theme
 
@@ -11,6 +12,7 @@ export default function ViewSnippet () {
   const [snippet, setSnippet] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [coloring, setColoring] = useState(Cookies.get('preferences') === 'dark'? oneDark : oneLight)
 
   useEffect(() => {
     const fetchSnippet = async () => {
@@ -75,12 +77,12 @@ export default function ViewSnippet () {
           border: '1px solid #ccc',
           borderRadius: 2,
           overflow: 'auto',
-          backgroundColor: '#1e1e1e'
+          // backgroundColor: '#1e1e1e'
         }}
       >
         <SyntaxHighlighter
           language={snippet.language || 'text'}
-          style={oneDark}
+          style={coloring}
           wrapLines
           wrapLongLines
           customStyle={{

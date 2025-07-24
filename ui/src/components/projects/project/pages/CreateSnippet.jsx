@@ -11,8 +11,8 @@ import {
 } from '@mui/material'
 
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
-
+import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
+import Cookies from 'js-cookie';
 export default function CreateSnippetForm () {
   const [title, setTitle] = useState('')
   const [language, setLanguage] = useState('')
@@ -21,6 +21,7 @@ export default function CreateSnippetForm () {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [coloring, setColoring] = useState(Cookies.get('preferences') === 'dark'? oneDark : oneLight)
 
   const { project_id, page_id } = useParams()
   const navigate = useNavigate()
@@ -182,7 +183,7 @@ export default function CreateSnippetForm () {
         </Typography>
         <SyntaxHighlighter
           language={language || 'text'}
-          style={oneDark}
+          style={coloring}
           wrapLines
           wrapLongLines
           customStyle={{

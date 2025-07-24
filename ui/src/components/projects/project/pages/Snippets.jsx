@@ -3,6 +3,7 @@ import {
   Typography,
   Box,
   Button,
+  Divider,
   Grid
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -36,13 +37,6 @@ export default function PageSnippets() {
 
   return (
     <Box sx={{ p: 2, maxHeight: '80vh', overflowY: 'auto' }}>
-      <Typography variant="h5" gutterBottom>
-        Snippets for Page {page_id}
-      </Typography>
-
-      <Typography variant="body1" sx={{ mb: 2 }}>
-        Snippet Stuff
-      </Typography>
 
       <Button
         component={Link}
@@ -53,7 +47,7 @@ export default function PageSnippets() {
         Create New Snippet
       </Button>
 
-      <Typography variant="h6" gutterBottom>Snippets</Typography>
+      <Divider sx={{ my: 2 }}>Code Snippets</Divider>
       <Grid container spacing={2}>
         {sortedSnippets.map((snippet) => (
           <Grid key={snippet.CodeID}>
