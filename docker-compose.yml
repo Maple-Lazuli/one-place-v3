@@ -8,29 +8,31 @@ services:
       POSTGRES_DB: mydatabase
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-    ports:
-      - "5432:5432"
     networks:
       - backend
 
-  # backend:
-  #   build: ./api
-  #   ports:
-  #     - "3001:3001"
-  #   depends_on:
-  #     - db
-  #   networks:
-  #     - backend
-  #     - frontend
+  backend:
+    build: ./api
+    ports:
+      - "3001:3001"
+    depends_on:
+      - db
+    networks:
+      - backend
+      - frontend
 
-  # frontend:
-  #   build: ./ui
-  #   ports:
-  #     - "3000:3000"
-  #   networks:
-  #     - frontend
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile  # This is the multi-stage Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - frontend
+      - backend
 
 networks:
   frontend:
   backend:
-

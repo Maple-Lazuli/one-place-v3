@@ -15,6 +15,7 @@ COPY pyproject.toml uv.lock ./
 
 # Install project and dependencies (no --no-deps)
 RUN uv pip install --system .
+RUN uv pip install --system gunicorn .
 
 COPY . .
 
@@ -23,4 +24,5 @@ RUN uv sync
 EXPOSE 3001
 
 # Use uv to run your app
-CMD ["uv", "run", "run.py"]
+# CMD ["uv", "run", "run.py"]
+CMD ["gunicorn", "-w", "4", "-b", "0.0.0.0:3001", "run:app"]
