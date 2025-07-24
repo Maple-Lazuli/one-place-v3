@@ -4,7 +4,8 @@ DB_CONFIG = {
     "dbname": "mydatabase",
     "user": "myuser",
     "password": "mypassword",
-    "host": "localhost",
+    # "host": "localhost",
+    "host": "db",
     "port": "5432",
 }
 
