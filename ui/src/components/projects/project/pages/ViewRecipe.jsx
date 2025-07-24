@@ -74,7 +74,7 @@ return (
       sx={{
         mt: 2,
         p: 2,
-        backgroundColor: '#f6f8fa',
+        // backgroundColor: '#f6f8fa',
         overflowY: 'auto',
         maxHeight: '75vh', // fixed max height in px or use '60vh' etc
         whiteSpace: 'pre-wrap',

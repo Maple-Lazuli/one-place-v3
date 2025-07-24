@@ -248,7 +248,7 @@ export default function UpdateRecipeForm () {
           overflow: 'auto',
           
           whiteSpace: 'pre-wrap',
-          backgroundColor: '#fafafa',
+          // backgroundColor: '#fafafa',
           height: '90%'
         }}
       >

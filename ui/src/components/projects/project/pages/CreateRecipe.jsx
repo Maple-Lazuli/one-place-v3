@@ -222,7 +222,7 @@ export default function CreateRecipeForm () {
           border: '1px solid #ccc',
           borderRadius: 2,
           p: 2,
-          bgcolor: '#f9f9f9',
+          // bgcolor: '#f9f9f9',
           fontSize: '1rem'
         }}
       >

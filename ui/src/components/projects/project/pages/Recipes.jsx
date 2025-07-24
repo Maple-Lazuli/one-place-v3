@@ -3,6 +3,7 @@ import {
   Typography,
   Box,
   Button,
+  Divider,
   Grid
 } from '@mui/material'
 import { useEffect, useState } from 'react'
@@ -36,14 +37,6 @@ export default function PageRecipes () {
 
   return (
     <Box sx={{ p: 2, maxHeight: '80vh', overflowY: 'auto' }}>
-      <Typography variant="h5" gutterBottom>
-        Recipes for Page {page_id}
-      </Typography>
-
-      <Typography variant="body1" sx={{ mb: 2, overflowY: 'auto' }}>
-        Recipes Stuff
-      </Typography>
-
       <Button
         component={Link}
         to={`/projects/project/${project_id}/pages/page/${page_id}/recipes/create`}
@@ -53,7 +46,7 @@ export default function PageRecipes () {
         Create New Recipe
       </Button>
 
-      <Typography variant="h6" gutterBottom>Recipes</Typography>
+     <Divider sx={{ my: 2 }}>Recipes</Divider>
       <Grid container spacing={2}>
         {sortedRecipes.map((recipe) => (
           <Grid key={recipe.RecipeID}>
