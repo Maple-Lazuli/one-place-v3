@@ -149,7 +149,7 @@ export default function Projects() {
       ) : (
         <Grid container spacing={3}>
           {filteredProjects.map(p => (
-            <Grid item key={p.ProjectID} xs={12} sm={6} md={4} lg={3}>
+            <Grid key={p.ProjectID}>
               <ProjectCard
                 name={p.name}
                 description={p.description}

@@ -3,7 +3,6 @@ import {
   Card,
   CardContent,
   Typography,
-  Box,
   Button,
   Stack
 } from '@mui/material'
@@ -12,25 +11,25 @@ import { Link, useParams } from 'react-router-dom'
 export default function PageCard ({
   name,
   page_id,
+  last_edit,
   onDelete
 }) {
   const { project_id } = useParams()
 
-
-  const handleDelete = async page_id => {
+  const handleDelete = async (page_id) => {
     try {
       const res = await fetch('/api/pages/delete', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json'
         },
-        credentials: 'include', // to send the cookie
-        body: JSON.stringify({ page_id: page_id })
+        credentials: 'include',
+        body: JSON.stringify({ page_id })
       })
 
       const data = await res.json()
       if (data.status === 'success') {
-        onDelete?.(page_id) // Notify parent to remove the card
+        onDelete?.(page_id)
       } else {
         console.error(data.message)
       }
@@ -39,17 +38,24 @@ export default function PageCard ({
     }
   }
 
+  const formatDate = (unixTimestamp) => {
+    const timestamp = unixTimestamp > 1e12 ? unixTimestamp : unixTimestamp * 1000
+    const date = new Date(timestamp)
+    return date.toLocaleString()
+  }
+
   return (
-    <Card
-      sx={{
-        maxWidth: 400,
-        mb: 2,
-      }}
-    >
+    <Card sx={{ maxWidth: 400, mb: 2 }}>
       <CardContent>
         <Typography variant='h6' gutterBottom>
           {name}
         </Typography>
+
+        {last_edit && (
+          <Typography variant='body2' color='text.secondary' sx={{ mb: 1 }}>
+            Last Edited: {formatDate(last_edit)}
+          </Typography>
+        )}
 
         <Stack direction='row' spacing={1}>
           <Button
@@ -61,6 +67,7 @@ export default function PageCard ({
           </Button>
           <Button
             variant='outlined'
+            color='warning'
             component={Link}
             to={`/projects/project/${project_id}/pages/update/${page_id}`}
           >
