@@ -85,17 +85,20 @@ export default function TodoCard ({
       sx={{
         maxWidth: 400,
         minWidth: 200,
-        minHeight: 200,
+        minHeight: 215,
         mb: 2,
         opacity: isPast ? 0.5 : 1,
         border: borderColor
           ? `3px solid ${borderColor}`
           : '2px solid rgba(0, 0, 0, 0.2)',
         borderRadius: 2,
-        boxShadow: 3
+        boxShadow: 3,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between'
       }}
     >
-      <CardContent>
+      <CardContent sx={{ flexGrow: 1 }}>
         <Typography variant='h6' gutterBottom>
           {name}
         </Typography>
@@ -112,12 +115,17 @@ export default function TodoCard ({
             {description}
           </Typography>
         </Box>
-        <Box sx={{ whiteSpace: 'pre-line', mb: 1 }}>
+        {/* <Box sx={{ whiteSpace: 'pre-line', mb: 1 }}> */}
           <Typography variant='caption' color='text.primary'>
-            {recurring? `(recurring: ${interval} day${interval === 1? "" : 's'})`: undefined}
+            {recurring
+              ? `(recurring: ${interval} day${interval === 1 ? '' : 's'})`
+              : undefined}
           </Typography>
-        </Box>
+        {/* </Box> */}
+      </CardContent>
 
+      {/* Button row pinned to bottom */}
+      <Box sx={{ px: 1, pb: 2 }}>
         <Stack direction='row' spacing={1}>
           {!isPast && (
             <Button
@@ -144,7 +152,7 @@ export default function TodoCard ({
             Delete
           </Button>
         </Stack>
-      </CardContent>
+      </Box>
     </Card>
   )
 }
