@@ -9,11 +9,19 @@ import remarkGfm from 'remark-gfm'
 import { replaceImageHosts } from '../../../../utils/scripts.js'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
+import {
+  oneDark,
+  oneLight
+} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import Cookies from 'js-cookie'
 
 export default function PageEditor () {
   const { page_id } = useParams()
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
+  const [coloring, setColoring] = useState(
+    Cookies.get('preferences') === 'dark' ? oneDark : oneLight
+  )
   const [showPreview, setShowPreview] = useState(false)
   const lastEditTimeRef = useRef(Date.now())
   const lastSaveTimeRef = useRef(0)
@@ -182,7 +190,6 @@ export default function PageEditor () {
   }
 
   const handleChange = e => {
-    
     setText(e.target.value)
     lastEditTimeRef.current = Date.now()
   }
@@ -222,24 +229,27 @@ export default function PageEditor () {
           boxSizing: 'border-box'
         }}
       >
-        <textarea
-          ref={textareaRef}
+        <TextField
+          multiline
+          inputRef={textareaRef}
           value={text}
           onChange={handleChange}
-          style={{
+          placeholder='Write your markdown here...'
+          fullWidth
+          minRows={20}
+          maxRows={Infinity}
+          variant='outlined'
+          sx={{
             flex: 1,
             fontFamily: 'monospace',
-            padding: '1rem',
-            border: '1px solid #ccc',
-            resize: 'none',
-            height: '100%',
-            margin: 0,
-            boxSizing: 'border-box',
             overflow: 'auto',
-            whiteSpace: 'pre-wrap',
-            wordWrap: 'break-word'
+            height: '100%',
+            '& .MuiInputBase-input': {
+              whiteSpace: 'pre-wrap',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word'
+            }
           }}
-          placeholder='Write your markdown here...'
         />
 
         {showPreview && (
@@ -249,7 +259,7 @@ export default function PageEditor () {
               flexShrink: 0,
               width: containerWidth ? containerWidth * 0.45 : '45%',
               overflow: 'hidden',
-              background: '#fff',
+              // background: '#fff',
               border: '1px solid #ddd',
               padding: '1rem',
               height: '100%',
