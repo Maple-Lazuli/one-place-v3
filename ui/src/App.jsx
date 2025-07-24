@@ -54,6 +54,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
 import Box from '@mui/material/Box'
 import Equations from './components/projects/project/Equations'
+import Recipes from './components/projects/project/Recipes';
 import ProjectCalendar from './components/ProjectCalendar'
 import PageRecipes from './components/projects/project/pages/Recipes'
 import ViewRecipe from './components/projects/project/pages/ViewRecipe'
@@ -209,6 +210,8 @@ export default function App () {
                   element={<UpdateEventForm />}
                 />
                 <Route path='translations' element={<Translations />} />
+                <Route path='recipes' element={<Recipes />} />
+                
                 <Route path='snippets' element={<Snippets />} />
                 <Route path='canvases' element={<Canvases />} />
                 <Route path='' element={<ProjectOverview />} />
