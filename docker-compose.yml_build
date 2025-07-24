@@ -1,12 +1,18 @@
 version: "3.9"
 services:
   db:
-    image: lovelylazuli/one-place-v3-db:latest 
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydatabase
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
     networks:
       - backend
 
   backend:
-    image: lovelylazuli/one-place-v3-backend:latest
+    build: ./api
     ports:
       - "3001:3001"
     depends_on:
@@ -16,7 +22,9 @@ services:
       - frontend
 
   nginx:
-    image: lovelylazuli/one-place-v3-frontend:latest
+    build:
+      context: .
+      dockerfile: Dockerfile  # This is the multi-stage Dockerfile
     ports:
       - "80:80"
     depends_on:
