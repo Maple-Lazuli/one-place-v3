@@ -25,6 +25,8 @@ import {
 import Cookies from 'js-cookie'
 
 export default function UpdateRecipeForm () {
+  const maxNameCharLimit = 64
+  const maxDescriptionLimit = 255
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [content, setContent] = useState('')
@@ -70,7 +72,7 @@ export default function UpdateRecipeForm () {
 
   // Paste handler to upload images and insert markdown
   useEffect(() => {
-    const handlePaste = async (e) => {
+    const handlePaste = async e => {
       if (document.activeElement !== textareaRef.current) return
       const items = e.clipboardData?.items
       if (!items) return
@@ -107,7 +109,7 @@ export default function UpdateRecipeForm () {
   }, [content])
 
   // Insert markdown text at cursor position inside content
-  const insertAtCursor = (markdown) => {
+  const insertAtCursor = markdown => {
     const textarea = textareaRef.current
     if (!textarea) return
 
@@ -128,7 +130,7 @@ export default function UpdateRecipeForm () {
     }, 0)
   }
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault()
     setError('')
     setSuccess('')
@@ -165,7 +167,9 @@ export default function UpdateRecipeForm () {
 
       setSuccess(data.message || 'Recipe updated successfully!')
       setTimeout(() => {
-        navigate(`/projects/project/${project_id}/pages/page/${page_id}/recipes`)
+        navigate(
+          `/projects/project/${project_id}/pages/page/${page_id}/recipes`
+        )
       }, 1000)
     } catch (err) {
       setError(err.message)
@@ -207,10 +211,13 @@ export default function UpdateRecipeForm () {
         {!fetching && (
           <>
             <TextField
-              label='Title'
+              label='Name'
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
+              inputProps={{ maxLength: maxNameCharLimit }}
+              helperText={`${title.length}/${maxNameCharLimit} characters`}
+              error={title.length > maxNameCharLimit}
             />
 
             <TextField
@@ -220,6 +227,9 @@ export default function UpdateRecipeForm () {
               value={description}
               onChange={e => setDescription(e.target.value)}
               required
+              inputProps={{ maxLength: maxDescriptionLimit }}
+              helperText={`${description.length}/${maxDescriptionLimit} characters`}
+              error={description.length > maxDescriptionLimit}
             />
 
             <TextField
@@ -254,7 +264,7 @@ export default function UpdateRecipeForm () {
           border: '1px solid #ccc',
           borderRadius: 2,
           overflow: 'auto',
-          
+
           whiteSpace: 'pre-wrap',
           // backgroundColor: '#fafafa',
           height: '90%'
@@ -263,47 +273,47 @@ export default function UpdateRecipeForm () {
         <Typography variant='h6' gutterBottom>
           Preview
         </Typography>
-              <ReactMarkdown
-                children={content}
-                remarkPlugins={[remarkMath, remarkGfm]}
-                rehypePlugins={[rehypeKatex]}
-                components={{
-                  code ({ node, inline, className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || '')
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        language={match[1]}
-                        showLineNumbers
-                        style={coloring}
-                        PreTag='div'
-                        customStyle={{
-                          // background: 'transparent',
-                          margin: 0,
-                          padding: 0,
-                          maxheight: 300,
-                          overflowX: 'auto'
-                        }}
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, '')}
-                      </SyntaxHighlighter>
-                    ) : (
-                      <code
-                        className={className}
-                        style={{
-                          backgroundColor: '#eee',
-                          padding: '0.2em 0.4em',
-                          borderRadius: '4px',
-                          fontSize: '0.95em'
-                        }}
-                        {...props}
-                      >
-                        {children}
-                      </code>
-                    )
-                  }
-                }}
-              />
+        <ReactMarkdown
+          children={content}
+          remarkPlugins={[remarkMath, remarkGfm]}
+          rehypePlugins={[rehypeKatex]}
+          components={{
+            code ({ node, inline, className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '')
+              return !inline && match ? (
+                <SyntaxHighlighter
+                  language={match[1]}
+                  showLineNumbers
+                  style={coloring}
+                  PreTag='div'
+                  customStyle={{
+                    // background: 'transparent',
+                    margin: 0,
+                    padding: 0,
+                    maxheight: 300,
+                    overflowX: 'auto'
+                  }}
+                  {...props}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              ) : (
+                <code
+                  className={className}
+                  style={{
+                    backgroundColor: '#eee',
+                    padding: '0.2em 0.4em',
+                    borderRadius: '4px',
+                    fontSize: '0.95em'
+                  }}
+                  {...props}
+                >
+                  {children}
+                </code>
+              )
+            }
+          }}
+        />
       </Box>
     </Box>
   )

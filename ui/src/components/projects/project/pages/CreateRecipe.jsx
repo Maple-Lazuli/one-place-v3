@@ -26,6 +26,8 @@ import {
 import Cookies from 'js-cookie'
 
 export default function CreateRecipeForm () {
+  const maxNameCharLimit = 64
+  const maxDescriptionLimit = 255
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [content, setContent] = useState('')
@@ -183,10 +185,13 @@ export default function CreateRecipeForm () {
         {success && <Alert severity='success'>{success}</Alert>}
 
         <TextField
-          label='Title'
+          label='Name'
           value={title}
           onChange={e => setTitle(e.target.value)}
           required
+          inputProps={{ maxLength: maxNameCharLimit }}
+          helperText={`${title.length}/${maxNameCharLimit} characters`}
+          error={title.length > maxNameCharLimit}
         />
 
         <TextField
@@ -196,6 +201,9 @@ export default function CreateRecipeForm () {
           value={description}
           onChange={e => setDescription(e.target.value)}
           required
+          inputProps={{ maxLength: maxDescriptionLimit }}
+          helperText={`${description.length}/${maxDescriptionLimit} characters`}
+          error={description.length > maxDescriptionLimit}
         />
 
         <TextField
@@ -236,47 +244,47 @@ export default function CreateRecipeForm () {
         <Typography variant='h6' gutterBottom>
           Preview
         </Typography>
-              <ReactMarkdown
-                children={content}
-                remarkPlugins={[remarkMath, remarkGfm]}
-                rehypePlugins={[rehypeKatex]}
-                components={{
-                  code ({ node, inline, className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || '')
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        language={match[1]}
-                        showLineNumbers
-                        style={coloring}
-                        PreTag='div'
-                        customStyle={{
-                          // background: 'transparent',
-                          margin: 0,
-                          padding: 0,
-                          maxheight: 300,
-                          overflowX: 'auto'
-                        }}
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, '')}
-                      </SyntaxHighlighter>
-                    ) : (
-                      <code
-                        className={className}
-                        style={{
-                          backgroundColor: '#eee',
-                          padding: '0.2em 0.4em',
-                          borderRadius: '4px',
-                          fontSize: '0.95em'
-                        }}
-                        {...props}
-                      >
-                        {children}
-                      </code>
-                    )
-                  }
-                }}
-              />
+        <ReactMarkdown
+          children={content}
+          remarkPlugins={[remarkMath, remarkGfm]}
+          rehypePlugins={[rehypeKatex]}
+          components={{
+            code ({ node, inline, className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '')
+              return !inline && match ? (
+                <SyntaxHighlighter
+                  language={match[1]}
+                  showLineNumbers
+                  style={coloring}
+                  PreTag='div'
+                  customStyle={{
+                    // background: 'transparent',
+                    margin: 0,
+                    padding: 0,
+                    maxheight: 300,
+                    overflowX: 'auto'
+                  }}
+                  {...props}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              ) : (
+                <code
+                  className={className}
+                  style={{
+                    backgroundColor: '#eee',
+                    padding: '0.2em 0.4em',
+                    borderRadius: '4px',
+                    fontSize: '0.95em'
+                  }}
+                  {...props}
+                >
+                  {children}
+                </code>
+              )
+            }
+          }}
+        />
       </Box>
     </Box>
   )
