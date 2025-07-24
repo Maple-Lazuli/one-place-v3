@@ -2,6 +2,7 @@ version: "3.9"
 services:
   db:
     image: lovelylazuli/one-place-v3-db:latest 
+    restart: unless-stopped
     networks:
       - backend
 
@@ -11,12 +12,14 @@ services:
       - "3001:3001"
     depends_on:
       - db
+    restart: unless-stopped
     networks:
       - backend
       - frontend
 
   nginx:
     image: lovelylazuli/one-place-v3-frontend:latest
+    restart: unless-stopped
     ports:
       - "80:80"
     depends_on:
