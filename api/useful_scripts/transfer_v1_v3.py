@@ -26,6 +26,10 @@ def create_image(image_handle, dst_address, dst_ip, cookie):
 
 
 def process_markdown_images(markdown_text, source_file, dst_address, dst_ip, cookie):
+    if not isinstance(markdown_text, str):
+        print(f"Expected string, got {type(markdown_text)}")
+        return ""
+
     pattern = re.compile(
         r'!\[(.*?)\]\((https?://[^)]*/images\?image=([a-fA-F0-9]+))\)'
     )
@@ -34,25 +38,15 @@ def process_markdown_images(markdown_text, source_file, dst_address, dst_ip, coo
         alt_text, full_url, image_id = match.groups()
         image_path = os.path.join("images", f"{image_id}.png")
 
-        try:
-            with zipfile.ZipFile(source_file, 'r') as zip_ref:
-                with zip_ref.open(image_path) as file_handle:
-                    content = file_handle.read()
-
-            # Save temp file for upload
-            temp_path = os.path.join("temp", f"{image_id}.png")
-            with open(temp_path, "wb") as temp_file:
-                temp_file.write(content)
-
-            with open(temp_path, "rb") as image_handle:
+        with zipfile.ZipFile(source_file, 'r') as zip_ref:
+            with zip_ref.open(image_path) as file_handle:
+                content = file_handle.read()
+            with open("temp/" + f"{image_id}.png", "wb") as file_out:
+                file_out.write(content)
+            with open("temp/" + f"{image_id}.png", "rb") as image_handle:
                 new_url = create_image(image_handle, dst_address, dst_ip, cookie)
 
-            # Replace the whole markdown image with new URL
-            return f"![{alt_text}]({new_url})"
-
-        except KeyError:
-            print(f"Image not found in zip: {image_path}")
-            return match.group(0)  # fallback to original
+        return f"![{alt_text}]({new_url})"
 
     return pattern.sub(replacer, markdown_text)
 
@@ -96,7 +90,7 @@ def main(dst_username, dst_password, dst_ip, source_file):
     projects = [content[key] for key in content]
 
     for project in projects:
-        time.sleep(.5)
+        time.sleep(.1)
         res = r.post(dst_address + "/projects/create", json={
             "project_name": project['title'],
             "project_description": project['purpose'],
@@ -111,7 +105,7 @@ def main(dst_username, dst_password, dst_ip, source_file):
 
         for key in project['pages']:
             page = project['pages'][key]
-            time.sleep(.5)
+            time.sleep(.1)
             res = r.post(dst_address + "/pages/create", json={
                 "project_id": new_project_id,
                 "name": page['title'],
@@ -137,7 +131,7 @@ def main(dst_username, dst_password, dst_ip, source_file):
                 print(f"Updated page: {page['title']}")
 
             for snippet in page.get('code_snippets', {}).values():
-                time.sleep(.5)
+                time.sleep(.1)
                 res = r.post(dst_address + "/code_snippet/create", json={
                     "page_id": new_page_id,
                     "name": snippet['title'],
@@ -169,7 +163,7 @@ def main(dst_username, dst_password, dst_ip, source_file):
             }, cookies=cookie)
 
             for file in project['files'].values():
-                time.sleep(.5)
+                time.sleep(.1)
                 with zipfile.ZipFile(source_file, 'r') as zip_ref:
                     with zip_ref.open("files/" + file['file_name']) as file_handle:
                         content = file_handle.read()
