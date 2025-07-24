@@ -193,7 +193,7 @@ export default function CreateSnippetForm () {
           border: '1px solid #ccc',
           borderRadius: 2,
           overflow: 'auto',
-          backgroundColor: '#1e1e1e'
+          // backgroundColor: '#1e1e1e'
         }}
       >
         <Typography variant='h6' gutterBottom color='white'>

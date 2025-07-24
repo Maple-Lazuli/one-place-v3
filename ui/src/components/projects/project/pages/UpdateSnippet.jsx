@@ -160,7 +160,7 @@ export default function UpdateSnippetForm () {
         {!fetching && (
           <>
             <TextField
-              label='Title'
+              label='Name'
               value={title}
               onChange={e => setTitle(e.target.value)}
               required
