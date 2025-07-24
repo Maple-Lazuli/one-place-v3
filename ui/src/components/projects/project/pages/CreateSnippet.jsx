@@ -185,6 +185,7 @@ export default function CreateSnippetForm () {
           language={language || 'text'}
           style={coloring}
           wrapLines
+          showLineNumbers
           wrapLongLines
           customStyle={{
             borderRadius: '8px',

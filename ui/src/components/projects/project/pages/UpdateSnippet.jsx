@@ -217,6 +217,7 @@ export default function UpdateSnippetForm () {
           style={coloring}
           wrapLines
           wrapLongLines
+          showLineNumbers
           customStyle={{
             borderRadius: '8px',
             padding: '16px'

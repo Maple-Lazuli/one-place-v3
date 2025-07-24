@@ -84,6 +84,7 @@ export default function ViewSnippet () {
           language={snippet.language || 'text'}
           style={coloring}
           wrapLines
+          showLineNumbers
           wrapLongLines
           customStyle={{
             borderRadius: '8px',
