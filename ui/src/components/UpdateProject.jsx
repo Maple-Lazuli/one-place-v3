@@ -14,7 +14,8 @@ import {
 export default function EditProject() {
   const { project_id } = useParams()
   const navigate = useNavigate()
-  const maxChars = 250
+  const nameMaxChars = 100
+  const descMaxChars = 250
 
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
@@ -102,8 +103,13 @@ export default function EditProject() {
       return
     }
 
-    if (description.length > maxChars) {
-      setError(`Description cannot exceed ${maxChars} characters`)
+    if (name.length > nameMaxChars) {
+      setError(`Name cannot exceed ${nameMaxChars} characters`)
+      return
+    }
+
+    if (description.length > descMaxChars) {
+      setError(`Description cannot exceed ${descMaxChars} characters`)
       return
     }
 
@@ -161,6 +167,9 @@ export default function EditProject() {
           margin="normal"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          inputProps={{ maxLength: nameMaxChars }}
+          helperText={`${name.length}/${nameMaxChars} characters`}
+          error={name.length > nameMaxChars}
         />
 
         <TextField
@@ -171,9 +180,9 @@ export default function EditProject() {
           margin="normal"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          inputProps={{ maxLength: maxChars }}
-          helperText={`${description.length}/${maxChars} characters`}
-          error={description.length > maxChars}
+          inputProps={{ maxLength: descMaxChars }}
+          helperText={`${description.length}/${descMaxChars} characters`}
+          error={description.length > descMaxChars}
         />
 
         <Box sx={{ mt: 2 }}>

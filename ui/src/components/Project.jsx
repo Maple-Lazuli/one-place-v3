@@ -84,7 +84,7 @@ export default function Project () {
         <Typography variant='h6' gutterBottom>
           Project {project_id}
         </Typography>
-        <Divider sx={{ borderColor: 'primary.contrastText', mb: 2 }} />
+        <Divider sx={{ borderColor: 'text.primary', borderBottomWidth: 2, mb: 2 }} />
         <Stack spacing={1}>
           {links.map(link => (
             <Button
@@ -95,7 +95,7 @@ export default function Project () {
               sx={{
                 justifyContent: 'flex-start',
                 fontWeight: 'medium',
-                color: 'primary.contrastText',
+                color: 'text.primary',
                 '&:hover': { bgcolor: 'primary.dark' },
                 textTransform: 'none'
               }}
