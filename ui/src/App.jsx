@@ -212,6 +212,7 @@ export default function App () {
                 <Route path='snippets' element={<Snippets />} />
                 <Route path='canvases' element={<Canvases />} />
                 <Route path='' element={<ProjectOverview />} />
+                <Route path='overview' element={<ProjectOverview />} />
                 <Route path='calendar' element={<ProjectCalendar />} />
               </Route>
             </Route>

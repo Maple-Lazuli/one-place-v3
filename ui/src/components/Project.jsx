@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link, Outlet } from 'react-router-dom'
+import { useParams, Link, Outlet, useMatch } from 'react-router-dom'
 import {
   Box,
   Typography,
@@ -14,10 +14,12 @@ import MenuIcon from '@mui/icons-material/Menu'
 
 export default function Project () {
   const { project_id } = useParams()
-  const [drawerOpen, setDrawerOpen] = useState(false)
+  const match = useMatch('/projects/project/:project_id/')
+  const [drawerOpen, setDrawerOpen] = useState(!!match)
+  // const [drawerOpen, setDrawerOpen] = useState(false)
 
   const links = [
-    { label: 'Overview', path: '' },
+    { label: 'Overview', path: 'overview' },
     { label: 'Calendar', path: 'calendar' },
     { label: 'Pages', path: 'pages' },
     { label: 'Todos', path: 'todos' },
@@ -38,24 +40,24 @@ export default function Project () {
       }}
     >
       {/* Top bar with toggle */}
-<IconButton
-  onClick={() => setDrawerOpen(!drawerOpen)}
-  sx={{
-    position: 'fixed',
-    top: 8,
-    left: 8,
-    zIndex: 1301,
-    color: 'primary.contrastText',
-    animation: 'flash 0.5s ease-in-out 2',
-    '@keyframes flash': {
-      '0%': { opacity: 1 },
-      '50%': { opacity: 0.2 },
-      '100%': { opacity: 1 }
-    }
-  }}
->
-  {drawerOpen ? <CloseIcon /> : <MenuIcon />}
-</IconButton>
+      <IconButton
+        onClick={() => setDrawerOpen(!drawerOpen)}
+        sx={{
+          position: 'fixed',
+          top: 8,
+          left: 8,
+          zIndex: 1301,
+          color: 'primary.contrastText',
+          animation: 'flash 0.5s ease-in-out 2',
+          '@keyframes flash': {
+            '0%': { opacity: 1 },
+            '50%': { opacity: 0.2 },
+            '100%': { opacity: 1 }
+          }
+        }}
+      >
+        {drawerOpen ? <CloseIcon /> : <MenuIcon />}
+      </IconButton>
 
       {/* Sidebar Drawer */}
       <Drawer
