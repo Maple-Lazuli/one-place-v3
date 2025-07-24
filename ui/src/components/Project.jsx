@@ -17,7 +17,8 @@ export default function Project () {
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   const links = [
-    { label: 'Calendar', path: '' },
+    { label: 'Overview', path: '' },
+    { label: 'Calendar', path: 'calendar' },
     { label: 'Pages', path: 'pages' },
     { label: 'Todos', path: 'todos' },
     { label: 'Events', path: 'events' },

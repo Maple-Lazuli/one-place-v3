@@ -9,6 +9,7 @@ import {
   Divider
 } from '@mui/material'
 
+import Cookies from 'js-cookie';
 import { useNavigate } from 'react-router-dom'
 
 export default function UpdateUserAccount () {
@@ -16,11 +17,13 @@ export default function UpdateUserAccount () {
   const [username, setUsername] = useState('')
   const [password1, setPassword1] = useState('')
   const [password2, setPassword2] = useState('')
+  const [password3, setPassword3] = useState('')
+  
 
   const [newUsername, setNewUsername] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
-  const [preferences, setPreferences] = useState('')
+  const [preferences, setPreferences] = useState(Cookies.get('preferences')|| '')
 
   const [deletePassword, setDeletePassword] = useState('')
 
@@ -127,9 +130,9 @@ export default function UpdateUserAccount () {
     e.preventDefault()
     if (!preferences.trim())
       return showSnack('Please enter preferences', 'warning')
-    if (!password1)
-      return showSnack('Please enter your current password', 'warning')
 
+    if (!password3.trim())
+      return showSnack('Please enter password', 'warning')
     try {
       const res = await fetch('/api/users/update_user_preferences', {
         method: 'PATCH',
@@ -137,7 +140,8 @@ export default function UpdateUserAccount () {
         credentials: 'include',
         body: JSON.stringify({
           username,
-          preferences: preferences.trim()
+          preferences: preferences.trim(),
+          password: password3
         })
       })
       const data = await res.json()
@@ -283,6 +287,19 @@ export default function UpdateUserAccount () {
           sx={{ mb: 2 }}
           required
         />
+        <Typography variant='caption'>
+          *Enter current password to authorize change.
+        </Typography>
+        <TextField
+          label='Current Password'
+          type='password'
+          fullWidth
+          value={password3}
+          onChange={e => setPassword3(e.target.value)}
+          sx={{ mb: 3 }}
+          required
+        />
+
         <Button type='submit' variant='contained' sx={{ mb: 2 }}>
           Update Preferences
         </Button>

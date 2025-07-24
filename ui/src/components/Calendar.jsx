@@ -22,7 +22,7 @@ const typeColors = {
   equation: '#d32f2f',
   canvas: '#0288d1',
   files: '#5d4037',
-  USER_EVENT: '#007BFF',
+  event: '#007BFF',
   TODO: '#fbc02d' // bright yellow for TODOs
 }
 
@@ -214,8 +214,8 @@ export default function CalendarView ({
               start: fromUTCToLocalDate(new Date(e.eventTime * 1000)),
               end: fromUTCToLocalDate(new Date((e.eventTime + 3600) * 1000)), // 1hr default
               description: e.description,
-              type: 'USER_EVENT',
-              eventType: 'USER_EVENT',
+              type: 'event',
+              eventType: 'event',
               name: e.name,
               source: 'userEvent'
             }))
@@ -420,7 +420,7 @@ const summarizedEvents = useMemo(() => {
         <Divider sx={{ my: 2 }} />
 
         <Typography variant='subtitle1' gutterBottom>
-          Log Event Types
+          Log Types
         </Typography>
         <Stack spacing={1}>
           {logTypes.map(logType => (

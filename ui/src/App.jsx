@@ -1,4 +1,11 @@
-import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom'
+import React, { useState, useEffect } from 'react';
+
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Outlet
+} from 'react-router-dom'
 
 import Login from './components/Login'
 import CreateAccount from './components/CreateAccount'
@@ -41,7 +48,7 @@ import StartCanvas from './components/projects/project/pages/StartCanvas'
 import UpdateCanvasForm from './components/projects/project/pages/UpdateCanvasFields'
 import CanvasEditor from './components/projects/project/pages/CanvasEditor'
 import UpdateUserAccount from './components/UpdateAccount' // your update account component
-import AppLayout from './AppLayout'  // your layout with NavigationBar
+import AppLayout from './AppLayout' // your layout with NavigationBar
 import DeleteTags from './components/DeleteTags'
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
@@ -49,29 +56,48 @@ import Box from '@mui/material/Box'
 import Equations from './components/projects/project/Equations'
 import ProjectCalendar from './components/ProjectCalendar'
 import PageRecipes from './components/projects/project/pages/Recipes'
-import CreateRecipe from './components/projects/project/pages/CreateRecipe'
 import ViewRecipe from './components/projects/project/pages/ViewRecipe'
-import UpdateRecipe from './components/projects/project/pages/UpdateRecipe'
 import CreateRecipeForm from './components/projects/project/pages/CreateRecipe'
 import UpdateRecipeForm from './components/projects/project/pages/UpdateRecipe'
+import ProjectOverview from './components/projects/project/ProjectOverview'
+import Cookies from 'js-cookie';
+
+
 // // PublicLayout for routes without navbar
-function PublicLayout() {
-  return <Outlet />  // just render the child routes
+function PublicLayout () {
+  return <Outlet /> // just render the child routes
 }
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: {
-      main: '#1976d2'
-    },
-    secondary: {
-      main: '#dc004e'
-    }
-  }
-})
+export default function App () {
 
-export default function App() {
+  const [theme, setTheme] = useState(
+    createTheme({
+      palette: {
+        mode: 'light', // default
+        primary: { main: '#1976d2' },
+        secondary: { main: '#dc004e' }
+      }
+    })
+  )
+
+  useEffect(() => {
+    try {
+      const cookie = Cookies.get('preferences') || ' '
+      setTheme(
+        createTheme({
+          palette: {
+            mode: cookie === 'dark' ? 'dark' : 'light',
+            primary: { main: '#1976d2' },
+            secondary: { main: '#dc004e' }
+          }
+        })
+      )
+    } catch (e) {
+      console.error('Failed to parse preferences cookie:', e)
+    }
+  }, [])
+
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline /> {/* Normalize and reset styles */}
@@ -87,64 +113,106 @@ export default function App() {
           <Routes>
             {/* Public routes - no navbar */}
             <Route element={<PublicLayout />}>
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<CreateAccount />} />
+              <Route path='/login' element={<Login />} />
+              <Route path='/register' element={<CreateAccount />} />
             </Route>
 
             {/* Authenticated app routes with navbar */}
             <Route element={<AppLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/projects" element={<Projects />} />
-              <Route path="/projects/create" element={<CreateProject />} />
-              <Route path="/update_account" element={<UpdateUserAccount />} />
-              <Route path="/delete_tags" element={<DeleteTags />} />
+              <Route path='/' element={<Home />} />
+              <Route path='/projects' element={<Projects />} />
+              <Route path='/projects/create' element={<CreateProject />} />
+              <Route path='/update_account' element={<UpdateUserAccount />} />
+              <Route path='/delete_tags' element={<DeleteTags />} />
 
               {/* Nested project routes */}
-              <Route path="/projects/project/:project_id" element={<Project />}>
-                <Route path="pages" element={<Pages />} />
-                <Route path="pages/create" element={<CreatePageForm />} />
-                <Route path="pages/update/:page_id" element={<UpdatePageForm />} />
+              <Route path='/projects/project/:project_id' element={<Project />}>
+                <Route path='pages' element={<Pages />} />
+                <Route path='pages/create' element={<CreatePageForm />} />
+                <Route
+                  path='pages/update/:page_id'
+                  element={<UpdatePageForm />}
+                />
 
-                <Route path="pages/page/:page_id" element={<Page />}>
+                <Route path='pages/page/:page_id' element={<Page />}>
                   <Route index element={<PageContent />} />
-                  <Route path="editor" element={<PageEditor />} />
-                  <Route path="snippets" element={<PageSnippets />} />
-                  <Route path="snippets/create" element={<CreateSnippet />} />
-                  <Route path="snippets/update/:snippet_id" element={<UpdateSnippetForm />} />
-                  <Route path="snippets/view/:snippet_id" element={<ViewSnippet />} />
-                  <Route path="equations" element={<PageEquations />} />
-                  <Route path="equations/create" element={<CreateEquationForm />} />
-                  <Route path="equations/update/:equation_id" element={<UpdateEquationForm />} />
-                  <Route path="equations/view/:equation_id" element={<ViewEquation />} />
-                  <Route path="recipes" element={<PageRecipes />} />
-                  <Route path="recipes/create" element={<CreateRecipeForm />} />
-                  <Route path="recipes/update/:recipe_id" element={<UpdateRecipeForm />} />
-                  <Route path="recipes/view/:recipe_id" element={<ViewRecipe />} />
-                  <Route path="files" element={<PageFiles />} />
-                  <Route path="files/upload" element={<UploadFileForm />} />
-                  <Route path="translations" element={<PageTranslations />} />
-                  <Route path="translations/start" element={<StartTranslationForm />} />
-                  <Route path="translations/update/:translation_id" element={<UpdateTranslation />} />
-                  <Route path="canvases" element={<PageCanvases />} />
-                  <Route path="canvases/start" element={<StartCanvas />} />
-                  <Route path="canvases/update_fields/:canvas_id" element={<UpdateCanvasForm />} />
-                  <Route path="canvases/update/:canvas_id" element={<CanvasEditor />} />
+                  <Route path='editor' element={<PageEditor />} />
+                  <Route path='snippets' element={<PageSnippets />} />
+                  <Route path='snippets/create' element={<CreateSnippet />} />
+                  <Route
+                    path='snippets/update/:snippet_id'
+                    element={<UpdateSnippetForm />}
+                  />
+                  <Route
+                    path='snippets/view/:snippet_id'
+                    element={<ViewSnippet />}
+                  />
+                  <Route path='equations' element={<PageEquations />} />
+                  <Route
+                    path='equations/create'
+                    element={<CreateEquationForm />}
+                  />
+                  <Route
+                    path='equations/update/:equation_id'
+                    element={<UpdateEquationForm />}
+                  />
+                  <Route
+                    path='equations/view/:equation_id'
+                    element={<ViewEquation />}
+                  />
+                  <Route path='recipes' element={<PageRecipes />} />
+                  <Route path='recipes/create' element={<CreateRecipeForm />} />
+                  <Route
+                    path='recipes/update/:recipe_id'
+                    element={<UpdateRecipeForm />}
+                  />
+                  <Route
+                    path='recipes/view/:recipe_id'
+                    element={<ViewRecipe />}
+                  />
+                  <Route path='files' element={<PageFiles />} />
+                  <Route path='files/upload' element={<UploadFileForm />} />
+                  <Route path='translations' element={<PageTranslations />} />
+                  <Route
+                    path='translations/start'
+                    element={<StartTranslationForm />}
+                  />
+                  <Route
+                    path='translations/update/:translation_id'
+                    element={<UpdateTranslation />}
+                  />
+                  <Route path='canvases' element={<PageCanvases />} />
+                  <Route path='canvases/start' element={<StartCanvas />} />
+                  <Route
+                    path='canvases/update_fields/:canvas_id'
+                    element={<UpdateCanvasForm />}
+                  />
+                  <Route
+                    path='canvases/update/:canvas_id'
+                    element={<CanvasEditor />}
+                  />
                 </Route>
 
-                <Route path="update" element={<EditProject />} />
-                <Route path="todos" element={<Todos />} />
-                <Route path="todos/create" element={<CreateTodoForm />} />
-                <Route path="todos/update/:todo_id" element={<UpdateTodoForm />} />
-                <Route path="attachments" element={<Attachments />} />
-                <Route path="equations" element={<Equations />} />
-                <Route path="events" element={<Events />} />
-                <Route path="events/create" element={<CreateEventForm />} />
-                <Route path="events/update/:event_id" element={<UpdateEventForm />} />
-                <Route path="translations" element={<Translations />} />
-                <Route path="snippets" element={<Snippets />} />
-                <Route path="canvases" element={<Canvases />} />
-                <Route path="" element={<ProjectCalendar />} />
-                
+                <Route path='update' element={<EditProject />} />
+                <Route path='todos' element={<Todos />} />
+                <Route path='todos/create' element={<CreateTodoForm />} />
+                <Route
+                  path='todos/update/:todo_id'
+                  element={<UpdateTodoForm />}
+                />
+                <Route path='attachments' element={<Attachments />} />
+                <Route path='equations' element={<Equations />} />
+                <Route path='events' element={<Events />} />
+                <Route path='events/create' element={<CreateEventForm />} />
+                <Route
+                  path='events/update/:event_id'
+                  element={<UpdateEventForm />}
+                />
+                <Route path='translations' element={<Translations />} />
+                <Route path='snippets' element={<Snippets />} />
+                <Route path='canvases' element={<Canvases />} />
+                <Route path='' element={<ProjectOverview />} />
+                <Route path='calendar' element={<ProjectCalendar />} />
               </Route>
             </Route>
           </Routes>

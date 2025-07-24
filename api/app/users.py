@@ -153,7 +153,7 @@ def create_user_ep():
     data = request.get_json()
     username = data.get("username").strip()
     password = data.get("password").strip()
-    preferences = data.get("preferences", "{}")
+    preferences = data.get("preferences", '{"theme":"light"}')
 
     if len(password) < 8:
         return make_response({'status': 'error', 'message': "Password Needs To Be Longer Than 8 Charactes"},
