@@ -70,7 +70,9 @@ export default function CanvasEditor () {
   const [history, setHistory] = useState([])
   const [redoStack, setRedoStack] = useState([])
   const [drawing, setDrawing] = useState(false)
-  const [strokeColor, setStrokeColor] = useState('#000000')
+  const [strokeColor, setStrokeColor] = useState(
+    Cookies.get('preferences') === 'dark' ? '#ffffff' : '#000000'
+  )
   const [strokeWidth, setStrokeWidth] = useState(4)
   const [scale, setScale] = useState(1)
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 })
@@ -84,7 +86,7 @@ export default function CanvasEditor () {
   const lastEditTimeRef = useRef(Date.now())
   const lastSaveTimeRef = useRef(0)
   const [backgroundColor, setBackgroundColor] =  useState(
-    Cookies.get('preferences') === 'dark' ? '#000000' : '#ffffff'
+    Cookies.get('preferences') === 'dark' ? '#333333' : '#ffffff'
   )
 
   // Upload image to backend and get image ID
