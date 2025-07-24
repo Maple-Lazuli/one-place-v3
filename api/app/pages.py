@@ -22,6 +22,28 @@ def convert_time(object):
     return object
 
 
+def get_last_review_by_project_id(project_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT max(accessTime), pagerequests.pageID, pages.name FROM pagerequests
+        inner join pages on pages.pageid = pagerequests.pageid
+        where accessGranted = TRUE AND pages.projectID = %s
+        group by pagerequests.pageID, pages.name
+    """, (project_id,))
+    review_deltas = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if review_deltas is not None:
+        review_deltas_list = []
+        for review_delta in review_deltas:
+            review_delta = {k: v for k, v in zip(['days', 'page_id', 'name'], review_delta)}
+            review_delta['days'] = (datetime.now() - review_delta['days']).days
+            review_deltas_list.append(review_delta)
+    return review_deltas
+
+
 def get_last_update(page_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -328,6 +350,29 @@ def get_pages_by_project_ep():
         return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     pages = get_pages_by_project(project_id)
+
+    if pages is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
+
+    response = make_response({'status': 'success', 'message': pages}, STATUS.OK)
+    return response
+
+
+@pages_bp.route('/get_project_pages_review_list', methods=['GET'])
+def get_pages_review_by_project_ep():
+    project_id = int(request.args.get("id"))
+
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    if not authorized_project_access(token, project_id):
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
+
+    pages = get_last_review_by_project_id(project_id)
 
     if pages is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
