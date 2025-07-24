@@ -28,7 +28,7 @@ def get_last_review_by_project_id(project_id):
     cursor.execute("""
         SELECT %s - max(accessTime), pagerequests.pageID, pages.name FROM pagerequests
         inner join pages on pages.pageid = pagerequests.pageid
-        where accessGranted = TRUE AND pages.projectID = %s
+        where accessGranted = TRUE AND pages.projectID = %s AND pagerequests.notes = 'REVIEW'
         group by pagerequests.pageID, pages.name
     """, (datetime.now().astimezone(), project_id,))
     review_deltas = cursor.fetchall()

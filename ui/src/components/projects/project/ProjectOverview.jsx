@@ -230,7 +230,7 @@ export default function ProjectOverview () {
           Most in need of review:{' '}
           <MUILink
             component={RouterLink}
-            to={`/projects/project/${project_id}/pages/page/${mostStalePage.page_id}/editor`}
+            to={`/projects/project/${project_id}/pages/page/${mostStalePage.page_id}/`}
             underline='hover'
             sx={{ fontWeight: 500 }}
           >
