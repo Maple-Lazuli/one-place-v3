@@ -9,6 +9,7 @@ import remarkGfm from 'remark-gfm'
 import { replaceImageHosts } from '../../../../utils/scripts.js'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import {
   oneDark,
   oneLight
@@ -284,19 +285,34 @@ export default function PageEditor () {
               <ReactMarkdown
                 children={text}
                 remarkPlugins={[remarkMath, remarkGfm]}
-                rehypePlugins={[rehypeKatex, rehypeHighlight]}
+                rehypePlugins={[rehypeKatex]}
                 components={{
                   code ({ node, inline, className, children, ...props }) {
-                    return (
-                      <code
-                        style={{
-                          whiteSpace: 'pre-wrap',
-                          wordBreak: 'break-word',
-                          overflowWrap: 'break-word',
-                          width: '100%',
-                          display: 'inline-block'
+                    const match = /language-(\w+)/.exec(className || '')
+                    return !inline && match ? (
+                      <SyntaxHighlighter
+                        language={match[1]}
+                        style={coloring}
+                        PreTag='div'
+                        customStyle={{
+                          // background: 'transparent',
+                          margin: 0,
+                          padding: 0,
+                          overflowX: 'auto'
                         }}
+                        {...props}
+                      >
+                        {String(children).replace(/\n$/, '')}
+                      </SyntaxHighlighter>
+                    ) : (
+                      <code
                         className={className}
+                        style={{
+                          backgroundColor: '#eee',
+                          padding: '0.2em 0.4em',
+                          borderRadius: '4px',
+                          fontSize: '0.95em'
+                        }}
                         {...props}
                       >
                         {children}
