@@ -12,7 +12,7 @@ def create_app():
     # Load config
     config = load_config()
     app.config['DEBUG'] = config['flask']['debug']
-    app.config['MAX_CONTENT_LENGTH'] =
+    app.config['MAX_CONTENT_LENGTH'] = config['uploads']['max_size']
 
     # Register blueprints
     from .analytics import analytics_bp
