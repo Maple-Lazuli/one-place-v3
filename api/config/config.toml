@@ -3,3 +3,6 @@ debug = false
 
 [app]
 session_life_seconds = 86400
+
+[uploads]
+max_size= 1073741824 #1GB
