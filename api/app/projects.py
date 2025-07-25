@@ -99,6 +99,7 @@ def get_projects_with_token(token):
     inner join projects
     on projects.UserID = sessions.UserID
     where token = %s and endTime > %s and isActive = TRUE 
+    ORDER BY projects.timeCreated DESC
     """, (token, datetime.now()))
     results = cursor.fetchall()
     conn.commit()
@@ -109,6 +110,7 @@ def get_projects_with_token(token):
         result_list = []
         for result in results:
             result = {k: v for k, v in zip(['ProjectID', 'name', 'description', 'timeCreated'], result)}
+            result['timeCreated'] = result['timeCreated'].timestamp()
             result_list.append(result)
         return result_list
     return None

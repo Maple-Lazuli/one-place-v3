@@ -108,6 +108,21 @@ def get_todo_by_id(todo_id):
     return todo
 
 
+def complete_todo_with_back_date(todo_id, completion_time):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("UPDATE todo SET completed = TRUE, timeCompleted = %s where TodoID = %s RETURNING *;",
+                   (completion_time, todo_id,))
+    completed_todo = cursor.fetchone()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if completed_todo is not None:
+        completed_todo = {k: v for k, v in zip(todo_fields, completed_todo)}
+        completed_todo = convert_time(completed_todo)
+    return completed_todo
+
+
 def complete_todo(todo_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -287,6 +302,33 @@ def update_ep():
         return make_response({'status': 'error', 'message': "Failed To Update Todo"}, STATUS.FORBIDDEN)
 
     response = make_response({'status': 'success', 'message': f'Updated {todo_name}'}, STATUS.OK)
+    return response
+
+
+@todo_bp.route('/completed_previously', methods=['PATCH'])
+def completed_previously_ep():
+    data = request.get_json()
+    todo_id = int(data.get("todo_id"))
+    todo_completed_time = data.get("completion_time").strip()
+    todo_completed_time = datetime.fromtimestamp(todo_completed_time)
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    todo = get_todo_by_id(todo_id)
+
+    if not authorized_project_access(token, todo['ProjectID']):
+        return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
+
+    completed_todo = complete_todo_with_back_date(todo_id, todo_completed_time)
+
+    if completed_todo is None:
+        return make_response({'status': 'error', 'message': "Failed To Complete Todo"}, STATUS.FORBIDDEN)
+
+    response = make_response({'status': 'success', 'message': f'Completed {completed_todo["name"]}'}, STATUS.OK)
     return response
 
 
