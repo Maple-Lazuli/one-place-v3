@@ -1,5 +1,13 @@
 import { useParams, Outlet, useLocation, useNavigate } from 'react-router-dom'
-import { Typography, Container, Paper, Tabs, Tab, Box, CircularProgress } from '@mui/material'
+import {
+  Typography,
+  Container,
+  Paper,
+  Tabs,
+  Tab,
+  Box,
+  CircularProgress
+} from '@mui/material'
 import { useEffect, useState } from 'react'
 
 export default function Page () {
@@ -61,7 +69,7 @@ export default function Page () {
     <Container
       maxWidth={false}
       sx={{
-        height: '100vh',
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
         p: 2
@@ -74,11 +82,11 @@ export default function Page () {
       <Tabs
         value={tabIndex}
         onChange={handleChange}
-        textColor="inherit"
-        indicatorColor="primary"
+        textColor='inherit'
+        indicatorColor='primary'
         sx={{ mb: 1, flexShrink: 0 }}
-        variant="scrollable"
-        scrollButtons="auto"
+        variant='scrollable'
+        scrollButtons='auto'
         allowScrollButtonsMobile
       >
         {navLinks.map(({ label }) => (
@@ -89,16 +97,16 @@ export default function Page () {
               color: 'text.primary',
               '&.Mui-selected': {
                 color: 'primary.main',
-                fontWeight: 'bold',
+                fontWeight: 'bold'
               },
               '&:hover': {
-                color: 'primary.light',
+                color: 'primary.light'
               },
               '&:focus': {
                 outline: '2px solid',
                 outlineColor: 'primary.main',
-                outlineOffset: '2px',
-              },
+                outlineOffset: '2px'
+              }
             }}
           />
         ))}
@@ -120,7 +128,7 @@ export default function Page () {
             flexGrow: 1,
             overflowY: 'hidden',
             minHeight: 0,
-            maxHeight: '95vh'
+            maxHeight: '95%'
           }}
         >
           <Outlet />

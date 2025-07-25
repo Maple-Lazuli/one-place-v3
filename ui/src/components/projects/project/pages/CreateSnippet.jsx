@@ -108,8 +108,8 @@ export default function CreateSnippetForm () {
       sx={{
         display: 'flex',
         gap: 4,
-        mt: 4,
-        height: '80vh'
+        mt: 2,
+        height: '100%'
       }}
     >
       {/* Form Section */}
@@ -120,7 +120,9 @@ export default function CreateSnippetForm () {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: 2
+          gap: 2,
+          overflowY:'auto',
+          padding: '2em'
         }}
       >
         <Typography variant='h5' component='h2' gutterBottom>
@@ -193,6 +195,7 @@ export default function CreateSnippetForm () {
           border: '1px solid #ccc',
           borderRadius: 2,
           overflow: 'auto',
+          padding: '2em'
           // backgroundColor: '#1e1e1e'
         }}
       >

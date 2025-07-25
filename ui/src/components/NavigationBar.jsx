@@ -191,7 +191,7 @@ export default function NavigationBar() {
 
   return (
     <>
-      <AppBar position="static" color="primary" elevation={2} sx={{ height: '4vh' }}>
+      <AppBar position="static" color="primary" elevation={2} sx={{ height:'60px' }}>
         <Toolbar>
           <Button component={Link} to="/" color="inherit" sx={{ fontWeight: 'bold', marginLeft: '30px'}}>
             Home

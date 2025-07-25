@@ -70,7 +70,7 @@ export default function ViewRecipe () {
   }
 
   return (
-    <Box sx={{ maxWidth: '100%', mx: 'auto', mt: 4 }}>
+    <Box sx={{ maxWidth: '100%', mx: 'auto', mt: 2, height: '100%' }}>
       <Typography variant='h4' gutterBottom>
         {recipe.name}
       </Typography>
@@ -81,13 +81,12 @@ export default function ViewRecipe () {
       <Paper
         variant='outlined'
         sx={{
-          mt: 2,
-          p: 2,
-          // backgroundColor: '#f6f8fa',
-          overflowY: 'auto',
-          maxHeight: '75vh', // fixed max height in px or use '60vh' etc
-          whiteSpace: 'pre-wrap',
-          fontFamily: 'monospace'
+          flex: 1,
+          border: '1px solid #ccc',
+          borderRadius: 2,
+          overflow: 'auto',
+          height: '100%',
+          paddingBottom: '10em'
         }}
       >
               <ReactMarkdown

@@ -232,7 +232,7 @@ export default function UpdateTranslation () {
   }
 
   return (
-    <Box sx={{ p: 1 }}>
+    <Box sx={{ p: 1, height: '100%', overflow:'auto' }}>
       <Box
         sx={{
           display: 'flex',
@@ -266,7 +266,7 @@ export default function UpdateTranslation () {
           gap: 4,
           mt: 2,
           width: '100%',
-          height: '100%',
+          height: '85%',
           flexGrow: 1
         }}
       >
@@ -276,7 +276,7 @@ export default function UpdateTranslation () {
             display: 'flex',
             flexDirection: 'column',
             gap: 2,
-            height: '70vh',
+            height: '100%',
             overflow: 'auto'
           }}
         >
@@ -310,10 +310,10 @@ export default function UpdateTranslation () {
             p: 2,
             border: '1px solid #ccc',
             borderRadius: 2,
-            overflow: 'auto',
             whiteSpace: 'pre-wrap',
             // backgroundColor: '#fafafa',
-            height: '70vh'
+           height: '100%',
+            overflow: 'auto'
           }}
         >
           <Typography variant='h6' gutterBottom>

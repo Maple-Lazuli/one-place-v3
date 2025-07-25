@@ -203,14 +203,7 @@ export default function PageContent () {
   }, [])
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        maxWidth: '100%',
-        overflowWrap: 'break-word',
-        boxSizing: 'border-box'
-      }}
-    >
+<Box sx={{ maxWidth: '100%', mx: 'right', mt: 2, height: '100%' }}>
       <Box
         sx={{
           px: 2,
@@ -252,13 +245,17 @@ export default function PageContent () {
         </Typography>
       </Box>
       <Divider sx={{ my: 2 }}></Divider>
-      <div
-        style={{
-          maxWidth: containerWidth ? containerWidth * 0.99 : '90%',
-          wordBreak: 'break-word',
-          height: '80vh',
-          margin: 'auto',
-          overflowY: 'auto'
+      <Box
+        sx={{
+          flex: 1,
+          p: 2,
+          border: '1px solid #ccc',
+          borderRadius: 2,
+          overflow: 'auto',
+          height: '100%',
+          paddingBottom: '10em'
+          
+          // backgroundColor: '#1e1e1e'
         }}
       >
         <ReactMarkdown
@@ -302,7 +299,7 @@ export default function PageContent () {
             }
           }}
         />
-      </div>
+      </Box>
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
@@ -317,6 +314,6 @@ export default function PageContent () {
           Page marked as reviewed successfully.
         </Alert>
       </Snackbar>
-    </div>
+    </Box>
   )
 }

@@ -202,7 +202,7 @@ export default function PageEditor () {
       display: 'flex',
       flexDirection: 'column',
       gap: '1rem',
-      height: '84vh',
+      height: '100%',
       boxSizing: 'border-box',
       p: 2,
       overflow: 'hidden'

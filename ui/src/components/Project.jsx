@@ -54,7 +54,7 @@ export default function Project () {
     <Box
       sx={{
         display: 'flex',
-        height: '96vh',
+        height: '100%',
         overflow: 'hidden',
         width: '100%'
       }}

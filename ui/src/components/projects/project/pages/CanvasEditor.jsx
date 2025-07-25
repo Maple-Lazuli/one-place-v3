@@ -111,7 +111,7 @@ export default function CanvasEditor () {
           { ...lastLine, points: [...lastLine.points, ...newLine] }
         ]
       })
-    }, 50)
+    }, 20)
   ).current
 
   useEffect(() => {
@@ -123,7 +123,7 @@ export default function CanvasEditor () {
   const throttledPan = useRef(
     throttle((dx, dy) => {
       setStagePosition(pos => ({ x: pos.x + dx, y: pos.y + dy }))
-    }, 50) // ~60fps
+    }, 20) // ~60fps
   ).current
 
   useEffect(() => {

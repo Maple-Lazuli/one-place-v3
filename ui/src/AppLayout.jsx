@@ -10,7 +10,7 @@ export default function AppLayout() {
       <Box
         sx={{
           // pt: '4vh', // Add padding to avoid overlap
-          height: '96vh', // adjust based on header height
+          height: '100%', // adjust based on header height
           overflowY: 'hidden',
           width: '100vw',
         }}

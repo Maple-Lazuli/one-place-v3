@@ -63,7 +63,7 @@ export default function ViewEquation () {
   }
 
   return (
-    <Box sx={{ maxWidth: '100%', mx: 'right', mt: 4 }}>
+    <Box sx={{ maxWidth: '100%', mx: 'right', mt: 2, height: '100%'}}>
       <Typography variant='h4' gutterBottom>
         {equation.name}
       </Typography>
@@ -74,12 +74,13 @@ export default function ViewEquation () {
       <Paper
         variant='outlined'
         sx={{
-          mt: 2,
+          flex: 1,
           p: 2,
-          // backgroundColor: '#f6f8fa',
-          overflowX: 'auto',
-          whiteSpace: 'pre-wrap',
-          fontFamily: 'monospace'
+          border: '1px solid #ccc',
+          borderRadius: 2,
+          overflow: 'auto',
+          height: '100%',
+          paddingBottom: '10em'
         }}
       >
         <ReactMarkdown

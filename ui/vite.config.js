@@ -9,8 +9,8 @@ export default defineConfig({
     proxy: {
       // Proxy API requests starting with /api to backend server
       '/api': {
-        // target: 'http://localhost:3001', // for local dev
-        target: 'http://backend:3001', // for production
+         target: 'http://192.168.0.105:3001', // for local dev
+        // target: 'http://backend:3001', // for production
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''), // Remove /api prefix before forwarding

@@ -107,12 +107,10 @@ export default function UpdateEquationForm () {
   return (
     <Box
       sx={{
-        display: 'flex',
+         display: 'flex',
         gap: 4,
-        mt: 4,
-        width: '100%',
-        height: '100%',
-        flexGrow: 1
+        mt: 2,
+        height: '100%'
       }}
     >
       {/* Form Section */}
@@ -123,7 +121,9 @@ export default function UpdateEquationForm () {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: 2
+          gap: 2,
+          overflowY: 'auto',
+          padding: '2em'
         }}
       >
         <Typography variant='h5' component='h2' gutterBottom>
@@ -187,10 +187,8 @@ export default function UpdateEquationForm () {
           p: 2,
           border: '1px solid #ccc',
           borderRadius: 2,
-          overflow: 'auto',
-          whiteSpace: 'pre-wrap',
-          // backgroundColor: '#fafafa',
-          height: '90%'
+          overflowY: 'auto',
+          padding: '2em'
         }}
       >
         <Typography variant='h6' gutterBottom>

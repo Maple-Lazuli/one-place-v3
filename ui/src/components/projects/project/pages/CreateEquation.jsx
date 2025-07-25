@@ -85,10 +85,8 @@ export default function CreateEquationForm () {
       sx={{
         display: 'flex',
         gap: 4,
-        mt: 4,
-        alignItems: 'flex-start',
-        width: '100%',
-        px: 2
+        mt: 2,
+        height: '100%'
       }}
     >
       {/* FORM */}
@@ -99,7 +97,9 @@ export default function CreateEquationForm () {
           flex: 1,
           display: 'flex',
           flexDirection: 'column',
-          gap: 2
+          gap: 2,
+          overflowY: 'auto',
+          padding: '2em'
         }}
       >
         <Typography variant='h5' component='h2' gutterBottom>
@@ -155,13 +155,11 @@ export default function CreateEquationForm () {
       <Box
         sx={{
           flex: 1,
-          maxHeight: '600px',
-          overflow: 'auto',
+          p: 2,
           border: '1px solid #ccc',
           borderRadius: 2,
-          p: 2,
-          bgcolor: '#f9f9f9',
-          fontSize: '1rem'
+          overflow: 'auto',
+          padding: '2em'
         }}
       >
         <Typography variant='h6' gutterBottom>
