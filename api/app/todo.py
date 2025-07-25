@@ -309,7 +309,7 @@ def update_ep():
 def completed_previously_ep():
     data = request.get_json()
     todo_id = int(data.get("todo_id"))
-    todo_completed_time = data.get("completion_time").strip()
+    todo_completed_time = data.get("completion_time")
     todo_completed_time = datetime.fromtimestamp(todo_completed_time)
     token = request.cookies.get("token")
 
