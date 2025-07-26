@@ -145,7 +145,9 @@ function summarizeEvents (events) {
 export default function CalendarView ({
   logs_route,
   userEvents_route,
-  todo_route
+  todo_route,
+  currentDate,
+  setCurrentDate
 }) {
   const today = new Date()
   const initialStart = new Date(today.getFullYear(), today.getMonth(), 1)
@@ -465,6 +467,8 @@ const summarizedEvents = useMemo(() => {
           style={{ height: '100%', padding: '10px' }}
           eventPropGetter={eventStyleGetter}
           onRangeChange={handleRangeChange}
+          date={currentDate} 
+          onNavigate={setCurrentDate} 
           components={{
             event: props => <EventComponent {...props} view={view} />
           }}
