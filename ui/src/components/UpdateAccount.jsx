@@ -22,7 +22,9 @@ export default function UpdateUserAccount () {
   const [newUsername, setNewUsername] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmNewPassword, setConfirmNewPassword] = useState('')
-  const [preferences, setPreferences] = useState(Cookies.get('preferences') || '')
+  const [preferences, setPreferences] = useState(
+    Cookies.get('preferences') || ''
+  )
 
   const [deletePassword, setDeletePassword] = useState('')
 
@@ -70,7 +72,10 @@ export default function UpdateUserAccount () {
     if (!newUsername.trim())
       return showSnack('Please enter a new username', 'warning')
     if (newUsername.length > maxUsernameChars)
-      return showSnack(`Username cannot exceed ${maxUsernameChars} characters`, 'warning')
+      return showSnack(
+        `Username cannot exceed ${maxUsernameChars} characters`,
+        'warning'
+      )
     if (!password1)
       return showSnack('Please enter your current password', 'warning')
 
@@ -134,8 +139,7 @@ export default function UpdateUserAccount () {
     if (!preferences.trim())
       return showSnack('Please enter preferences', 'warning')
 
-    if (!password3.trim())
-      return showSnack('Please enter password', 'warning')
+    if (!password3.trim()) return showSnack('Please enter password', 'warning')
     try {
       const res = await fetch('/api/users/update_user_preferences', {
         method: 'PATCH',
@@ -182,9 +186,7 @@ export default function UpdateUserAccount () {
       if (res.ok && data.status === 'success') {
         showSnack(data.message || 'Account deleted', 'success')
         setUsername(null)
-        setTimeout(() => {
-          navigate('/login')
-        }, 1500)
+        navigate('/login')
       } else {
         showSnack(data.message || 'Failed to delete account', 'error')
       }
