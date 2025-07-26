@@ -193,7 +193,7 @@ export default function CanvasEditor () {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       })
-      lastSaveTimeRef.current = Date.now()
+      lastSaveTimeRef.current = new Date(now.getTime() + 30000);
     } catch (e) {
       console.error('Failed to save canvas:', e)
     }
@@ -391,8 +391,12 @@ export default function CanvasEditor () {
       return
     }
     if (drawing) {
-      const point = stage.getRelativePointerPosition()
-      throttledUpdateLine([point.x, point.y])
+      const stage = stageRef.current
+      if (stage) {
+        const point = stage.getRelativePointerPosition()
+        throttledUpdateLine([point.x, point.y])
+      }
+
       setDrawing(false)
       setHistory(prev => [...prev, [...lines]])
       setRedoStack([])
