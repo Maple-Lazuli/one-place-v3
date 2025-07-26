@@ -392,9 +392,8 @@ const summarizedEvents = useMemo(() => {
     <Box
       sx={{
         display: 'flex',
-        height: '100vh',
+        height: '100%',
         width: '100vw',
-        overflow: 'hidden'
       }}
     >
       <Paper
