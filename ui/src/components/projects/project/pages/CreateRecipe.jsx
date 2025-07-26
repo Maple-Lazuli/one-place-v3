@@ -91,7 +91,7 @@ export default function CreateRecipeForm () {
     const end = textarea.selectionEnd
 
     // Insert markdown with newlines around for better formatting
-    const insertText = `\n\n${markdown}\n\n`
+    const insertText = `\n${markdown}\n`
     const newValue = value.slice(0, start) + insertText + value.slice(end)
 
     setContent(newValue)

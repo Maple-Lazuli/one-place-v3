@@ -193,7 +193,7 @@ export default function UpdateTranslation () {
     const before = currentValue.slice(0, start)
     const after = currentValue.slice(end)
 
-    const spacedMarkdown = `\n\n${markdown}\n\n`
+    const spacedMarkdown = `\n${markdown}\n`
     const newText = before + spacedMarkdown + after
 
     textarea.value = newText

@@ -117,7 +117,7 @@ export default function UpdateRecipeForm () {
     const start = textarea.selectionStart
     const end = textarea.selectionEnd
 
-    const insertText = `\n\n${markdown}\n\n`
+    const insertText = `\n${markdown}\n`
     const newValue = value.slice(0, start) + insertText + value.slice(end)
 
     setContent(newValue)

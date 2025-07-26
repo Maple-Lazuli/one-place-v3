@@ -154,7 +154,7 @@ export default function PageEditor () {
     const before = currentValue.slice(0, start)
     const after = currentValue.slice(end)
 
-    const spacedMarkdown = `\n\n${markdown}\n\n`
+    const spacedMarkdown = `\n${markdown}\n`
     const newText = before + spacedMarkdown + after
 
     // Set the actual <textarea>'s value to keep them in sync
