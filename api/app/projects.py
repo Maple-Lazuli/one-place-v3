@@ -1,7 +1,7 @@
 from flask import Blueprint, jsonify, request, make_response
 from http import HTTPStatus as STATUS
 from datetime import datetime, timedelta
-
+from collections import defaultdict
 from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .logging import create_access_request
@@ -9,6 +9,36 @@ from .logging import create_access_request
 projects_bp = Blueprint('projects', __name__, url_prefix='/projects')
 projects_fields = ['ProjectID', 'UserID', 'name', 'description', 'TimeCreated', 'lastUpdate']
 tag_fields = ['TagID', 'UserID', 'tag', 'options']
+
+
+def get_tags_for_projects(project_ids):
+    if not project_ids:
+        return {}
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # Use SQL's IN clause to fetch all tags at once
+    cursor.execute("""
+        SELECT tagmappings.projectID, tags.TagID, tags.UserID, tags.tag, tags.options
+        FROM tags
+        JOIN tagmappings ON tags.TagID = tagmappings.TagID
+        WHERE tagmappings.projectID = ANY(%s)
+        ORDER BY tags.tag;
+    """, (project_ids,))
+
+    rows = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    tags_by_project = defaultdict(list)
+    for row in rows:
+        project_id = row[0]
+        tag_data = dict(zip(tag_fields, row[1:]))  # Skip projectID
+        tags_by_project[project_id].append(tag_data)
+
+    return tags_by_project
 
 
 def get_tags_by_project(project_id):
@@ -269,12 +299,13 @@ def get_all_projects_ep():
     if projects is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
-    project_list = []
-    for project in projects:
-        project['tags'] = get_tags_by_project(project['ProjectID'])
-        project_list.append(project)
+    project_ids = [project['ProjectID'] for project in projects]
+    tags_by_project = get_tags_for_projects(project_ids)
 
-    response = make_response({'status': 'success', 'message': project_list}, STATUS.OK)
+    for project in projects:
+        project['tags'] = tags_by_project.get(project['ProjectID'], [])
+
+    response = make_response({'status': 'success', 'message': projects}, STATUS.OK)
     return response
 
 

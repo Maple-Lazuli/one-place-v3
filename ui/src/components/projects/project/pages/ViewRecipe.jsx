@@ -86,6 +86,7 @@ export default function ViewRecipe () {
           borderRadius: 2,
           overflow: 'auto',
           height: '100%',
+          padding: '1em',
           paddingBottom: '10em'
         }}
       >

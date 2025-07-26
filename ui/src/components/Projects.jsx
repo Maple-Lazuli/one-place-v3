@@ -34,8 +34,9 @@ export default function Projects () {
       const res = await fetch('/api/tags/get', { credentials: 'include' })
       const data = await res.json()
       if (data.status === 'success') {
+        console.log(data.message)
         const sortedTags = data.message.sort((a, b) =>
-          a.Tag.localeCompare(b.Tag)
+          a.tag.toLowerCase().localeCompare(b.tag.toLowerCase())
         )
         setTags(sortedTags)
       } else {

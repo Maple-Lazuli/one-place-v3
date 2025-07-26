@@ -48,9 +48,11 @@ def get_tags_by_project(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT tags.TagID, UserID, tag, options FROM tags 
-    join tagmappings on tags.tagid = tagmappings.tagid
-    where projectID = %s order by Tag;
+    SELECT DISTINCT tags.TagID, tags.UserID, tags.tag, tags.options
+    FROM tags 
+    JOIN tagmappings ON tags.TagID = tagmappings.TagID
+    WHERE tagmappings.projectID = %s
+    ORDER BY tags.tag;
     """, (project_id,))
     tags = cursor.fetchall()
     conn.commit()
