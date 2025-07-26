@@ -125,11 +125,25 @@ def get_projects_with_token(token):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT ProjectID, name, description, timeCreated FROM sessions
-    inner join projects
-    on projects.UserID = sessions.UserID
-    where token = %s and endTime > %s and isActive = TRUE 
-    ORDER BY projects.timeCreated DESC
+    SELECT
+      projects.ProjectID,
+      projects.name,
+      projects.description,
+      MAX(projectrequests.accessTime) AS lastAccessed
+    FROM sessions
+    INNER JOIN projects ON projects.UserID = sessions.UserID
+    INNER JOIN projectrequests ON projectrequests.projectID = projects.ProjectID
+    WHERE
+      sessions.token = %s
+      AND sessions.endTime > %s
+      AND sessions.isActive = TRUE
+      AND projectrequests.notes IN ('GET', 'CREATE')
+    GROUP BY
+      projects.ProjectID,
+      projects.name,
+      projects.description
+    ORDER BY
+      lastAccessed DESC;
     """, (token, datetime.now()))
     results = cursor.fetchall()
     conn.commit()
