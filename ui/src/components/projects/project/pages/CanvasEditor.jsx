@@ -41,6 +41,12 @@ const DraggableImage = forwardRef(
 
     useImperativeHandle(ref, () => shapeRef.current)
 
+    useEffect(() => {
+      if (isSelected && shapeRef.current) {
+        shapeRef.current.draggable(true)
+      }
+    }, [isSelected])
+
     return (
       <KonvaImage
         image={image}
@@ -49,21 +55,32 @@ const DraggableImage = forwardRef(
         scaleX={scaleX}
         scaleY={scaleY}
         draggable
+        ref={shapeRef}
         onClick={onSelect}
         onTap={onSelect}
-        ref={shapeRef}
         onDragEnd={e => {
-          onChange && onChange({ x: e.target.x(), y: e.target.y() })
+          onChange &&
+            onChange({
+              x: e.target.x(),
+              y: e.target.y()
+            })
         }}
         onTransformEnd={e => {
           const node = shapeRef.current
-          onChange &&
-            onChange({
-              x: node.x(),
-              y: node.y(),
-              scaleX: node.scaleX(),
-              scaleY: node.scaleY()
-            })
+          const scaleX = node.scaleX()
+          const scaleY = node.scaleY()
+
+          console.log('Transform scale', scaleX, scaleY)
+
+          node.scaleX(1)
+          node.scaleY(1)
+
+          onChange?.({
+            x: node.x(),
+            y: node.y(),
+            scaleX,
+            scaleY
+          })
         }}
       />
     )
@@ -231,15 +248,17 @@ export default function CanvasEditor () {
   }, [])
 
   useEffect(() => {
+    if (transformerRef.current && selectedImageIndex !== null) {
+      const selectedNode = imageRefs.current[selectedImageIndex]
+      if (selectedNode) {
+        transformerRef.current.nodes([selectedNode])
+        transformerRef.current.getLayer().batchDraw()
+      }
+    }
     if (selectedImageIndex === null) {
       transformerRef.current?.nodes([])
       transformerRef.current?.getLayer()?.batchDraw()
       return
-    }
-    const selectedNode = imageRefs.current[selectedImageIndex]
-    if (selectedNode) {
-      transformerRef.current.nodes([selectedNode])
-      transformerRef.current.getLayer().batchDraw()
     }
   }, [selectedImageIndex])
 
@@ -310,6 +329,9 @@ export default function CanvasEditor () {
 
   const handleMouseDown = e => {
     const stage = e.target.getStage()
+    const clickedOnImage = imageRefs.current.some(
+      imageNode => imageNode && imageNode === e.target
+    )
     if (e.evt.button === 1) {
       e.evt.preventDefault()
       setMiddleMouseDown(true)
@@ -319,6 +341,14 @@ export default function CanvasEditor () {
     if (tool === 'pan') {
       lastPanPos.current = stage.getPointerPosition()
       return
+    }
+    const transformer = transformerRef.current
+    const clickedOnTransformer =
+      transformer &&
+      (transformer === e.target || transformer.isAncestorOf(e.target))
+
+    if (!clickedOnImage && !clickedOnTransformer) {
+      setSelectedImageIndex(null)
     }
     if (middleMouseDown) return
     const pos = stage.getRelativePointerPosition()
@@ -331,7 +361,6 @@ export default function CanvasEditor () {
         strokeWidth
       }
     ])
-    setSelectedImageIndex(null)
   }
 
   const handleMouseMove = e => {
