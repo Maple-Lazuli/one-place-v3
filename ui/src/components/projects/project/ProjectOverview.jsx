@@ -67,8 +67,6 @@ export default function ProjectOverview () {
           setReviewData(reviewDataJson.message)
         }
 
-        console.log('review_data')
-        console.log(reviewData)
         // 2. Fetch todos
         const todoRes = await fetch(
           `/api/todo/get_project_todo?project_id=${project_id}`,
