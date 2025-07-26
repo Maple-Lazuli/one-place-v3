@@ -16,7 +16,7 @@ import {
 } from '@mui/material'
 import ProjectCard from './ProjectCard'
 
-export default function Projects() {
+export default function Projects () {
   const [projects, setProjects] = useState([])
   const [filteredProjects, setFilteredProjects] = useState([])
   const [tags, setTags] = useState([])
@@ -34,7 +34,10 @@ export default function Projects() {
       const res = await fetch('/api/tags/get', { credentials: 'include' })
       const data = await res.json()
       if (data.status === 'success') {
-        setTags(data.message)
+        const sortedTags = data.message.sort((a, b) =>
+          a.Tag.localeCompare(b.Tag)
+        )
+        setTags(sortedTags)
       } else {
         console.error('Failed to load tags')
       }
@@ -47,7 +50,7 @@ export default function Projects() {
     try {
       const res = await fetch('/api/projects/get_all', {
         method: 'GET',
-        credentials: 'include',
+        credentials: 'include'
       })
       if (!res.ok) throw new Error('Unauthorized or failed request')
       const data = await res.json()
@@ -78,7 +81,7 @@ export default function Projects() {
     }
   }
 
-  const handleTagFilter = (e) => {
+  const handleTagFilter = e => {
     const tagId = e.target.value
     setSelectedTag(tagId)
 
@@ -98,17 +101,25 @@ export default function Projects() {
     setOpen(false)
   }
 
-  const handleDelete = (deletedId) => {
+  const handleDelete = deletedId => {
     const updated = projects.filter(p => p.ProjectID !== deletedId)
     setProjects(updated)
-    setFilteredProjects(selectedTag
-      ? updated.filter(project => (project.tags || []).some(t => t.TagID === selectedTag))
-      : updated)
+    setFilteredProjects(
+      selectedTag
+        ? updated.filter(project =>
+            (project.tags || []).some(t => t.TagID === selectedTag)
+          )
+        : updated
+    )
   }
 
   return (
-    <Box sx={{ width: '100vw', height: '94vh', overflowY: 'auto', px: 4, py: 4 }}>
-      <Typography variant='h4' gutterBottom>Projects</Typography>
+    <Box
+      sx={{ width: '100vw', height: '94vh', overflowY: 'auto', px: 4, py: 4 }}
+    >
+      <Typography variant='h4' gutterBottom>
+        Projects
+      </Typography>
 
       <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
         <Link to='/projects/create' style={{ textDecoration: 'none' }}>
@@ -125,7 +136,9 @@ export default function Projects() {
           >
             <MenuItem value=''>All</MenuItem>
             {tags.map(tag => (
-              <MenuItem key={tag.TagID} value={tag.TagID}>{tag.tag}</MenuItem>
+              <MenuItem key={tag.TagID} value={tag.TagID}>
+                {tag.tag}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
@@ -145,7 +158,9 @@ export default function Projects() {
       </Snackbar>
 
       {filteredProjects.length === 0 && !open ? (
-        <Typography>No projects available. Create one to get started.</Typography>
+        <Typography>
+          No projects available. Create one to get started.
+        </Typography>
       ) : (
         <Grid container spacing={3}>
           {filteredProjects.map(p => (

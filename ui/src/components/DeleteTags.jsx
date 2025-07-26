@@ -58,7 +58,7 @@ export default function DeleteTags() {
   }
 
   return (
-    <div style={{ maxWidth: 400, margin: '0 auto' }}>
+    <div style={{ maxWidth: 400, margin: '0 auto', height:'100%', overflow:'auto' }}>
       <h2>Delete Tags</h2>
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {success && <p style={{ color: 'green' }}>{success}</p>}
