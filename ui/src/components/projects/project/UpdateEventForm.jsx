@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTheme } from '@mui/material/styles'
 import {
   Box,
   Button,
@@ -21,7 +22,7 @@ export default function UpdateEventForm () {
   const [submitLoading, setSubmitLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-
+  const theme = useTheme()
   const eventNameLimit = 64
   const eventDescriptionLimit = 255
 
@@ -160,14 +161,24 @@ export default function UpdateEventForm () {
       />
 
       <TextField
-        label='Description'
-        multiline
-        rows={4}
-        value={description}
-        onChange={e => setDescription(e.target.value)}
-        inputProps={{ maxLength: eventDescriptionLimit }}
-        helperText={`${description.length}/${eventDescriptionLimit} characters`}
-        error={description.length > eventDescriptionLimit}
+        label='Date & Time (Optional)'
+        type='datetime-local'
+        value={dateTime}
+        onChange={e => setDateTime(e.target.value)}
+        InputLabelProps={{ shrink: true }}
+        sx={{
+          input: {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& .MuiInputBase-root': {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& input[type="datetime-local"]::-webkit-calendar-picker-indicator': {
+            filter: theme.palette.mode === 'dark' ? 'invert(1)' : 'none'
+          }
+        }}
       />
 
       <Button variant='contained' type='submit' disabled={submitLoading}>

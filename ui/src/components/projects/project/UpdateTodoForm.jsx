@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTheme } from '@mui/material/styles'
 import {
   Box,
   Button,
@@ -20,6 +21,7 @@ export default function UpdateTodoForm () {
   const [description, setDescription] = useState('')
   const [recurring, setRecurring] = useState(false)
   const [intervalDays, setIntervalDays] = useState('')
+  const theme = useTheme()
 
   const [loading, setLoading] = useState(true)
   const [submitLoading, setSubmitLoading] = useState(false)
@@ -174,14 +176,6 @@ export default function UpdateTodoForm () {
       />
 
       <TextField
-        label='Date & Time Due (Optional)'
-        type='datetime-local'
-        value={dateTime}
-        onChange={e => setDateTime(e.target.value)}
-        InputLabelProps={{ shrink: true }}
-      />
-
-      <TextField
         label='Description'
         multiline
         rows={4}
@@ -190,6 +184,27 @@ export default function UpdateTodoForm () {
         inputProps={{ maxLength: maxDescriptionLimit }}
         helperText={`${description.length}/${maxDescriptionLimit} characters`}
         error={description.length > maxDescriptionLimit}
+      />
+
+      <TextField
+        label='Date & Time (Optional)'
+        type='datetime-local'
+        value={dateTime}
+        onChange={e => setDateTime(e.target.value)}
+        InputLabelProps={{ shrink: true }}
+        sx={{
+          input: {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& .MuiInputBase-root': {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& input[type="datetime-local"]::-webkit-calendar-picker-indicator': {
+            filter: theme.palette.mode === 'dark' ? 'invert(1)' : 'none'
+          }
+        }}
       />
 
       <FormControlLabel

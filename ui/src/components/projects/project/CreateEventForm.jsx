@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-
+import { useTheme } from '@mui/material/styles'
 import {
   Box,
   Button,
@@ -18,7 +18,7 @@ export default function CreateEventForm () {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
-
+  const theme = useTheme()
   const eventNameLimit = 64
   const eventDescriptionLimit = 255
 
@@ -110,12 +110,24 @@ export default function CreateEventForm () {
       />
 
       <TextField
-        label='Date & Time'
+        label='Date & Time (Optional)'
         type='datetime-local'
         value={dateTime}
         onChange={e => setDateTime(e.target.value)}
         InputLabelProps={{ shrink: true }}
-        required
+        sx={{
+          input: {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& .MuiInputBase-root': {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& input[type="datetime-local"]::-webkit-calendar-picker-indicator': {
+            filter: theme.palette.mode === 'dark' ? 'invert(1)' : 'none'
+          }
+        }}
       />
 
       <TextField
