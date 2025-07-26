@@ -24,7 +24,8 @@ const typeColors = {
   canvas: '#0288d1',
   files: '#5d4037',
   event: '#007BFF',
-  TODO: '#fbc02d' // bright yellow for TODOs
+  'Scheduled Todo': '#fbc12dd2',
+  'Completed Todo': '#fbc12d7c'
 }
 
 const toUnixSecondsUTC = date => {
@@ -240,7 +241,7 @@ export default function CalendarView ({
                   title: `${label}: ${e.name}`,
                   start: fromUTCToLocalDate(new Date(timestamp * 1000)),
                   end: fromUTCToLocalDate(new Date((timestamp + 1800) * 1000)), // 30 mins
-                  type: 'TODO',
+                  type: e.completed? 'Completed Todo':'Scheduled Todo',
                   eventType: e.completed ? 'COMPLETED' : 'DUE',
                   completed: e.completed,
                   name: e.name,
