@@ -20,7 +20,7 @@ def get_tags_for_projects(project_ids):
 
     # Use SQL's IN clause to fetch all tags at once
     cursor.execute("""
-        SELECT tagmappings.projectID, tags.TagID, tags.UserID, tags.tag, tags.options
+        SELECT DISTINCT tagmappings.projectID, tags.TagID, tags.UserID, tags.tag, tags.options
         FROM tags
         JOIN tagmappings ON tags.TagID = tagmappings.TagID
         WHERE tagmappings.projectID = ANY(%s)
