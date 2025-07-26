@@ -56,16 +56,15 @@ def process_markdown_images(markdown, translate_images, src_address, src_cookie,
 
 
 def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip, delete_dst_user):
-
     src_address = f"http://{src_ip}:3001/"
 
     dst_address = f"http://{dst_ip}:3001/"
 
-    src_res = r.post(src_address + "/users/create_user", json={
-        "username": src_username,
-        "password": src_password
-    })
-    src_res = src_res.json()
+    # src_res = r.post(src_address + "/users/create_user", json={
+    #     "username": src_username,
+    #     "password": src_password
+    # })
+    # src_res = src_res.json()
 
     src_res = r.post(src_address + "/users/login", json={
         "username": src_username,
@@ -74,6 +73,10 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
     src_json = src_res.json()
     if src_json['message'] == "Authenticated Successfully":
         print("Authenticated With Source")
+    else:
+        print(f"Could Not Authenticate with Source: {src_username}@{src_password}")
+        print(src_json)
+        return
     src_cookie = {'token': src_res.cookies['token']}
 
     if delete_dst_user:
@@ -91,16 +94,18 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
             dst_res = dst_res.json()
             if dst_res['status'] == "success":
                 print(f"Deleted Destination User: {dst_username}@{dst_ip}")
+
+            dst_res = r.post(dst_address + "/users/create_user", json={
+                "username": dst_username,
+                "password": dst_password
+            })
+            dst_res = dst_res.json()
+            if dst_res['status'] == "success":
+                print(f"Created Destination User: {dst_username}@{dst_ip}")
         else:
             print("Could Not Authenticate To Delete Account")
     else:
         print("Proceeding without deleting destination")
-
-    dst_res = r.post(dst_address + "/users/create_user", json={
-        "username": dst_username,
-        "password": src_password
-    })
-    dst_res = dst_res.json()
 
     dst_res = r.post(dst_address + "/users/login", json={
         "username": dst_username,
@@ -108,7 +113,11 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
     })
     dst_json = dst_res.json()
     if dst_json['message'] == "Authenticated Successfully":
-        print("Authenticated With Destination")
+        print("Authenticated With Source")
+    else:
+        print(f"Could Not Authenticate with Source: {dst_username}@{dst_password}")
+        print(dst_json)
+        return
     dst_cookie = {'token': dst_res.cookies['token']}
 
     src_res = r.get(src_address + "/projects/get_all", cookies=src_cookie)
@@ -336,6 +345,8 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
     print(f"Progress: {100}%")
     print(f"Destination Username: {dst_username}")
     print(f"Destination Password: {dst_password}")
+    if os.path.exists('temp'):
+        shutil.rmtree('temp')
 
 
 if __name__ == "__main__":
@@ -354,7 +365,6 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    main(args.dst_username, args.dst_password, args.dst_ip, args.src_username, args.src_password, args.src_ip,
+    main(args.dst_username.strip(), args.dst_password.strip(), args.dst_ip.strip(), args.src_username.strip(),
+         args.src_password.strip(), args.src_ip.strip(),
          args.delete_dst_user)
-
-

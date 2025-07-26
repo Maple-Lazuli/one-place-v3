@@ -116,8 +116,10 @@ def main(dst_username, dst_password, dst_ip, source_file):
                 continue
 
             new_page_id = res.json()['id']
-
-            processed_content = process_markdown_images(page['content'], source_file, dst_address, dst_ip, cookie)
+            if page['content'] is None:
+                processed_content = "No Content Yet"
+            else:
+                processed_content = process_markdown_images(page['content'], source_file, dst_address, dst_ip, cookie)
 
             res = r.put(dst_address + "/pages/content", json={
                 "page_id": new_page_id,
@@ -197,4 +199,4 @@ if __name__ == "__main__":
     parser.add_argument("--source_file", required=True, help="Path to source zip file")
 
     args = parser.parse_args()
-    main(args.dst_username, args.dst_password, args.dst_ip, args.source_file)
+    main(args.dst_username.strip(), args.dst_password.strip(), args.dst_ip.strip(), args.source_file)
