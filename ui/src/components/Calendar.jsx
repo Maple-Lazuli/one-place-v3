@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import {
   Box,
   Checkbox,
@@ -10,7 +11,7 @@ import {
 } from '@mui/material'
 import { Calendar, momentLocalizer, Views } from 'react-big-calendar'
 import moment from 'moment'
-import Cookies from 'js-cookie';
+import Cookies from 'js-cookie'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 import './Calendar.css'
 const localizer = momentLocalizer(moment)
@@ -36,18 +37,15 @@ const toUnixSecondsUTC = date => {
   return utcUnixTime
 }
 
-if (Cookies.get('preferences') == 'dark'){
-  import('./Calendar_dark.css');
+if (Cookies.get('preferences') == 'dark') {
+  import('./Calendar_dark.css')
 }
-
 
 const allTypes = Object.keys(typeColors)
 const logTypes = ['CREATE', 'DELETE', 'UPDATE', 'UPLOAD', 'REVIEW']
 
 // Custom Event component to hide time text on week/day views
 function EventComponent ({ event, title, view }) {
-
-
   if (view === Views.WEEK || view === Views.DAY) {
     return (
       <div
@@ -150,6 +148,7 @@ export default function CalendarView ({
   setCurrentDate
 }) {
   const today = new Date()
+  const navigate = useNavigate()
   const initialStart = new Date(today.getFullYear(), today.getMonth(), 1)
   const initialEnd = new Date(
     today.getFullYear(),
@@ -225,6 +224,7 @@ export default function CalendarView ({
               start: fromUTCToLocalDate(new Date(e.eventTime * 1000)),
               end: fromUTCToLocalDate(new Date((e.eventTime + 3600) * 1000)), // 1hr default
               description: e.description,
+              ProjectID: e.ProjectID,
               type: 'event',
               eventType: 'event',
               name: e.name,
@@ -243,7 +243,8 @@ export default function CalendarView ({
                   title: `${label}: ${e.name}`,
                   start: fromUTCToLocalDate(new Date(timestamp * 1000)),
                   end: fromUTCToLocalDate(new Date((timestamp + 1800) * 1000)), // 30 mins
-                  type: e.completed? 'Completed Todo':'Scheduled Todo',
+                  type: e.completed ? 'Completed Todo' : 'Scheduled Todo',
+                  ProjectID: e.ProjectID,
                   eventType: e.completed ? 'COMPLETED' : 'DUE',
                   completed: e.completed,
                   name: e.name,
@@ -364,9 +365,7 @@ export default function CalendarView ({
         ...event,
         start,
         end,
-        title: `${capitalize(event.eventType)}: ${
-          event.name || ''
-        }`.trim()
+        title: `${capitalize(event.eventType)}: ${event.name || ''}`.trim()
       }
     })
   }
@@ -376,24 +375,24 @@ export default function CalendarView ({
     return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
   }
 
-const summarizedLogEvents = useMemo(() => {
-  if (view === 'week' || view === 'day') {
-    return summarizeDayViewEvents(filteredLogEvents)
-  } else {
-    return summarizeEvents(filteredLogEvents)
-  }
-}, [filteredLogEvents, view])
+  const summarizedLogEvents = useMemo(() => {
+    if (view === 'week' || view === 'day') {
+      return summarizeDayViewEvents(filteredLogEvents)
+    } else {
+      return summarizeEvents(filteredLogEvents)
+    }
+  }, [filteredLogEvents, view])
 
-const summarizedEvents = useMemo(() => {
-  return [...nonLogEvents, ...summarizedLogEvents]
-}, [nonLogEvents, summarizedLogEvents])
+  const summarizedEvents = useMemo(() => {
+    return [...nonLogEvents, ...summarizedLogEvents]
+  }, [nonLogEvents, summarizedLogEvents])
 
   return (
     <Box
       sx={{
         display: 'flex',
         height: '100%',
-        width: '100vw',
+        width: '100vw'
       }}
     >
       <Paper
@@ -466,14 +465,23 @@ const summarizedEvents = useMemo(() => {
           style={{ height: '100%', padding: '10px' }}
           eventPropGetter={eventStyleGetter}
           onRangeChange={handleRangeChange}
-          date={currentDate} 
-          onNavigate={setCurrentDate} 
+          date={currentDate}
+          onNavigate={setCurrentDate}
           components={{
             event: props => <EventComponent {...props} view={view} />
           }}
           showMultiDayTimes={view !== Views.MONTH}
           max={3}
+          min={new Date(1970, 1, 1, 0, 0)} // start at midnight
+          max={new Date(1970, 1, 1, 23, 59)} // end at 11:59 PM
           popup
+          onSelectEvent={event => {
+            if (event.type === 'Scheduled Todo' || event.type === 'Completed Todo') {
+              navigate(`/projects/project/${event.ProjectID}/todos`)
+            } else if (event.type === 'event') {
+              navigate(`/projects/project/${event.ProjectID}/events`)
+            }
+          }}
         />
       </Box>
     </Box>
