@@ -23,7 +23,5 @@ RUN uv sync
 
 EXPOSE 3001
 
-# Use uv to run your app
-# CMD ["uv", "run", "run.py"]
 CMD ["gunicorn", "-w", "4", "--threads", "2", "-b", "0.0.0.0:3001", "run:app"]
 
