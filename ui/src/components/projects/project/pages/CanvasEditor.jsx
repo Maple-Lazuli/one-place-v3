@@ -361,6 +361,8 @@ export default function CanvasEditor () {
         strokeWidth
       }
     ])
+    const point = stage.getRelativePointerPosition()
+    throttledUpdateLine([point.x, point.y])
   }
 
   const handleMouseMove = e => {
@@ -468,15 +470,23 @@ export default function CanvasEditor () {
   }, [lines, images])
 
   useEffect(() => {
-    const interval = setInterval(async () => {
+    let interval = null
+
+    async function pollCanvasUpdate () {
+      if (drawing) {
+        return
+      }
       try {
         const res = await fetch(`/api/canvas/last_update?id=${canvas_id}`, {
           credentials: 'include'
         })
         const data = await res.json()
+
         if (res.ok && data.last_update && data.last_update !== 'Null') {
           const lastUpdate = Number(data.last_update) * 1000
+
           if (
+            !drawing && //
             lastUpdate > lastEditTimeRef.current &&
             lastUpdate > lastSaveTimeRef.current
           ) {
@@ -486,15 +496,19 @@ export default function CanvasEditor () {
               const parsed = JSON.parse(canvasData.message.content)
               setLines(parsed.lines || [])
               setImages(parsed.images || [])
+              setBackgroundColor(parsed.backgroundColor || '#ffffff')
             }
           }
         }
       } catch (err) {
         console.error('Error checking canvas last update:', err)
       }
-    }, 1500)
+    }
+
+    interval = setInterval(pollCanvasUpdate, 1500)
+
     return () => clearInterval(interval)
-  }, [canvas_id])
+  }, [canvas_id, drawing])
 
   return (
     <div
