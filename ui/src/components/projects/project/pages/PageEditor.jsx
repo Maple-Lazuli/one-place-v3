@@ -329,10 +329,11 @@ export default function PageEditor () {
                       <code
                         className={className}
                         style={{
-                          backgroundColor: '#eee',
+                          // backgroundColor: '#eee',
                           padding: '0.2em 0.4em',
                           borderRadius: '4px',
-                          fontSize: '0.95em'
+                          fontSize: '0.95em',
+                          fontFamily: 'monospace'
                         }}
                         {...props}
                       >

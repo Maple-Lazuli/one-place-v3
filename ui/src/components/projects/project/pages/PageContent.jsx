@@ -286,10 +286,11 @@ export default function PageContent () {
                 <code
                   className={className}
                   style={{
-                    backgroundColor: '#eee',
-                    padding: '0.2em 0.4em',
-                    borderRadius: '4px',
-                    fontSize: '0.95em'
+                          // backgroundColor: '#eee',
+                          padding: '0.2em 0.4em',
+                          borderRadius: '4px',
+                          fontSize: '0.95em',
+                          fontFamily: 'monospace'
                   }}
                   {...props}
                 >
