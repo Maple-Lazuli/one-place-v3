@@ -128,7 +128,7 @@ export default function CanvasEditor () {
           { ...lastLine, points: [...lastLine.points, ...newLine] }
         ]
       })
-    }, 20)
+    }, 15)
   ).current
 
   useEffect(() => {
@@ -140,7 +140,7 @@ export default function CanvasEditor () {
   const throttledPan = useRef(
     throttle((dx, dy) => {
       setStagePosition(pos => ({ x: pos.x + dx, y: pos.y + dy }))
-    }, 20) // ~60fps
+    }, 15) // ~60fps
   ).current
 
   useEffect(() => {
@@ -391,6 +391,8 @@ export default function CanvasEditor () {
       return
     }
     if (drawing) {
+      const point = stage.getRelativePointerPosition()
+      throttledUpdateLine([point.x, point.y])
       setDrawing(false)
       setHistory(prev => [...prev, [...lines]])
       setRedoStack([])
