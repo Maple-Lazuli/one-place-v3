@@ -14,6 +14,7 @@ export default function PageTranslations () {
   const [translations, setTranslations] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchTranslations() {
       const res = await fetch(`/api/translations/get_all_by_page?id=${page_id}`, {
         credentials: 'include',
@@ -25,8 +26,11 @@ export default function PageTranslations () {
     }
 
     fetchTranslations()
-  }, [page_id])
 
+    intervalId = setInterval(fetchTranslations, 5000)
+
+    return () => clearInterval(intervalId)
+  }, [page_id])
   const handleDelete = (deletedId) => {
     setTranslations((prev) => prev.filter((translation) => translation.TranslationID !== deletedId))
   }

@@ -8,6 +8,7 @@ export default function PageFiles () {
   const [files, setFiles] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchFiles () {
       const res = await fetch(`/api/files/files_by_page?page_id=${page_id}`, {
         credentials: 'include'
@@ -17,6 +18,10 @@ export default function PageFiles () {
     }
 
     fetchFiles()
+
+    intervalId = setInterval(fetchFiles, 5000)
+
+    return () => clearInterval(intervalId)
   }, [page_id])
 
   const handleDelete = deletedId => {

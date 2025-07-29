@@ -14,6 +14,7 @@ export default function PageRecipes () {
   const [recipes, setRecipes] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchRecipes() {
       const res = await fetch(`/api/recipes/get_all_by_page?id=${page_id}`, {
         credentials: 'include',
@@ -25,6 +26,10 @@ export default function PageRecipes () {
     }
 
     fetchRecipes()
+
+    intervalId = setInterval(fetchRecipes, 5000)
+
+    return () => clearInterval(intervalId)
   }, [page_id])
 
   const handleDelete = (deletedId) => {

@@ -14,6 +14,7 @@ export default function PageEquations () {
   const [equations, setEquations] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchEquations() {
       const res = await fetch(`/api/equations/get_all_by_page?id=${page_id}`, {
         credentials: 'include',
@@ -25,6 +26,10 @@ export default function PageEquations () {
     }
 
     fetchEquations()
+
+    intervalId = setInterval(fetchEquations, 5000)
+
+    return () => clearInterval(intervalId)
   }, [page_id])
 
   const handleDelete = (deletedId) => {
