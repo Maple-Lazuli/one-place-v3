@@ -66,7 +66,7 @@ export default function CanvasEditor () {
           { ...lastLine, points: [...lastLine.points, ...newLine] }
         ]
       })
-    }, 15)
+    }, 20)
   ).current
 
   useEffect(() => {
@@ -79,7 +79,7 @@ export default function CanvasEditor () {
     throttle((dx, dy, pointer) => {
       setStagePosition(pos => ({ x: pos.x + dx, y: pos.y + dy }))
       lastPanPos.current = pointer
-    }, 15) // ~60fps
+    }, 20) // ~60fps
   ).current
 
   useEffect(() => {
@@ -221,16 +221,16 @@ export default function CanvasEditor () {
   }
 
   const handleTouchMove = e => {
-    if (!drawing) {
-      return
-    }
-
     const stage = stageRef.current
     if (!stage) return
 
-    const point = stage.getRelativePointerPosition()
+    if (e.evt.touches.length === 2) {
+      e.evt.preventDefault()
+    } else if (drawing) {
+      const point = stage.getRelativePointerPosition()
 
-    throttledUpdateLine([point.x, point.y])
+      throttledUpdateLine([point.x, point.y])
+    }
   }
 
   const handlePointerMove = e => {
