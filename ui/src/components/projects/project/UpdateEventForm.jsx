@@ -15,9 +15,9 @@ export default function UpdateEventForm () {
   const navigate = useNavigate()
 
   const [title, setTitle] = useState('')
-  const [dateTime, setDateTime] = useState('')
+  const [dateStartTime, setStartTime] = useState('')
+  const [dateEndTime, setEndTime] = useState('')
   const [description, setDescription] = useState('')
-  const [duration, setDuration] = useState('')
   const [loading, setLoading] = useState(true)
   const [submitLoading, setSubmitLoading] = useState(false)
   const [error, setError] = useState('')
@@ -25,6 +25,20 @@ export default function UpdateEventForm () {
   const theme = useTheme()
   const eventNameLimit = 64
   const eventDescriptionLimit = 255
+
+  function toLocalISODateTime (date) {
+    return (
+      date.getFullYear() +
+      '-' +
+      String(date.getMonth() + 1).padStart(2, '0') +
+      '-' +
+      String(date.getDate()).padStart(2, '0') +
+      'T' +
+      String(date.getHours()).padStart(2, '0') +
+      ':' +
+      String(date.getMinutes()).padStart(2, '0')
+    )
+  }
 
   // Fetch event details on mount
   useEffect(() => {
@@ -42,13 +56,13 @@ export default function UpdateEventForm () {
         }
 
         const event = data.message // from response: { status: 'success', message: event }
+        console.log(event)
 
-        setTitle(event.Name || '')
-        const dt = new Date(event.Time)
-        const localISO = dt.toISOString().slice(0, 16)
-        setDateTime(localISO)
-        setDescription(event.Description || '')
-        setDuration(event.Duration?.toString() || '')
+        setTitle(event.name || '')
+        setStartTime(toLocalISODateTime(new Date(event.startTime * 1000)))
+        setEndTime(toLocalISODateTime(new Date(event.endTime * 1000)))
+
+        setDescription(event.description || '')
       } catch (err) {
         setError(err.message)
       } finally {
@@ -63,7 +77,7 @@ export default function UpdateEventForm () {
     setError('')
     setSuccess('')
 
-    if (!title || !dateTime) {
+    if (!title || !dateStartTime || !dateEndTime) {
       setError('Please fill in the event title and date/time.')
       return
     }
@@ -71,17 +85,14 @@ export default function UpdateEventForm () {
     setSubmitLoading(true)
 
     try {
-      const timestamp = new Date(dateTime).getTime() / 1000 // seconds since epoch
+      // const  = new Date(dateTime).getTime() / 1000 // seconds since epoch
 
       const payload = {
         event_id,
         new_name: title,
         new_description: description,
-        new_time: timestamp
-      }
-
-      if (duration) {
-        payload.new_duration = parseInt(duration, 10)
+        new_startTime: new Date(dateStartTime).getTime() / 1000,
+        new_endTime: new Date(dateEndTime).getTime() / 1000
       }
 
       const res = await fetch('/api/events/update', {
@@ -144,27 +155,10 @@ export default function UpdateEventForm () {
       />
 
       <TextField
-        label='Date & Time'
+        label='Start Time'
         type='datetime-local'
-        value={dateTime}
-        onChange={e => setDateTime(e.target.value)}
-        InputLabelProps={{ shrink: true }}
-        required
-      />
-
-      <TextField
-        label='Duration (minutes)'
-        type='number'
-        inputProps={{ min: 0 }}
-        value={duration}
-        onChange={e => setDuration(e.target.value)}
-      />
-
-      <TextField
-        label='Date & Time (Optional)'
-        type='datetime-local'
-        value={dateTime}
-        onChange={e => setDateTime(e.target.value)}
+        value={dateStartTime}
+        onChange={e => setStartTime(e.target.value)}
         InputLabelProps={{ shrink: true }}
         sx={{
           input: {
@@ -179,6 +173,38 @@ export default function UpdateEventForm () {
             filter: theme.palette.mode === 'dark' ? 'invert(1)' : 'none'
           }
         }}
+      />
+
+      <TextField
+        label='End Time'
+        type='datetime-local'
+        value={dateEndTime}
+        onChange={e => setEndTime(e.target.value)}
+        InputLabelProps={{ shrink: true }}
+        sx={{
+          input: {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& .MuiInputBase-root': {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& input[type="datetime-local"]::-webkit-calendar-picker-indicator': {
+            filter: theme.palette.mode === 'dark' ? 'invert(1)' : 'none'
+          }
+        }}
+      />
+
+      <TextField
+        label='Description'
+        multiline
+        rows={4}
+        value={description}
+        onChange={e => setDescription(e.target.value)}
+        inputProps={{ maxLength: eventDescriptionLimit }}
+        helperText={`${description.length}/${eventDescriptionLimit} characters`}
+        error={description.length > eventDescriptionLimit}
       />
 
       <Button variant='contained' type='submit' disabled={submitLoading}>

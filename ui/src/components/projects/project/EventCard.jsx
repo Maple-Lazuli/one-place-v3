@@ -12,6 +12,7 @@ import { Link, useParams } from 'react-router-dom'
 export default function EventCard({
   name,
   date,
+  dateEnd,
   description,
   event_id,
   onDelete,
@@ -20,7 +21,15 @@ export default function EventCard({
 }) {
   const { project_id } = useParams()
 
-const formattedDate = new Date(date * 1000).toLocaleString(undefined, {
+const formattedStartDate = new Date(date * 1000).toLocaleString(undefined, {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit'
+})
+
+const formattedEndDate = new Date(dateEnd * 1000).toLocaleString(undefined, {
   year: 'numeric',
   month: 'short',
   day: 'numeric',
@@ -70,7 +79,7 @@ const formattedDate = new Date(date * 1000).toLocaleString(undefined, {
           {name}
         </Typography>
         <Typography variant='subtitle2' color='text.secondary' gutterBottom>
-          {formattedDate}
+          {formattedStartDate} - {formattedEndDate}
         </Typography>
         <Box sx={{ whiteSpace: 'pre-line', mb: 2 }}>
           <Typography variant='body2' color='text.primary'>

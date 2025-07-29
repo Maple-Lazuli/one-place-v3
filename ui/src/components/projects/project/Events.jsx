@@ -34,21 +34,21 @@ export default function Events() {
   const now = Date.now() / 1000 // current UNIX timestamp in seconds
   const in24Hours = now + 24 * 60 * 60
 
-  const getBorderColor = (eventTime) => {
-  if (!eventTime) return undefined 
+  const getBorderColor = (startTime) => {
+  if (!startTime) return undefined 
 
-  if (eventTime >= now && eventTime <= in24Hours) return 'orange' 
+  if (startTime >= now && startTime <= in24Hours) return 'orange' 
 
   return undefined 
 }
 
   const futureEvents = [...events]
-    .filter((e) => e.eventTime > now)
-    .sort((a, b) => a.eventTime - b.eventTime)
+    .filter((e) => e.startTime > now)
+    .sort((a, b) => a.startTime - b.startTime)
 
   const pastEvents = [...events]
-    .filter((e) => e.eventTime <= now)
-    .sort((a, b) => b.eventTime - a.eventTime)
+    .filter((e) => e.startTime <= now)
+    .sort((a, b) => b.startTime - a.startTime)
 
   return (
     <Box sx={{ p: 2, height: '100%', overflowY:'auto' }}>
@@ -73,11 +73,12 @@ export default function Events() {
           <Grid key={event.EventID}>
             <EventCard
               name={event.name}
-              date={event.eventTime}
+              date={event.startTime}
+              dateEnd={event.endTime}
               description={event.description}
               event_id={event.EventID}
               onDelete={handleDelete}
-              borderColor={getBorderColor(event.eventTime)} 
+              borderColor={getBorderColor(event.startTime)} 
             />
           </Grid>
         ))}
@@ -89,7 +90,8 @@ export default function Events() {
           <Grid key={event.EventID}>
             <EventCard
               name={event.name}
-              date={event.eventTime}
+              date={event.startTime}
+              dateEnd={event.endTime}
               description={event.description}
               event_id={event.EventID}
               onDelete={handleDelete}

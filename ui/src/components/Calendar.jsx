@@ -221,8 +221,8 @@ export default function CalendarView ({
         userEventData.status === 'success'
           ? userEventData.message.map(e => ({
               title: e.name,
-              start: fromUTCToLocalDate(new Date(e.eventTime * 1000)),
-              end: fromUTCToLocalDate(new Date((e.eventTime + 3600) * 1000)), // 1hr default
+              start: fromUTCToLocalDate(new Date(e.startTime * 1000)),
+              end: fromUTCToLocalDate(new Date(e.endTime * 1000)), // 1hr default
               description: e.description,
               ProjectID: e.ProjectID,
               type: 'event',

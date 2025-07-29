@@ -12,9 +12,9 @@ import {
 
 export default function CreateEventForm () {
   const [title, setTitle] = useState('')
-  const [dateTime, setDateTime] = useState('')
+  const [dateStartTime, setStartTime] = useState('')
+  const [dateEndTime, setEndTime] = useState('')
   const [description, setDescription] = useState('')
-  const [duration, setDuration] = useState('')
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,7 +30,7 @@ export default function CreateEventForm () {
     setError('')
     setSuccess('')
 
-    if (!title || !dateTime) {
+    if (!title || !dateStartTime || !dateEndTime) {
       setError('Please fill in the event title and date/time.')
       return
     }
@@ -38,18 +38,15 @@ export default function CreateEventForm () {
     setLoading(true)
 
     try {
-      const timestamp = new Date(dateTime).getTime() / 1000 // convert to seconds since epoch
+      // const timestamp = new Date(dateTime).getTime() / 1000 // convert to seconds since epoch
 
       const payload = {
         project_id: Number(project_id), // convert string param to number
         name: title,
         description,
-        time: timestamp
+        startTime: new Date(dateStartTime).getTime() / 1000,
+        endTime: new Date(dateEndTime).getTime() / 1000
       }
-      if (duration) {
-        payload.duration = parseInt(duration, 10)
-      }
-
       const res = await fetch('/api/events/create', {
         method: 'POST',
         headers: {
@@ -110,10 +107,10 @@ export default function CreateEventForm () {
       />
 
       <TextField
-        label='Date & Time (Optional)'
+        label='Start Time'
         type='datetime-local'
-        value={dateTime}
-        onChange={e => setDateTime(e.target.value)}
+        value={dateStartTime}
+        onChange={e => setStartTime(e.target.value)}
         InputLabelProps={{ shrink: true }}
         sx={{
           input: {
@@ -131,11 +128,24 @@ export default function CreateEventForm () {
       />
 
       <TextField
-        label='Duration (Minutes) (Optional)'
-        type='number'
-        inputProps={{ min: 0 }}
-        value={duration}
-        onChange={e => setDuration(e.target.value)}
+        label='End Time'
+        type='datetime-local'
+        value={dateEndTime}
+        onChange={e => setEndTime(e.target.value)}
+        InputLabelProps={{ shrink: true }}
+        sx={{
+          input: {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& .MuiInputBase-root': {
+            color: theme.palette.text.primary,
+            backgroundColor: theme.palette.background.paper
+          },
+          '& input[type="datetime-local"]::-webkit-calendar-picker-indicator': {
+            filter: theme.palette.mode === 'dark' ? 'invert(1)' : 'none'
+          }
+        }}
       />
 
       <TextField
