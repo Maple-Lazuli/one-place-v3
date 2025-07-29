@@ -151,7 +151,6 @@ export default function CanvasEditor () {
     }
   }, [selectedImageIndex])
 
-
   function updateImagePosition (index, changes) {
     setImages(prev => {
       const updated = [...prev]
@@ -162,8 +161,6 @@ export default function CanvasEditor () {
   }
 
   const handlePointerDown = e => {
-    console.log(e)
-
     const stage = e.target.getStage()
     //ensure an image was not clicked on.
     const clickedOnImage = imageRefs.current.some(
@@ -206,9 +203,16 @@ export default function CanvasEditor () {
     setLines(prev => [
       ...prev,
       {
-        points: [pos.x, pos.y], 
-        stroke: tool === 'eraser' ? '#f0f0f0' : strokeColor, // Use background color for eraser
-        strokeWidth
+        points: [pos.x, pos.y],
+        stroke:
+          tool === 'eraser' ||
+          (e.evt.button === 5 && e.evt.pointerType === 'pen')
+            ? '#f0f0f0'
+            : strokeColor, // Use background color for eraser
+        strokeWidth:
+          e.evt.button === 5 && e.evt.pointerType === 'pen'
+            ? strokeWidth * 2
+            : strokeWidth
       }
     ])
 
@@ -216,17 +220,29 @@ export default function CanvasEditor () {
     throttledUpdateLine([point.x, point.y])
   }
 
+  const handleTouchMove = e => {
+    if (!drawing) {
+      return
+    }
+
+    const stage = stageRef.current
+    if (!stage) return
+
+    const point = stage.getRelativePointerPosition()
+
+    throttledUpdateLine([point.x, point.y])
+  }
 
   const handlePointerMove = e => {
     const stage = stageRef.current
-    if (!stage) return 
+    if (!stage) return
 
     if (middleMouseDown || tool === 'pan') {
-      const pointer = stage.getPointerPosition() 
-      const dx = pointer.x - lastPanPos.current.x 
-      const dy = pointer.y - lastPanPos.current.y 
+      const pointer = stage.getPointerPosition()
+      const dx = pointer.x - lastPanPos.current.x
+      const dy = pointer.y - lastPanPos.current.y
 
-      throttledPan(dx, dy, pointer) 
+      throttledPan(dx, dy, pointer)
       return
     }
 
@@ -237,13 +253,37 @@ export default function CanvasEditor () {
     throttledUpdateLine([point.x, point.y])
   }
 
+  const handleTouchEnd = e => {
+    if (drawing) {
+      const stage = stageRef.current
+      if (stage) {
+        const point = stage.getRelativePointerPosition()
+        throttledUpdateLine([point.x, point.y])
+      }
 
-    const handlePointerUp = e => {
-      
+      setDrawing(false)
+
+      // Save current lines into history for undo support
+      setHistory(prev => [...prev, [...lines]])
+
+      // Clear redo stack since a new action has been made
+      setRedoStack([])
+
+      // Save canvas to backend
+      //TODO Ensure this goes on a timer
+      saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+    }
+    lastPanPos.current = null
+  }
+
+  const handlePointerUp = e => {
     // stop panning if it was the middle mouse button or a touch
-    if ((e.evt.button === 4 && e.evt.pointerType === "mouse")||(e.evt.button === 0 && e.evt.pointerType === 'touch')) {
+    if (
+      (e.evt.button === 4 && e.evt.pointerType === 'mouse') ||
+      (e.evt.button === 0 && e.evt.pointerType === 'touch')
+    ) {
       setMiddleMouseDown(false)
-      lastPanPos.current = null 
+      lastPanPos.current = null
       return
     }
 
@@ -254,7 +294,7 @@ export default function CanvasEditor () {
         throttledUpdateLine([point.x, point.y])
       }
 
-      setDrawing(false) 
+      setDrawing(false)
 
       // Save current lines into history for undo support
       setHistory(prev => [...prev, [...lines]])
@@ -528,7 +568,9 @@ export default function CanvasEditor () {
         onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
+        onTouchMove={handleTouchMove}
         onPointerUp={handlePointerUp}
+        onTouchEnd={handleTouchEnd}
         draggable={tool === 'pan' || middleMouseDown}
         style={{ backgroundColor: backgroundColor, flexGrow: 1 }}
       >
