@@ -15,8 +15,6 @@ import 'katex/dist/katex.min.css'
 import { replaceImageHosts } from '../../../../utils/scripts.js'
 
 export default function UpdateTranslation () {
-
-
   const [content, setContent] = useState('')
   const [language, setLanguage] = useState('')
   const [error, setError] = useState('')
@@ -83,6 +81,10 @@ export default function UpdateTranslation () {
 
   useEffect(() => {
     const interval = setInterval(async () => {
+      const now = Date.now()
+
+      // Skip polling if last edit was within the last 2 seconds
+      if (now - lastEditTimeRef.current < 2000) return
       try {
         const res = await fetch(
           `/api/translations/last_update?id=${translation_id}`,
@@ -232,7 +234,7 @@ export default function UpdateTranslation () {
   }
 
   return (
-    <Box sx={{ p: 1, height: '100%', overflow:'auto' }}>
+    <Box sx={{ p: 1, height: '100%', overflow: 'auto' }}>
       <Box
         sx={{
           display: 'flex',
@@ -312,7 +314,7 @@ export default function UpdateTranslation () {
             borderRadius: 2,
             whiteSpace: 'pre-wrap',
             // backgroundColor: '#fafafa',
-           height: '100%',
+            height: '100%',
             overflow: 'auto'
           }}
         >

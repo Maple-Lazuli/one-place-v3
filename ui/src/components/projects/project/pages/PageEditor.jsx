@@ -59,6 +59,10 @@ export default function PageEditor () {
 
   useEffect(() => {
     const interval = setInterval(async () => {
+      const now = Date.now()
+
+      // Skip polling if last edit was within the last 2 seconds
+      if (now - lastEditTimeRef.current < 2000) return
       try {
         const res = await fetch(`/api/pages/last_update?id=${page_id}`, {
           credentials: 'include'
@@ -196,18 +200,18 @@ export default function PageEditor () {
   }
 
   return (
-  <Box
-    ref={containerRef}
-    sx={{
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '1rem',
-      height: '100%',
-      boxSizing: 'border-box',
-      p: 2,
-      overflow: 'hidden'
-    }}
-  >
+    <Box
+      ref={containerRef}
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        height: '100%',
+        boxSizing: 'border-box',
+        p: 2,
+        overflow: 'hidden'
+      }}
+    >
       <Box
         sx={{
           display: 'flex',
