@@ -14,6 +14,7 @@ export default function Canvases () {
   const [canvases, setCanvases] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchCanvases() {
       const res = await fetch(`/api/canvas/get_all_by_project?id=${project_id}`, {
         credentials: 'include',
@@ -25,6 +26,10 @@ export default function Canvases () {
     }
 
     fetchCanvases()
+
+    intervalId = setInterval(fetchCanvases, 5000)
+
+    return () => clearInterval(intervalId)
   }, [project_id])
 
   const handleDelete = (deletedId) => {

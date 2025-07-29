@@ -14,6 +14,7 @@ export default function Events() {
   const [events, setEvents] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchEvents() {
       const res = await fetch(`/api/events/get_project_events?project_id=${project_id}`, {
         credentials: 'include',
@@ -25,6 +26,10 @@ export default function Events() {
     }
 
     fetchEvents()
+
+    intervalId = setInterval(fetchEvents, 5000)
+
+    return () => clearInterval(intervalId)
   }, [project_id])
 
   const handleDelete = (deletedId) => {

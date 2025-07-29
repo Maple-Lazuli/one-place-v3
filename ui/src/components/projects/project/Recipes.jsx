@@ -14,6 +14,7 @@ export default function Recipes () {
   const [recipes, setRecipes] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchRecipes() {
       const res = await fetch(`/api/recipes/get_all_by_project?id=${project_id}`, {
         credentials: 'include',
@@ -25,6 +26,10 @@ export default function Recipes () {
     }
 
     fetchRecipes()
+
+    intervalId = setInterval(fetchRecipes, 5000)
+
+    return () => clearInterval(intervalId)
   }, [project_id])
 
   const handleDelete = (deletedId) => {

@@ -8,6 +8,7 @@ export default function Attachments () {
   const [files, setFiles] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchFiles () {
       const res = await fetch(`/api/files/files_by_project?id=${project_id}`, {
         credentials: 'include'
@@ -17,6 +18,10 @@ export default function Attachments () {
     }
 
     fetchFiles()
+
+    intervalId = setInterval(fetchFiles, 5000)
+
+    return () => clearInterval(intervalId)
   }, [project_id])
 
   const handleDelete = deletedId => {

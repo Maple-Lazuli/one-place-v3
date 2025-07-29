@@ -8,6 +8,7 @@ export default function Pages () {
   const [pages, setPages] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchPages () {
       const res = await fetch(`/api/pages/get_project_pages?id=${project_id}`, {
         credentials: 'include'
@@ -19,6 +20,10 @@ export default function Pages () {
     }
 
     fetchPages()
+
+    intervalId = setInterval(fetchPages, 5000)
+
+    return () => clearInterval(intervalId)
   }, [project_id])
 
   const handleDelete = deletedId => {

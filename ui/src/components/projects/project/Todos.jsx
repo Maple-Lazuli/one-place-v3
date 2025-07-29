@@ -18,6 +18,7 @@ export default function Todos () {
   const [snackbarOpen, setSnackbarOpen] = useState(false)
 
   useEffect(() => {
+    let intervalId
     async function fetchTodos () {
       const res = await fetch(
         `/api/todo/get_project_todo?project_id=${project_id}`,
@@ -32,6 +33,10 @@ export default function Todos () {
     }
 
     fetchTodos()
+
+    intervalId = setInterval(fetchTodos, 5000)
+
+    return () => clearInterval(intervalId)
   }, [project_id])
 
   const handleDelete = deletedId => {

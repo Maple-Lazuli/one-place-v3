@@ -14,6 +14,7 @@ export default function Snippets() {
   const [snippets, setSnippets] = useState([])
 
   useEffect(() => {
+    let intervalId
     async function fetchSnippets() {
       const res = await fetch(`/api/code_snippet/get_all_by_project?id=${project_id}`, {
         credentials: 'include',
@@ -25,6 +26,10 @@ export default function Snippets() {
     }
 
     fetchSnippets()
+
+    intervalId = setInterval(fetchSnippets, 5000)
+
+    return () => clearInterval(intervalId)
   }, [project_id])
 
   const handleDelete = (deletedId) => {
