@@ -8,12 +8,14 @@ from .db import get_db_connection
 from .sessions import verify_session_for_access
 from .projects import authorized_project_access
 
-event_fields = ['EventID', 'ProjectID', 'name', 'description', 'timeCreated', 'eventTime', 'duration', 'lastUpdate']
+event_fields = ['EventID', 'ProjectID', 'name', 'description', 'timeCreated', 'startTime', 'endTime', 'lastUpdate']
 
 
 def convert_time(object):
     object['timeCreated'] = object['timeCreated'].timestamp()
-    object['eventTime'] = object['eventTime'].timestamp()
+    object['startTime'] = object['startTime'].timestamp()
+    object['endTime'] = object['endTime'].timestamp()
+
     object['lastUpdate'] = object['lastUpdate'].timestamp()
     return object
 
@@ -30,14 +32,14 @@ def get_last_update(event_id):
     return None
 
 
-def create_event(projectID, name, description, eventTime, duration):
+def create_event(projectID, name, description, start_time, end_time):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        INSERT INTO events (ProjectID, name, description, eventTime, duration)
+        INSERT INTO events (ProjectID, name, description, startTime, endTime)
         VALUES (%s, %s, %s, %s, %s)
         RETURNING *;
-    """, (projectID, name, description, eventTime, duration))
+    """, (projectID, name, description, start_time, end_time))
     new_event = cursor.fetchone()
     conn.commit()
     cursor.close()
@@ -48,14 +50,14 @@ def create_event(projectID, name, description, eventTime, duration):
     return new_event
 
 
-def update_event(event_id, name, description, eventTime, duration):
+def update_event(event_id, name, description, start_time, end_time):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        UPDATE events SET name = %s, description = %s, eventTime = %s, duration = %s, lastUpdate = %s
+        UPDATE events SET name = %s, description = %s, startTime = %s, endTime = %s, lastUpdate = %s
         WHERE eventID = %s
         RETURNING *;
-    """, (name, description, eventTime, duration, datetime.now(), event_id))
+    """, (name, description, start_time, end_time, datetime.now(), event_id))
     updated_event = cursor.fetchone()
     conn.commit()
     cursor.close()
@@ -115,7 +117,7 @@ def get_all_events_by_user(user_id, start_time, end_time):
     inner join projects on
     projects.projectID = events.projectID
     where projects.UserID = %s
-    AND eventTime BETWEEN %s AND %s 
+    AND startTime BETWEEN %s AND %s 
     """, (user_id, start_time, end_time))
     events = cursor.fetchall()
     conn.commit()
@@ -142,13 +144,11 @@ def create_ep():
     project_id = int(data.get("project_id"))
     event_name = data.get("name").strip()
     event_description = data.get("description").strip()
-    event_time = data.get("time")
-    duration = data.get("duration", None)
+    start_time = data.get("startTime")
+    end_time = data.get("endTime")
 
-    event_time = datetime.fromtimestamp(float(event_time))
-
-    if duration is not None:
-        duration = int(duration)
+    start_time = datetime.fromtimestamp(float(start_time))
+    end_time = datetime.fromtimestamp(float(end_time))
 
     token = request.cookies.get("token")
 
@@ -160,7 +160,7 @@ def create_ep():
     if not authorized_project_access(token, project_id):
         return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
-    new_event = create_event(project_id, event_name, event_description, event_time, duration)
+    new_event = create_event(project_id, event_name, event_description, start_time, end_time)
     if new_event is None:
         return make_response({'status': 'error', 'message': "Failed To Create Event"}, STATUS.INTERNAL_SERVER_ERROR)
 
@@ -242,10 +242,11 @@ def update_ep():
     event_id = int(data.get("event_id"))
     event_name = data.get("new_name").strip()
     event_description = data.get("new_description").strip()
-    event_time = data.get("new_time")
-    duration = data.get("new_duration", None)
+    start_time = data.get("new_startTime")
+    end_time = data.get("new_endTime")
 
-    event_time = datetime.fromtimestamp(float(event_time))
+    start_time = datetime.fromtimestamp(float(start_time))
+    end_time = datetime.fromtimestamp(float(end_time))
 
     token = request.cookies.get("token")
 
@@ -259,7 +260,7 @@ def update_ep():
     if not authorized_project_access(token, todo['ProjectID']):
         return make_response({'status': 'error', 'message': "Not Authorized To Access Project"}, STATUS.FORBIDDEN)
 
-    updated_event = update_event(event_id, event_name, event_description, event_time, duration)
+    updated_event = update_event(event_id, event_name, event_description, start_time, end_time)
 
     if updated_event is None:
         return make_response({'status': 'error', 'message': "Failed To Update Event"}, STATUS.FORBIDDEN)

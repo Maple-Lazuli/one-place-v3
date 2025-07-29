@@ -45,8 +45,8 @@ CREATE TABLE events (
     name VARCHAR (64) NOT NULL,
     description VARCHAR(255) NOT NULL,
     timeCreated TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    eventTime TIMESTAMP NOT NULL,
-    duration FLOAT8 DEFAULT 0.0, -- seconds
+    startTime TIMESTAMP NOT NULL,
+    endTime TIMESTAMP NOT NULL,
     lastUpdate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (ProjectID) REFERENCES projects(ProjectID) ON DELETE CASCADE
 );
