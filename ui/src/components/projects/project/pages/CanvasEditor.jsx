@@ -30,7 +30,7 @@ export default function CanvasEditor () {
   const transformerRef = useRef()
   const { project_id, page_id, canvas_id } = useParams()
   const navigate = useNavigate()
-
+  const [saving, setSaving] = useState(false)
   const [tool, setTool] = useState('pen') // pen, eraser, pan
   const [lines, setLines] = useState([])
   const [images, setImages] = useState([])
@@ -47,7 +47,7 @@ export default function CanvasEditor () {
   const [scale, setScale] = useState(1)
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 })
   const [middleMouseDown, setMiddleMouseDown] = useState(false)
-  const autoSaveTimeout = 500 // 500ms delay for auto-save
+  const autoSaveTimeout = 1000 // 500ms delay for auto-save
   // For transformer & selection
   const [selectedImageIndex, setSelectedImageIndex] = useState(null)
   const imageRefs = useRef([])
@@ -88,12 +88,9 @@ export default function CanvasEditor () {
     }
   }, [])
 
-  // Load canvas content on mount
   useEffect(() => {
     loadCanvas(canvas_id, setLines, setImages, setBackgroundColor)
   }, [canvas_id])
-
-  // Save canvas helper
 
   const handleDeleteSelectedImage = () => {
     if (selectedImageIndex === null) return
@@ -253,6 +250,25 @@ export default function CanvasEditor () {
     throttledUpdateLine([point.x, point.y])
   }
 
+  //saving timeout
+  useEffect(() => {
+    if (drawing) return
+
+    const timeout = setTimeout(async () => {
+      setSaving(true)
+      await saveCanvas(
+        canvas_id,
+        lines,
+        images,
+        backgroundColor,
+        lastSaveTimeRef
+      )
+      setSaving(false)
+    }, autoSaveTimeout)
+
+    return () => clearTimeout(timeout)
+  }, [drawing])
+
   const handleTouchEnd = e => {
     if (drawing) {
       const stage = stageRef.current
@@ -263,15 +279,9 @@ export default function CanvasEditor () {
 
       setDrawing(false)
 
-      // Save current lines into history for undo support
       setHistory(prev => [...prev, [...lines]])
 
-      // Clear redo stack since a new action has been made
       setRedoStack([])
-
-      // Save canvas to backend
-      //TODO Ensure this goes on a timer
-      saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
     }
     lastPanPos.current = null
   }
@@ -296,15 +306,9 @@ export default function CanvasEditor () {
 
       setDrawing(false)
 
-      // Save current lines into history for undo support
       setHistory(prev => [...prev, [...lines]])
 
-      // Clear redo stack since a new action has been made
       setRedoStack([])
-
-      // Save canvas to backend
-      //TODO Ensure this goes on a timer
-      saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
     }
     lastPanPos.current = null
   }
@@ -381,6 +385,10 @@ export default function CanvasEditor () {
       if (drawing) {
         return
       }
+      if (saving) {
+        return
+      }
+
       try {
         const res = await fetch(`/api/canvas/last_update?id=${canvas_id}`, {
           credentials: 'include'
