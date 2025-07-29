@@ -28,6 +28,7 @@ import throttle from 'lodash/throttle'
 
 export default function CanvasEditor () {
   const stageRef = useRef()
+  const justLoadedRef = useRef(false)
   const transformerRef = useRef()
   const { project_id, page_id, canvas_id } = useParams()
   const navigate = useNavigate()
@@ -44,7 +45,7 @@ export default function CanvasEditor () {
   const [backgroundColor, setBackgroundColor] = useState(
     Cookies.get('preferences') === 'dark' ? '#111111' : '#ffffff'
   )
-  const [strokeWidth, setStrokeWidth] = useState(4)
+  const [strokeWidth, setStrokeWidth] = useState(1.1)
   const [scale, setScale] = useState(1)
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 })
   const [middleMouseDown, setMiddleMouseDown] = useState(false)
@@ -54,7 +55,7 @@ export default function CanvasEditor () {
   const imageRefs = useRef([])
 
   const lastPanPos = useRef(null)
-  const lastEditTimeRef = useRef(Date.now())
+  const lastEditTimeRef = useRef(0)
   const lastSaveTimeRef = useRef(0)
 
   const throttledUpdateLine = useRef(
@@ -67,7 +68,7 @@ export default function CanvasEditor () {
           { ...lastLine, points: [...lastLine.points, ...newLine] }
         ]
       })
-    }, 20)
+    }, 10)
   ).current
 
   useEffect(() => {
@@ -80,7 +81,7 @@ export default function CanvasEditor () {
     throttle((dx, dy, pointer) => {
       setStagePosition(pos => ({ x: pos.x + dx, y: pos.y + dy }))
       lastPanPos.current = pointer
-    }, 20) // ~60fps
+    }, 10) // ~60fps
   ).current
 
   useEffect(() => {
@@ -90,6 +91,7 @@ export default function CanvasEditor () {
   }, [])
 
   useEffect(() => {
+    justLoadedRef.current = true
     loadCanvas(canvas_id, setLines, setImages, setBackgroundColor)
   }, [canvas_id])
 
@@ -104,6 +106,8 @@ export default function CanvasEditor () {
 
   useEffect(() => {
     const handlePaste = async e => {
+      justLoadedRef.current = false
+
       const items = e.clipboardData.items
       for (const item of items) {
         if (item.type.includes('image')) {
@@ -155,10 +159,13 @@ export default function CanvasEditor () {
       updated[index] = { ...updated[index], ...changes }
       return updated
     })
-    saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+    if (!justLoadedRef.current) {
+      saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+    }
   }
 
   const handlePointerDown = e => {
+    justLoadedRef.current = false
     const stage = e.target.getStage()
     //ensure an image was not clicked on.
     const clickedOnImage = imageRefs.current.some(
@@ -190,6 +197,9 @@ export default function CanvasEditor () {
     // if an image was not selected, ensure all images are cleard.
     if (!clickedOnImage && !clickedOnTransformer) {
       setSelectedImageIndex(null)
+    } else {
+      // an image was selected?
+      return
     }
     //if we are in a panning mode ensure that we do not draw.
     if (middleMouseDown) return
@@ -253,7 +263,7 @@ export default function CanvasEditor () {
 
   //saving timeout
   useEffect(() => {
-    if (drawing) return
+    if (drawing || justLoadedRef.current) return
 
     const timeout = setTimeout(async () => {
       setSaving(true)
@@ -271,6 +281,7 @@ export default function CanvasEditor () {
   }, [drawing])
 
   const handleTouchEnd = e => {
+    setMiddleMouseDown(false)
     if (drawing) {
       const stage = stageRef.current
       if (stage) {
@@ -288,7 +299,6 @@ export default function CanvasEditor () {
   }
 
   const handlePointerUp = e => {
-    // stop panning if it was the middle mouse button or a touch
     if (
       (e.evt.button === 1 && e.evt.pointerType === 'mouse') ||
       (e.evt.button === 0 && e.evt.pointerType === 'touch')
@@ -370,7 +380,7 @@ export default function CanvasEditor () {
     setHistory([])
     setRedoStack([])
     setSelectedImageIndex(null)
-    saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+    saveCanvas(canvas_id, [], [], backgroundColor, lastSaveTimeRef)
   }
 
   //set last edit time when the lines or the images change
@@ -384,9 +394,11 @@ export default function CanvasEditor () {
 
     async function pollCanvasUpdate () {
       if (drawing) {
+        console.log("can't fetch, drawing")
         return
       }
       if (saving) {
+        console.log("can't fetch, saving")
         return
       }
 
@@ -412,6 +424,8 @@ export default function CanvasEditor () {
               setImages(parsed.images || [])
               setBackgroundColor(parsed.backgroundColor || '#ffffff')
             }
+          } else {
+            console.log("No new change.")
           }
         }
       } catch (err) {

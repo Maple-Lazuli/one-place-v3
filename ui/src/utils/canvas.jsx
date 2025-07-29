@@ -139,6 +139,7 @@ export async function saveCanvas (
   backgroundColor,
   lastSaveTimeRef
 ) {
+  console.log("sent save")
   try {
     const payload = {
       canvas_id: Number(canvas_id),
