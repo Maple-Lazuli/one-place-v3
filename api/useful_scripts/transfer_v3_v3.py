@@ -44,7 +44,7 @@ def replace_canvas_images(content, src_address, src_cookie, dst_address, dst_coo
 
 
 def translate_images(origional_link, src_address, src_cookie, dst_address, dst_cookie, dst_ip):
-    time.sleep(.1)
+    time.sleep(.01)
     source_id = origional_link.split("=")[-1]
     src_res = r.get(src_address + "/images/image", params={"id": source_id}, cookies=src_cookie)
     if src_res.status_code != 200:
@@ -166,7 +166,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
 
     for idx, project in enumerate(src_projects):
         print(f"Progress: {idx / len(src_projects) * 100}%")
-        time.sleep(.1)
+        time.sleep(.01)
         # Create new project in DST and get the id
         dst_res = r.post(dst_address + "/projects/create", json={
             "project_name": project['name'],
@@ -191,7 +191,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
                         cookies=src_cookie)
         src_todos = canary(src_res)['message']
         for todo in src_todos:
-            time.sleep(.1)
+            time.sleep(.01)
             dst_res = r.post(dst_address + "/todo/create", json={
                 "project_id": dst_project_id,
                 "name": todo['name'],
@@ -214,7 +214,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
         src_events = canary(src_res)['message']
 
         for event in src_events:
-            time.sleep(.1)
+            time.sleep(.01)
             dst_res = r.post(dst_address + "/events/create", json={
                 "project_id": dst_project_id,
                 "name": event['name'],
@@ -230,7 +230,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
                         cookies=src_cookie)
         src_pages = canary(src_res)['message']
         for page in src_pages:
-            time.sleep(.1)
+            time.sleep(.01)
             src_page_id = page['PageID']
 
             # have to get source content.
@@ -256,7 +256,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
             src_code_snippets = canary(src_res)['message']
 
             for snippet in src_code_snippets:
-                time.sleep(.1)
+                time.sleep(.01)
                 dst_res = r.post(dst_address + "/code_snippet/create", json={
                     "page_id": dst_page_id,
                     "name": snippet['name'],
@@ -272,7 +272,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
             src_recipes = canary(src_res)['message']
 
             for recipe in src_recipes:
-                time.sleep(.1)
+                time.sleep(.01)
                 translated_recipe_content = process_markdown_images(recipe['content'], translate_images, src_address,
                                                                     src_cookie, dst_address, dst_cookie, dst_ip)
                 dst_res = r.post(dst_address + "/recipes/create", json={
@@ -289,7 +289,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
             src_equations = canary(src_res)['message']
 
             for equation in src_equations:
-                time.sleep(.1)
+                time.sleep(.01)
                 dst_res = r.post(dst_address + "/equations/create", json={
                     "page_id": dst_page_id,
                     "name": equation['name'],
@@ -307,7 +307,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
                 src_res = r.get(src_address + "/canvas/get", params={"id": canvas['CanvasID']}, cookies=src_cookie)
                 content = canary(src_res)['message']['content']
                 content = replace_canvas_images(content, src_address, src_cookie, dst_address, dst_cookie)
-                time.sleep(.1)
+                time.sleep(.01)
                 dst_res = r.post(dst_address + "/canvas/create", json={
                     "page_id": dst_page_id,
                     "name": canvas['name'],
@@ -328,7 +328,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
                 content = canary(src_res)['message']['content']
                 if content is None:
                     continue
-                time.sleep(.1)
+                time.sleep(.01)
                 translated_translation_content = process_markdown_images(content, translate_images, src_address,
                                                                          src_cookie, dst_address, dst_cookie, dst_ip)
                 dst_res = r.post(dst_address + "/translations/create", json={
@@ -349,7 +349,7 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
 
             for file in src_files:
                 print(f"Uploading File: {file['name']} from {project['name']}/{page['name']}")
-                time.sleep(.1)
+                time.sleep(.01)
                 src_res = r.get(src_address + "/files/file", params={"id": file['FileID']}, cookies=src_cookie)
                 if src_res.status_code != 200:
                     print("issue with files")
