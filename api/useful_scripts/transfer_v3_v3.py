@@ -21,6 +21,28 @@ def canary(res):
     return res.json()
 
 
+def replace_canvas_images(content, src_address, src_cookie, dst_address, dst_cookie):
+    parsed_content = json.loads(content)
+    for image in parsed_content['images']:
+        src_res = r.get(src_address + "/images/image", params={"id": image['id']}, cookies=src_cookie)
+        if src_res.status_code != 200:
+            print("issue getting image")
+            raise ValueError("Canary!")
+
+        with open("temp/temp.png", "wb") as file_out:
+            file_out.write(src_res.content)
+
+        with open("temp/temp.png", "rb") as new_image:
+            files = {"file": new_image}
+
+            dst_res = r.post(dst_address + "/images/image", files=files, cookies=dst_cookie)
+            dst_id = canary(dst_res)['id']
+
+        image['id'] = dst_id
+
+    return json.dumps(parsed_content)
+
+
 def translate_images(origional_link, src_address, src_cookie, dst_address, dst_cookie, dst_ip):
     time.sleep(.1)
     source_id = origional_link.split("=")[-1]
@@ -197,8 +219,8 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
                 "project_id": dst_project_id,
                 "name": event['name'],
                 "description": event['description'],
-                "time": event['eventTime'],
-                "duration": event['duration']}, cookies=dst_cookie)
+                "startTime": event['startTime'],
+                "endTime": event['endTime']}, cookies=dst_cookie)
             new_event_id = canary(dst_res)['id']
             canary(dst_res)
             print(f"Created event: {event['name']} on Destination.")
@@ -282,9 +304,9 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
             src_canvases = canary(src_res)['message']
 
             for canvas in src_canvases:
-                src_res = r.get(src_address + "/canvas/get", params={"id": src_page_id}, cookies=src_cookie)
+                src_res = r.get(src_address + "/canvas/get", params={"id": canvas['CanvasID']}, cookies=src_cookie)
                 content = canary(src_res)['message']['content']
-
+                content = replace_canvas_images(content, src_address, src_cookie, dst_address, dst_cookie)
                 time.sleep(.1)
                 dst_res = r.post(dst_address + "/canvas/create", json={
                     "page_id": dst_page_id,
@@ -301,8 +323,11 @@ def main(dst_username, dst_password, dst_ip, src_username, src_password, src_ip,
             src_translations = canary(src_res)['message']
 
             for translation in src_translations:
-                src_res = r.get(src_address + "/translations/get", params={"id": src_page_id}, cookies=src_cookie)
+                src_res = r.get(src_address + "/translations/get", params={"id": translation['TranslationID']},
+                                cookies=src_cookie)
                 content = canary(src_res)['message']['content']
+                if content is None:
+                    continue
                 time.sleep(.1)
                 translated_translation_content = process_markdown_images(content, translate_images, src_address,
                                                                          src_cookie, dst_address, dst_cookie, dst_ip)
