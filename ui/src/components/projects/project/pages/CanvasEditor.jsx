@@ -394,11 +394,9 @@ export default function CanvasEditor () {
 
     async function pollCanvasUpdate () {
       if (drawing) {
-        console.log("can't fetch, drawing")
         return
       }
       if (saving) {
-        console.log("can't fetch, saving")
         return
       }
 
@@ -424,9 +422,7 @@ export default function CanvasEditor () {
               setImages(parsed.images || [])
               setBackgroundColor(parsed.backgroundColor || '#ffffff')
             }
-          } else {
-            console.log("No new change.")
-          }
+          } 
         }
       } catch (err) {
         console.error('Error checking canvas last update:', err)
