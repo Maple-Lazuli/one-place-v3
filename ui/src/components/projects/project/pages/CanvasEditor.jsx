@@ -12,6 +12,7 @@ import {
   ToggleButtonGroup
 } from '@mui/material'
 import StrokeSizeStepper from '../StrokeSizeStepper'
+import CanvasScaleControl from './CanvasScaleControl'
 import {
   DraggableImage,
   uploadImage,
@@ -289,7 +290,7 @@ export default function CanvasEditor () {
   const handlePointerUp = e => {
     // stop panning if it was the middle mouse button or a touch
     if (
-      (e.evt.button === 4 && e.evt.pointerType === 'mouse') ||
+      (e.evt.button === 1 && e.evt.pointerType === 'mouse') ||
       (e.evt.button === 0 && e.evt.pointerType === 'touch')
     ) {
       setMiddleMouseDown(false)
@@ -520,7 +521,7 @@ export default function CanvasEditor () {
           <ToggleButton value='eraser'>Eraser</ToggleButton>
           <ToggleButton value='pan'>Pan</ToggleButton>
         </ToggleButtonGroup>
-
+        <CanvasScaleControl scale={scale} setScale={setScale} />
         {/* Action Buttons */}
         <Button onClick={handleUndo} disabled={history.length === 0}>
           Undo

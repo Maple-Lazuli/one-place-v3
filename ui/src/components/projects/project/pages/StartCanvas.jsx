@@ -39,7 +39,8 @@ export default function StartCanvas () {
       const payload = {
         page_id: Number(page_id),
         name: title,
-        description: description
+        description: description,
+        content: "[]"
       }
 
       const res = await fetch('/api/canvas/create', {
