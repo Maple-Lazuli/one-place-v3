@@ -13,7 +13,8 @@ export default function RecipeCard ({
   name,
   description,
   recipe_id,
-  onDelete
+  onDelete,
+  passed_page_id = undefined
 }) {
   const { project_id, page_id } = useParams()
 
@@ -64,7 +65,7 @@ export default function RecipeCard ({
           <Button
             variant='outlined'
             component={Link}
-            to={`/projects/project/${project_id}/pages/page/${page_id}/recipes/view/${recipe_id}`}
+            to={`/projects/project/${project_id}/pages/page/${page_id ? page_id : passed_page_id}/recipes/view/${recipe_id}`}
           >
             View
           </Button>
@@ -72,7 +73,7 @@ export default function RecipeCard ({
             variant='outlined'
             color='warning'
             component={Link}
-            to={`/projects/project/${project_id}/pages/page/${page_id}/recipes/update/${recipe_id}`}
+            to={`/projects/project/${project_id}/pages/page/${page_id ? page_id : passed_page_id}/recipes/update/${recipe_id}`}
           >
             Edit
           </Button>

@@ -14,7 +14,8 @@ export default function SnippetCard ({
   language,
   description,
   code_id,
-  onDelete
+  onDelete,
+  passed_page_id = undefined
 }) {
   const { project_id, page_id } = useParams()
 
@@ -68,7 +69,7 @@ export default function SnippetCard ({
           <Button
             variant='outlined'
             component={Link}
-            to={`/projects/project/${project_id}/pages/page/${page_id}/snippets/view/${code_id}`}
+            to={`/projects/project/${project_id}/pages/page/${page_id ? page_id : passed_page_id}/snippets/view/${code_id}`}
           >
             View
           </Button>
@@ -76,7 +77,7 @@ export default function SnippetCard ({
             variant='outlined'
             color='warning'
             component={Link}
-            to={`/projects/project/${project_id}/pages/page/${page_id}/snippets/update/${code_id}`}
+            to={`/projects/project/${project_id}/pages/page/${page_id ? page_id : passed_page_id}/snippets/update/${code_id}`}
           >
             Edit
           </Button>

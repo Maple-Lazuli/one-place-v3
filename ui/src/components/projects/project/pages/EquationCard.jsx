@@ -13,7 +13,8 @@ export default function EquationCard ({
   name,
   description,
   equation_id,
-  onDelete
+  onDelete,
+  passed_page_id = undefined
 }) {
   const { project_id, page_id } = useParams()
 
@@ -64,7 +65,7 @@ export default function EquationCard ({
           <Button
             variant='outlined'
             component={Link}
-            to={`/projects/project/${project_id}/pages/page/${page_id}/equations/view/${equation_id}`}
+            to={`/projects/project/${project_id}/pages/page/${page_id ? page_id : passed_page_id}/equations/view/${equation_id}`}
           >
             View
           </Button>
@@ -72,7 +73,7 @@ export default function EquationCard ({
             variant='outlined'
             component={Link}
             color='warning'
-            to={`/projects/project/${project_id}/pages/page/${page_id}/equations/update/${equation_id}`}
+            to={`/projects/project/${project_id}/pages/page/${page_id ? page_id : passed_page_id}/equations/update/${equation_id}`}
           >
             Edit
           </Button>
