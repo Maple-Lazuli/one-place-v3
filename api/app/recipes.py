@@ -104,7 +104,7 @@ def get_recipes_by_project(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT recipes.* FROM recipes 
+    SELECT recipes.*, pages.pageID FROM recipes 
     inner join pages on pages.pageID = recipes.pageID
     where pages.projectID = %s;
     """, (project_id,))
@@ -115,7 +115,7 @@ def get_recipes_by_project(project_id):
     if recipes is not None:
         recipe_list = []
         for recipe in recipes:
-            recipe = {k: v for k, v in zip(recipe_fields, recipe)}
+            recipe = {k: v for k, v in zip(recipe_fields + ['pageID'], recipe)}
             recipe = convert_time(recipe)
             recipe_list.append(recipe)
         return recipe_list

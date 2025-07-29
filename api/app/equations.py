@@ -104,7 +104,7 @@ def get_equations_by_project(project_ID):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-    SELECT equations.* FROM equations 
+    SELECT equations.*, pages.pageID FROM equations 
     inner join pages on pages.pageID = equations.pageID
     where pages.projectID = %s;
     """, (project_ID,))
@@ -115,7 +115,7 @@ def get_equations_by_project(project_ID):
     if equations is not None:
         equations_list = []
         for equation in equations:
-            equation = {k: v for k, v in zip(equations_fields, equation)}
+            equation = {k: v for k, v in zip(equations_fields + ['pageID'], equation)}
             equation = convert_time(equation)
             equations_list.append(equation)
         return equations_list

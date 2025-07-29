@@ -116,7 +116,7 @@ def get_canvas_by_page(page_id):
 def get_canvas_by_project(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("""SELECT canvas.* FROM canvas
+    cursor.execute("""SELECT canvas.*, pages.pageID FROM canvas
     inner join pages
     on pages.pageID = canvas.pageID
     where pages.projectID = %s
@@ -128,7 +128,7 @@ def get_canvas_by_project(project_id):
     if canvases is not None:
         canvas_list = []
         for canvas in canvases:
-            canvas = {k: v for k, v in zip(canvas_fields, canvas) if k != "content"}
+            canvas = {k: v for k, v in zip(canvas_fields+['pageID'], canvas) if k != "content"}
             canvas = convert_time(canvas)
             canvas_list.append(canvas)
         return canvas_list

@@ -103,7 +103,7 @@ def get_snippets_by_page(page_id):
 def get_snippets_by_project(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
-    cursor.execute("""SELECT CodeSnippets.* FROM CodeSnippets
+    cursor.execute("""SELECT CodeSnippets.*, pages.pageID FROM CodeSnippets
      inner join pages on CodeSnippets.pageID = pages.pageID
      where pages.projectID = %s;
      """, (project_id,))
@@ -114,7 +114,7 @@ def get_snippets_by_project(project_id):
     if snippets is not None:
         snippets_list = []
         for snippet in snippets:
-            snippet = {k: v for k, v in zip(code_fields, snippet)}
+            snippet = {k: v for k, v in zip(code_fields + ['pageID'], snippet)}
             snippet = convert_time(snippet)
             snippets_list.append(snippet)
         return snippets_list
@@ -169,7 +169,8 @@ def create_ep():
         return make_response({'status': 'error', 'message': "Failed To Create Snippet"}, STATUS.INTERNAL_SERVER_ERROR)
 
     log_access(new_snippet['CodeID'], True, "CREATE")
-    response = make_response({'status': 'success', 'message': f'Created {name}','id':new_snippet['CodeID']}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {name}', 'id': new_snippet['CodeID']},
+                             STATUS.OK)
     return response
 
 

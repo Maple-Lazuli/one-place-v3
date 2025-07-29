@@ -19,7 +19,7 @@ import Attachments from './components/projects/project/Attachments'
 import Events from './components/projects/project/Events'
 import Snippets from './components/projects/project/Snippets'
 import Canvases from './components/projects/project/Canvases'
-import Translations from './components/projects/project/Translations'
+// import Translations from './components/projects/project/Translations'
 import CreateEventForm from './components/projects/project/CreateEventForm'
 import UpdateEventForm from './components/projects/project/UpdateEventForm'
 import CreateTodoForm from './components/projects/project/CreateTodoForm'
@@ -209,7 +209,7 @@ export default function App () {
                   path='events/update/:event_id'
                   element={<UpdateEventForm />}
                 />
-                <Route path='translations' element={<Translations />} />
+                {/* <Route path='translations' element={<Translations />} /> */}
                 <Route path='recipes' element={<Recipes />} />
                 
                 <Route path='snippets' element={<Snippets />} />
