@@ -1,29 +1,91 @@
-import React, { useRef, useState, useEffect } from 'react'
+import React, {
+  useRef,
+  useState,
+  useEffect,
+  useImperativeHandle,
+  forwardRef
+} from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { Stage, Layer, Line, Transformer } from 'react-konva'
-
+import {
+  Stage,
+  Layer,
+  Line,
+  Image as KonvaImage,
+  Transformer
+} from 'react-konva'
+import useImage from 'use-image'
 import jsPDF from 'jspdf'
 import Cookies from 'js-cookie'
 import {
   Box,
   Button,
+  Slider,
+  Input,
   TextField,
+  Typography,
   ToggleButton,
   ToggleButtonGroup
 } from '@mui/material'
 import StrokeSizeStepper from '../StrokeSizeStepper'
-import {
-  DraggableImage,
-  uploadImage,
-  deleteImageFromBackend,
-  exportAsImage,
-  exportAsPDF,
-  loadCanvas,
-  saveCanvas
-} from '../../../../utils/canvas.jsx'
-
 // Draggable & transformable image with forwarded ref
 import throttle from 'lodash/throttle'
+
+const DraggableImage = forwardRef(
+  (
+    { id, x, y, scaleX = 1, scaleY = 1, isSelected, onSelect, onChange },
+    ref
+  ) => {
+    const imageUrl = `/api/images/image?id=${id}`
+    const [image] = useImage(imageUrl)
+    const shapeRef = useRef()
+
+    useImperativeHandle(ref, () => shapeRef.current)
+
+    useEffect(() => {
+      if (isSelected && shapeRef.current) {
+        shapeRef.current.draggable(true)
+      }
+    }, [isSelected])
+
+    return (
+      <KonvaImage
+        image={image}
+        x={x}
+        y={y}
+        scaleX={scaleX}
+        scaleY={scaleY}
+        draggable
+        ref={shapeRef}
+        onClick={onSelect}
+        onTap={onSelect}
+        onDragEnd={e => {
+          onChange &&
+            onChange({
+              x: e.target.x(),
+              y: e.target.y()
+            })
+        }}
+        onTransformEnd={e => {
+          const node = shapeRef.current
+          const scaleX = node.scaleX()
+          const scaleY = node.scaleY()
+
+          console.log('Transform scale', scaleX, scaleY)
+
+          node.scaleX(1)
+          node.scaleY(1)
+
+          onChange?.({
+            x: node.x(),
+            y: node.y(),
+            scaleX,
+            scaleY
+          })
+        }}
+      />
+    )
+  }
+)
 
 export default function CanvasEditor () {
   const stageRef = useRef()
@@ -40,14 +102,11 @@ export default function CanvasEditor () {
   const [strokeColor, setStrokeColor] = useState(
     Cookies.get('preferences') === 'dark' ? '#ffffff' : '#000000'
   )
-  const [backgroundColor, setBackgroundColor] = useState(
-    Cookies.get('preferences') === 'dark' ? '#111111' : '#ffffff'
-  )
   const [strokeWidth, setStrokeWidth] = useState(4)
   const [scale, setScale] = useState(1)
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 })
   const [middleMouseDown, setMiddleMouseDown] = useState(false)
-  const autoSaveTimeout = 500 // 500ms delay for auto-save
+
   // For transformer & selection
   const [selectedImageIndex, setSelectedImageIndex] = useState(null)
   const imageRefs = useRef([])
@@ -55,6 +114,9 @@ export default function CanvasEditor () {
   const lastPanPos = useRef(null)
   const lastEditTimeRef = useRef(Date.now())
   const lastSaveTimeRef = useRef(0)
+  const [backgroundColor, setBackgroundColor] = useState(
+    Cookies.get('preferences') === 'dark' ? '#111111' : '#ffffff'
+  )
 
   const throttledUpdateLine = useRef(
     throttle(newLine => {
@@ -76,9 +138,8 @@ export default function CanvasEditor () {
   }, [])
 
   const throttledPan = useRef(
-    throttle((dx, dy, pointer) => {
+    throttle((dx, dy) => {
       setStagePosition(pos => ({ x: pos.x + dx, y: pos.y + dy }))
-      lastPanPos.current = pointer
     }, 15) // ~60fps
   ).current
 
@@ -88,12 +149,68 @@ export default function CanvasEditor () {
     }
   }, [])
 
+  // Upload image to backend and get image ID
+  async function uploadImage (blob) {
+    const formData = new FormData()
+    formData.append('file', blob)
+    const res = await fetch('/api/images/image', {
+      method: 'POST',
+      body: formData
+    })
+    if (!res.ok) throw new Error('Image upload failed')
+    const data = await res.json()
+    return data.id // backend should return { id: '...' }
+  }
+
   // Load canvas content on mount
   useEffect(() => {
-    loadCanvas(canvas_id, setLines, setImages, setBackgroundColor)
+    async function loadCanvas () {
+      try {
+        const res = await fetch(`/api/canvas/get?id=${canvas_id}`)
+        if (res.ok) {
+          const data = await res.json()
+          const parsed = JSON.parse(data.message.content)
+          setLines(parsed.lines || [])
+          setImages(parsed.images || [])
+          setBackgroundColor(parsed.backgroundColor || '#ffffff')
+        }
+      } catch (e) {
+        console.error('Failed to load canvas:', e)
+      }
+    }
+    loadCanvas()
   }, [canvas_id])
 
   // Save canvas helper
+  async function saveCanvas () {
+    try {
+      const payload = {
+        canvas_id: Number(canvas_id),
+        new_content: JSON.stringify({ lines, images, backgroundColor })
+      }
+      await fetch(`/api/canvas/content`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      lastSaveTimeRef.current = new Date(now.getTime() + 30000);
+    } catch (e) {
+      console.error('Failed to save canvas:', e)
+    }
+  }
+
+  async function deleteImageFromBackend (imageId) {
+    try {
+      const res = await fetch(`/api/images/image?id=${imageId}`, {
+        method: 'DELETE'
+      })
+      if (!res.ok) {
+        console.warn('Failed to delete image from backend')
+      }
+    } catch (e) {
+      console.error('Error deleting image:', e)
+    }
+  }
 
   const handleDeleteSelectedImage = () => {
     if (selectedImageIndex === null) return
@@ -101,7 +218,7 @@ export default function CanvasEditor () {
     setImages(prev => prev.filter((_, i) => i !== selectedImageIndex))
     setSelectedImageIndex(null)
     deleteImageFromBackend(imageToDelete.id)
-    saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+    saveCanvas()
   }
 
   useEffect(() => {
@@ -119,13 +236,7 @@ export default function CanvasEditor () {
               ...prev,
               { id: imageId, x: rel.x, y: rel.y, scaleX: 1, scaleY: 1 }
             ])
-            saveCanvas(
-              canvas_id,
-              lines,
-              images,
-              backgroundColor,
-              lastSaveTimeRef
-            )
+            saveCanvas()
           } catch (err) {
             console.error('Image upload failed:', err)
           }
@@ -151,6 +262,61 @@ export default function CanvasEditor () {
     }
   }, [selectedImageIndex])
 
+  const handleTouchStart = e => {
+    const stage = stageRef.current
+    const touch = e.evt.touches[0]
+    const pos = stage.getPointerPosition()
+    lastPanPos.current = pos
+
+    if (tool === 'pan') return
+
+    setDrawing(true)
+    setLines(prev => [
+      ...prev,
+      {
+        points: [pos.x, pos.y],
+        stroke: tool === 'eraser' ? '#f0f0f0' : strokeColor,
+        strokeWidth
+      }
+    ])
+    setSelectedImageIndex(null)
+  }
+
+  const handleTouchMove = e => {
+    const stage = stageRef.current
+    const pos = stage.getPointerPosition()
+
+    if (!pos) return
+
+    if (tool === 'pan') {
+      const dx = pos.x - lastPanPos.current.x
+      const dy = pos.y - lastPanPos.current.y
+      setStagePosition(prev => ({ x: prev.x + dx, y: prev.y + dy }))
+      lastPanPos.current = pos
+      return
+    }
+
+    if (!drawing) return
+
+    setLines(prevLines => {
+      const lastLine = prevLines[prevLines.length - 1]
+      const newLines = prevLines.slice(0, -1)
+      return [
+        ...newLines,
+        { ...lastLine, points: [...lastLine.points, pos.x, pos.y] }
+      ]
+    })
+  }
+
+  const handleTouchEnd = () => {
+    if (drawing) {
+      setDrawing(false)
+      setHistory(prev => [...prev, [...lines]])
+      setRedoStack([])
+      saveCanvas()
+    }
+    lastPanPos.current = null
+  }
 
   function updateImagePosition (index, changes) {
     setImages(prev => {
@@ -158,95 +324,72 @@ export default function CanvasEditor () {
       updated[index] = { ...updated[index], ...changes }
       return updated
     })
-    saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+    saveCanvas()
   }
 
-  const handlePointerDown = e => {
-    console.log(e)
-
+  const handleMouseDown = e => {
     const stage = e.target.getStage()
-    //ensure an image was not clicked on.
     const clickedOnImage = imageRefs.current.some(
       imageNode => imageNode && imageNode === e.target
     )
-
-    // if the middle mouse was clicked or the canvas was touched.
-    if (
-      (e.evt.button === 1 && e.evt.pointerType === 'mouse') ||
-      e.evt.pointerType == 'touch'
-    ) {
+    if (e.evt.button === 1) {
       e.evt.preventDefault()
       setMiddleMouseDown(true)
       lastPanPos.current = stage.getPointerPosition()
       return
     }
-
     if (tool === 'pan') {
       lastPanPos.current = stage.getPointerPosition()
       return
     }
-
     const transformer = transformerRef.current
-
     const clickedOnTransformer =
       transformer &&
       (transformer === e.target || transformer.isAncestorOf(e.target))
 
-    // if an image was not selected, ensure all images are cleard.
     if (!clickedOnImage && !clickedOnTransformer) {
       setSelectedImageIndex(null)
     }
-    //if we are in a panning mode ensure that we do not draw.
     if (middleMouseDown) return
-
     const pos = stage.getRelativePointerPosition()
-
     setDrawing(true)
-
     setLines(prev => [
       ...prev,
       {
-        points: [pos.x, pos.y], 
-        stroke: tool === 'eraser' ? '#f0f0f0' : strokeColor, // Use background color for eraser
+        points: [pos.x, pos.y],
+        stroke: tool === 'eraser' ? '#f0f0f0' : strokeColor,
         strokeWidth
       }
     ])
-
     const point = stage.getRelativePointerPosition()
     throttledUpdateLine([point.x, point.y])
   }
 
-
-  const handlePointerMove = e => {
+  const handleMouseMove = e => {
     const stage = stageRef.current
-    if (!stage) return 
+    if (!stage) return
 
     if (middleMouseDown || tool === 'pan') {
-      const pointer = stage.getPointerPosition() 
-      const dx = pointer.x - lastPanPos.current.x 
-      const dy = pointer.y - lastPanPos.current.y 
-
-      throttledPan(dx, dy, pointer) 
+      const pointer = stage.getPointerPosition()
+      const dx = pointer.x - lastPanPos.current.x
+      const dy = pointer.y - lastPanPos.current.y
+      throttledPan(dx, dy)
+      lastPanPos.current = pointer
       return
     }
 
     if (!drawing) return
 
     const point = stage.getRelativePointerPosition()
-
     throttledUpdateLine([point.x, point.y])
   }
 
-
-    const handlePointerUp = e => {
-      
-    // stop panning if it was the middle mouse button or a touch
-    if ((e.evt.button === 4 && e.evt.pointerType === "mouse")||(e.evt.button === 0 && e.evt.pointerType === 'touch')) {
+  const handleMouseUp = e => {
+    if (e.evt.button === 1) {
       setMiddleMouseDown(false)
-      lastPanPos.current = null 
+      lastPanPos.current = null
       return
     }
-
     if (drawing) {
       const stage = stageRef.current
       if (stage) {
@@ -254,49 +397,12 @@ export default function CanvasEditor () {
         throttledUpdateLine([point.x, point.y])
       }
 
-      setDrawing(false) 
-
-      // Save current lines into history for undo support
+      setDrawing(false)
       setHistory(prev => [...prev, [...lines]])
-
-      // Clear redo stack since a new action has been made
       setRedoStack([])
-
-      // Save canvas to backend
-      //TODO Ensure this goes on a timer
-      saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+      saveCanvas()
     }
     lastPanPos.current = null
-  }
-
-  //implements pan
-  const handleWheel = e => {
-    e.evt.preventDefault() // Prevent default page scroll behavior
-
-    const scaleBy = 1.05 // Zoom factor per wheel step
-    const stage = stageRef.current
-    const oldScale = stage.scaleX() // Assume uniform scaling on X and Y
-
-    const pointer = stage.getPointerPosition() // Get current mouse position
-
-    // Calculate the position of the mouse relative to the stage before scaling
-    const mousePointTo = {
-      x: (pointer.x - stage.x()) / oldScale,
-      y: (pointer.y - stage.y()) / oldScale
-    }
-
-    // Determine scroll direction: zoom in or out
-    const direction = e.evt.deltaY > 0 ? -1 : 1
-    const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy
-
-    // Apply the new scale
-    setScale(newScale)
-
-    // Adjust stage position so zoom is centered on mouse pointer
-    setStagePosition({
-      x: pointer.x - mousePointTo.x * newScale,
-      y: pointer.y - mousePointTo.y * newScale
-    })
   }
 
   const handleUndo = () => {
@@ -306,7 +412,7 @@ export default function CanvasEditor () {
     setRedoStack(r => [...r, lines])
     setLines(last || [])
     setHistory(prev)
-    saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+    saveCanvas()
   }
 
   const handleRedo = () => {
@@ -316,7 +422,44 @@ export default function CanvasEditor () {
     setHistory(h => [...h, lines])
     setLines(restored)
     setRedoStack(redo)
-    saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+    saveCanvas()
+  }
+
+  const handleWheel = e => {
+    e.evt.preventDefault()
+    const scaleBy = 1.05
+    const stage = stageRef.current
+    const oldScale = stage.scaleX()
+    const pointer = stage.getPointerPosition()
+    const mousePointTo = {
+      x: (pointer.x - stage.x()) / oldScale,
+      y: (pointer.y - stage.y()) / oldScale
+    }
+
+    const direction = e.evt.deltaY > 0 ? -1 : 1
+    const newScale = direction > 0 ? oldScale * scaleBy : oldScale / scaleBy
+
+    setScale(newScale)
+    setStagePosition({
+      x: pointer.x - mousePointTo.x * newScale,
+      y: pointer.y - mousePointTo.y * newScale
+    })
+  }
+
+  const exportAsImage = () => {
+    const uri = stageRef.current.toDataURL()
+    const link = document.createElement('a')
+    link.download = 'canvas.png'
+    link.href = uri
+    link.click()
+  }
+
+  const exportAsPDF = () => {
+    const canvas = stageRef.current.toCanvas()
+    const imgData = canvas.toDataURL('image/png')
+    const pdf = new jsPDF()
+    pdf.addImage(imgData, 'PNG', 0, 0, 210, 297)
+    pdf.save('canvas.pdf')
   }
 
   const handleClear = () => {
@@ -325,15 +468,13 @@ export default function CanvasEditor () {
     setHistory([])
     setRedoStack([])
     setSelectedImageIndex(null)
-    saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+    saveCanvas()
   }
 
-  //set last edit time when the lines or the images change
   useEffect(() => {
     lastEditTimeRef.current = Date.now()
   }, [lines, images])
 
-  //Auto polling when not drawing.
   useEffect(() => {
     let interval = null
 
@@ -480,20 +621,8 @@ export default function CanvasEditor () {
         <Button onClick={handleRedo} disabled={redoStack.length === 0}>
           Redo
         </Button>
-        <Button
-          onClick={() => {
-            exportAsImage(stageRef)
-          }}
-        >
-          Export Image
-        </Button>
-        <Button
-          onClick={() => {
-            exportAsPDF(stageRef)
-          }}
-        >
-          Export PDF
-        </Button>
+        <Button onClick={exportAsImage}>Export Image</Button>
+        <Button onClick={exportAsPDF}>Export PDF</Button>
         <Button onClick={handleClear}>Clear Canvas</Button>
         <Button
           onClick={() =>
@@ -526,9 +655,12 @@ export default function CanvasEditor () {
         x={stagePosition.x}
         y={stagePosition.y}
         onWheel={handleWheel}
-        onPointerDown={handlePointerDown}
-        onPointerMove={handlePointerMove}
-        onPointerUp={handlePointerUp}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
         draggable={tool === 'pan' || middleMouseDown}
         style={{ backgroundColor: backgroundColor, flexGrow: 1 }}
       >
