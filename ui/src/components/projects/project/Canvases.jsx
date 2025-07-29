@@ -51,6 +51,7 @@ export default function Canvases () {
               canvas_id={canvas.CanvasID}
               updated={canvas.lastEditTime}
               onDelete={handleDelete}
+              passed_page_id={canvas.pageID}
             />
           </Grid>
         ))}

@@ -14,7 +14,8 @@ export default function CanvasCard ({
   description,
   canvas_id,
   updated,
-  onDelete
+  onDelete,
+  passed_page_id = undefined
 }) {
   const { project_id, page_id } = useParams()
   const [showOverlay, setShowOverlay] = React.useState(false)
@@ -72,7 +73,7 @@ export default function CanvasCard ({
           <Button
             variant='outlined'
             component={Link}
-            to={`/projects/project/${project_id}/pages/page/${page_id}/canvases/update/${canvas_id}`}
+            to={`/projects/project/${project_id}/pages/page/${page_id ? page_id : passed_page_id}/canvases/update/${canvas_id}`}
           >
             Draw
           </Button>
@@ -80,7 +81,7 @@ export default function CanvasCard ({
             variant='outlined'
             component={Link}
             color='warning'
-            to={`/projects/project/${project_id}/pages/page/${page_id}/canvases/update_fields/${canvas_id}`}
+            to={`/projects/project/${project_id}/pages/page/${page_id ? page_id : passed_page_id}/canvases/update_fields/${canvas_id}`}
           >
             Fix
           </Button>
