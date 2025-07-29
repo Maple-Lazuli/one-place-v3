@@ -121,7 +121,7 @@ export default function CreateSnippetForm () {
           display: 'flex',
           flexDirection: 'column',
           gap: 2,
-          overflowY:'auto',
+          overflowY: 'auto',
           padding: '2em'
         }}
       >
@@ -204,13 +204,15 @@ export default function CreateSnippetForm () {
         </Typography>
         <SyntaxHighlighter
           language={language || 'text'}
-          style={coloring}
-          wrapLines
           showLineNumbers
-          wrapLongLines
+          style={coloring}
+          PreTag='div'
           customStyle={{
-            borderRadius: '8px',
-            padding: '16px'
+            // background: 'transparent',
+            margin: 0,
+            padding: 0,
+            // maxheight: 300,
+            overflowX: 'auto'
           }}
         >
           {content}

@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Box, Typography, CircularProgress, Alert, Paper } from '@mui/material'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
-import Cookies from 'js-cookie';
+import {
+  oneDark,
+  oneLight
+} from 'react-syntax-highlighter/dist/esm/styles/prism'
+import Cookies from 'js-cookie'
 
 import 'highlight.js/styles/github.css' // or your preferred highlight theme
 
@@ -12,7 +15,9 @@ export default function ViewSnippet () {
   const [snippet, setSnippet] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [coloring, setColoring] = useState(Cookies.get('preferences') === 'dark'? oneDark : oneLight)
+  const [coloring, setColoring] = useState(
+    Cookies.get('preferences') === 'dark' ? oneDark : oneLight
+  )
 
   useEffect(() => {
     const fetchSnippet = async () => {
@@ -79,19 +84,21 @@ export default function ViewSnippet () {
           overflow: 'auto',
           height: '100%',
           paddingBottom: '10em'
-          
+
           // backgroundColor: '#1e1e1e'
         }}
       >
         <SyntaxHighlighter
           language={snippet.language || 'text'}
-          style={coloring}
-          wrapLines
           showLineNumbers
-          wrapLongLines
+          style={coloring}
+          PreTag='div'
           customStyle={{
-            borderRadius: '8px',
-            padding: '16px'
+            // background: 'transparent',
+            margin: 0,
+            padding: 0,
+            // maxheight: 300,
+            overflowX: 'auto'
           }}
         >
           {snippet.content}

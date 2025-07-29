@@ -471,7 +471,6 @@ export default function CalendarView ({
             event: props => <EventComponent {...props} view={view} />
           }}
           showMultiDayTimes={view !== Views.MONTH}
-          max={3}
           min={new Date(1970, 1, 1, 0, 0)} // start at midnight
           max={new Date(1970, 1, 1, 23, 59)} // end at 11:59 PM
           popup

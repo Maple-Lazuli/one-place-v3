@@ -235,13 +235,15 @@ export default function UpdateSnippetForm () {
         </Typography>
         <SyntaxHighlighter
           language={language || 'text'}
-          style={coloring}
-          wrapLines
-          wrapLongLines
           showLineNumbers
+          style={coloring}
+          PreTag='div'
           customStyle={{
-            borderRadius: '8px',
-            padding: '16px'
+            // background: 'transparent',
+            margin: 0,
+            padding: 0,
+            // maxheight: 300,
+            overflowX: 'auto'
           }}
         >
           {content}
