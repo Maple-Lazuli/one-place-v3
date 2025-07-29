@@ -50,6 +50,7 @@ export default function Equations () {
               description={equation.description}
               equation_id={equation.EquationID}
               onDelete={handleDelete}
+              passed_page_id={equation.pageID}
             />
           </Grid>
         ))}

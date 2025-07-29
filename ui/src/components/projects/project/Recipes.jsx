@@ -50,6 +50,7 @@ export default function Recipes () {
               description={recipe.description}
               recipe_id={recipe.RecipeID}
               onDelete={handleDelete}
+              passed_page_id={recipe.pageID}
             />
           </Grid>
         ))}

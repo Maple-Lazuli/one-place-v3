@@ -50,6 +50,7 @@ export default function Snippets() {
               description={snippet.description}
               code_id={snippet.CodeID}
               onDelete={handleDelete}
+              passed_page_id={snippet.pageID}
             />
           </Grid>
         ))}
