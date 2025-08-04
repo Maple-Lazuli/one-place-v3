@@ -45,7 +45,7 @@ export default function CanvasEditor () {
   const [backgroundColor, setBackgroundColor] = useState(
     Cookies.get('preferences') === 'dark' ? '#111111' : '#ffffff'
   )
-  const [strokeWidth, setStrokeWidth] = useState(1.1)
+  const [strokeWidth, setStrokeWidth] = useState(1.5)
   const [scale, setScale] = useState(1)
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 })
   const [middleMouseDown, setMiddleMouseDown] = useState(false)
@@ -219,7 +219,7 @@ export default function CanvasEditor () {
             : strokeColor, // Use background color for eraser
         strokeWidth:
           e.evt.button === 5 && e.evt.pointerType === 'pen'
-            ? strokeWidth * 2
+            ? strokeWidth * 10
             : strokeWidth
       }
     ])
