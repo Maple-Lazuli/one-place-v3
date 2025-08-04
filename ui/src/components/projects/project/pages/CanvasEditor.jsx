@@ -18,7 +18,6 @@ import {
   uploadImage,
   deleteImageFromBackend,
   exportAsImage,
-  exportAsPDF,
   loadCanvas,
   saveCanvas
 } from '../../../../utils/canvas.jsx'
@@ -545,13 +544,6 @@ export default function CanvasEditor () {
           }}
         >
           Export Image
-        </Button>
-        <Button
-          onClick={() => {
-            exportAsPDF(stageRef)
-          }}
-        >
-          Export PDF
         </Button>
         <Button onClick={handleClear}>Clear Canvas</Button>
         <Button
