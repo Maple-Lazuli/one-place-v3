@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Stage, Layer, Line, Transformer } from 'react-konva'
 
-import jsPDF from 'jspdf'
 import Cookies from 'js-cookie'
 import {
   Box,
@@ -17,7 +16,6 @@ import {
   DraggableImage,
   uploadImage,
   deleteImageFromBackend,
-  exportAsImage,
   loadCanvas,
   saveCanvas
 } from '../../../../utils/canvas.jsx'
@@ -537,13 +535,6 @@ export default function CanvasEditor () {
         </Button>
         <Button onClick={handleRedo} disabled={redoStack.length === 0}>
           Redo
-        </Button>
-        <Button
-          onClick={() => {
-            exportAsImage(stageRef)
-          }}
-        >
-          Export Image
         </Button>
         <Button onClick={handleClear}>Clear Canvas</Button>
         <Button
