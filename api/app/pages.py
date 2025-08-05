@@ -22,6 +22,30 @@ def convert_time(object):
     return object
 
 
+def get_last_review_by_user_id(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT %s - max(accessTime), pagerequests.pageID, pages.name FROM pagerequests
+        inner join pages on pages.pageid = pagerequests.pageid
+        inner join projects on projects.projectID = pages.projectID
+        where accessGranted = TRUE AND pagerequests.notes = 'REVIEW' AND projects.UserID = %s
+        group by pagerequests.pageID, pages.name
+    """, (datetime.now().astimezone(), user_id))
+    review_deltas = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if review_deltas is not None:
+        review_deltas_list = []
+        for review_delta in review_deltas:
+            review_delta = {k: v for k, v in zip(['days', 'page_id', 'name'], review_delta)}
+            review_delta['days'] = review_delta['days'].days
+            review_deltas_list.append(review_delta)
+        return review_deltas_list
+    return review_deltas
+
+
 def get_last_review_by_project_id(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -194,7 +218,7 @@ def create_ep():
 
     create_page_access_request(session['SessionID'], new_page['PageID'], True, "CREATE")
 
-    response = make_response({'status': 'success', 'message': f'Created {name}', 'id':new_page['PageID']}, STATUS.OK)
+    response = make_response({'status': 'success', 'message': f'Created {name}', 'id': new_page['PageID']}, STATUS.OK)
     return response
 
 
@@ -374,6 +398,24 @@ def get_pages_review_by_project_ep():
         return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     pages = get_last_review_by_project_id(project_id)
+    print(pages)
+    if pages is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
+
+    response = make_response({'status': 'success', 'message': pages}, STATUS.OK)
+    return response
+
+
+@pages_bp.route('/get_user_pages_review_list', methods=['GET'])
+def get_pages_review_by_user_ep():
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    pages = get_last_review_by_user_id(session['UserID'])
     print(pages)
     if pages is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)

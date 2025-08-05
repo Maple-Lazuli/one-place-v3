@@ -10,6 +10,7 @@ import {
 import Login from './components/Login'
 import CreateAccount from './components/CreateAccount'
 import Home from './components/Home'
+import Overview from './components/Overview';
 import Projects from './components/Projects'
 import CreateProject from './components/CreateProject'
 import Project from './components/Project'
@@ -121,6 +122,7 @@ export default function App () {
             {/* Authenticated app routes with navbar */}
             <Route element={<AppLayout />}>
               <Route path='/' element={<Home />} />
+              <Route path='/overview' element={<Overview />} />
               <Route path='/projects' element={<Projects />} />
               <Route path='/projects/create' element={<CreateProject />} />
               <Route path='/update_account' element={<UpdateUserAccount />} />

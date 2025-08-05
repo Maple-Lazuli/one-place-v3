@@ -13,24 +13,29 @@ import {
 } from '@mui/material'
 import { Link, useNavigate } from 'react-router-dom'
 
-const Alert = React.forwardRef(function Alert(props, ref) {
-  return <MuiAlert elevation={6} ref={ref} variant="filled" {...props} />
+const Alert = React.forwardRef(function Alert (props, ref) {
+  return <MuiAlert elevation={6} ref={ref} variant='filled' {...props} />
 })
 
-export default function NavigationBar() {
+export default function NavigationBar () {
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [username, setUsername] = useState(null)
-  const [snack, setSnack] = useState({ open: false, severity: 'info', message: '', renew: false })
+  const [snack, setSnack] = useState({
+    open: false,
+    severity: 'info',
+    message: '',
+    renew: false
+  })
   const navigate = useNavigate()
   const intervalRef = useRef(null)
 
-  const toggleDrawer = (open) => () => {
+  const toggleDrawer = open => () => {
     setDrawerOpen(open)
   }
 
   // Check session validity and fetch username
   useEffect(() => {
-    async function initSessionCheck() {
+    async function initSessionCheck () {
       const sessionOk = await checkSession()
       if (!sessionOk) return
 
@@ -61,7 +66,8 @@ export default function NavigationBar() {
       }
 
       const timeLeft = data.endTime * 1000 - Date.now()
-      if (timeLeft <= 10 * 60 * 1000) { // Less than 10 minutes left
+      if (timeLeft <= 10 * 60 * 1000) {
+        // Less than 10 minutes left
         setSnack({
           open: true,
           severity: 'warning',
@@ -134,18 +140,30 @@ export default function NavigationBar() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username }),
-        credentials: 'include',
+        credentials: 'include'
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setSnack({ open: true, severity: 'success', message: 'Logged out successfully' })
+        setSnack({
+          open: true,
+          severity: 'success',
+          message: 'Logged out successfully'
+        })
       } else {
-        setSnack({ open: true, severity: 'error', message: data.message || 'Logout failed' })
+        setSnack({
+          open: true,
+          severity: 'error',
+          message: data.message || 'Logout failed'
+        })
       }
     } catch (err) {
-      setSnack({ open: true, severity: 'error', message: 'Network error during logout' })
+      setSnack({
+        open: true,
+        severity: 'error',
+        message: 'Network error during logout'
+      })
     } finally {
       setUsername(null)
       setDrawerOpen(false)
@@ -158,28 +176,49 @@ export default function NavigationBar() {
   const drawerContent = (
     <Box
       sx={{ width: 250, p: 2 }}
-      role="presentation"
+      role='presentation'
       onClick={toggleDrawer(false)}
       onKeyDown={toggleDrawer(false)}
     >
-      <Typography variant="h6" sx={{ fontWeight: 'bold', textAlign: 'center' }}>
+      <Typography variant='h6' sx={{ fontWeight: 'bold', textAlign: 'center' }}>
         {username}
       </Typography>
       <Divider sx={{ my: 2 }} />
-      <Button variant="outlined" color="inherit" fullWidth sx={{ mb: 2 }} component={Link} to="/update_account">
+      <Button
+        variant='outlined'
+        color='inherit'
+        fullWidth
+        sx={{ mb: 2 }}
+        component={Link}
+        to='/update_account'
+      >
         Edit Account
       </Button>
-            <Button variant="outlined" color="inherit" fullWidth sx={{ mb: 2 }} component={Link} to="/delete_tags">
+      <Button
+        variant='outlined'
+        color='inherit'
+        fullWidth
+        sx={{ mb: 2 }}
+        component={Link}
+        to='/delete_tags'
+      >
         Delete Tags
       </Button>
-      <Button variant="outlined"  color="inherit" fullWidth sx={{ mb: 2 }} component={Link} to="/db">
+      <Button
+        variant='outlined'
+        color='inherit'
+        fullWidth
+        sx={{ mb: 2 }}
+        component={Link}
+        to='/db'
+      >
         DB Management
       </Button>
       <Button
-        variant="contained"
+        variant='contained'
         fullWidth
-        color="error"
-        onClick={(e) => {
+        color='error'
+        onClick={e => {
           e.stopPropagation()
           handleLogout()
         }}
@@ -191,17 +230,30 @@ export default function NavigationBar() {
 
   return (
     <>
-      <AppBar position="static" color="primary" elevation={2} sx={{ height:'60px' }}>
+      <AppBar
+        position='static'
+        color='primary'
+        elevation={2}
+        sx={{ height: '60px' }}
+      >
         <Toolbar>
-          <Button component={Link} to="/" color="inherit" sx={{ fontWeight: 'bold', marginLeft: '30px'}}>
+          <Button
+            component={Link}
+            to='/'
+            color='inherit'
+            sx={{ fontWeight: 'bold', marginLeft: '30px' }}
+          >
             Home
           </Button>
-          <Button component={Link} to="/projects" color="inherit">
+          <Button component={Link} to='/projects' color='inherit'>
             Projects
+          </Button>
+          <Button component={Link} to='/overview' color='inherit'>
+            Overview
           </Button>
           <Box sx={{ flexGrow: 1 }} />
           {!username && (
-            <Button component={Link} to="/login" color="inherit">
+            <Button component={Link} to='/login' color='inherit'>
               Login
             </Button>
           )}
@@ -212,7 +264,7 @@ export default function NavigationBar() {
                 cursor: 'pointer',
                 width: 32,
                 height: 32,
-                fontSize: '1rem',
+                fontSize: '1rem'
               }}
               onClick={toggleDrawer(true)}
             >
@@ -222,7 +274,7 @@ export default function NavigationBar() {
         </Toolbar>
       </AppBar>
 
-      <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer(false)}>
+      <Drawer anchor='right' open={drawerOpen} onClose={toggleDrawer(false)}>
         {drawerContent}
       </Drawer>
 
@@ -237,7 +289,7 @@ export default function NavigationBar() {
           severity={snack.severity}
           action={
             snack.renew && (
-              <Button color="inherit" size="small" onClick={handleRenew}>
+              <Button color='inherit' size='small' onClick={handleRenew}>
                 RENEW
               </Button>
             )
