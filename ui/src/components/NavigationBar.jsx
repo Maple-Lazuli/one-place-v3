@@ -243,7 +243,7 @@ export default function NavigationBar () {
             color='inherit'
             sx={{ fontWeight: 'bold', marginLeft: '30px' }}
           >
-            Home
+            Calendar
           </Button>
           <Button component={Link} to='/overview' color='inherit'>
             Overview
