@@ -161,7 +161,7 @@ export default function UpdateEquationForm () {
             <TextField
               label='Content'
               multiline
-              rows={20}
+              // rows={20}
               value={content}
               onChange={e => setContent(e.target.value)}
               required
