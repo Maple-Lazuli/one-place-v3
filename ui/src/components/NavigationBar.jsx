@@ -245,12 +245,13 @@ export default function NavigationBar () {
           >
             Home
           </Button>
-          <Button component={Link} to='/projects' color='inherit'>
-            Projects
-          </Button>
           <Button component={Link} to='/overview' color='inherit'>
             Overview
           </Button>
+          <Button component={Link} to='/projects' color='inherit'>
+            Projects
+          </Button>
+
           <Box sx={{ flexGrow: 1 }} />
           {!username && (
             <Button component={Link} to='/login' color='inherit'>
