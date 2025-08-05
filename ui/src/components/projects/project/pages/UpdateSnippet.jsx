@@ -197,7 +197,7 @@ export default function UpdateSnippetForm () {
               inputRef={contentRef}
               label='Code Content'
               multiline
-              rows={20}
+              // rows={20}
               value={content}
               onChange={e => setContent(e.target.value)}
               onKeyDown={handleTabKey}
