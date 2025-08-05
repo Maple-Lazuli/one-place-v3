@@ -163,7 +163,7 @@ export default function CanvasEditor () {
       return updated
     })
     if (!justLoadedRef.current) {
-      saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
+      // saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
     }
   }
 
@@ -616,6 +616,7 @@ export default function CanvasEditor () {
               isSelected={selectedImageIndex === i}
               onSelect={() => setSelectedImageIndex(i)}
               onChange={changes => updateImagePosition(i, changes)}
+              save={() => {saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)}}
               ref={el => (imageRefs.current[i] = el)}
             />
           ))}
