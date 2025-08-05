@@ -8,7 +8,12 @@ import {
   Button,
   TextField,
   ToggleButton,
-  ToggleButtonGroup
+  ToggleButtonGroup,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
 } from '@mui/material'
 import StrokeSizeStepper from '../StrokeSizeStepper'
 import CanvasScaleControl from './CanvasScaleControl'
@@ -42,6 +47,7 @@ export default function CanvasEditor () {
   const [backgroundColor, setBackgroundColor] = useState(
     Cookies.get('preferences') === 'dark' ? '#111111' : '#ffffff'
   )
+  const [confirmOpen, setConfirmOpen] = useState(false)
   const [strokeWidth, setStrokeWidth] = useState(1.5)
   const [scale, setScale] = useState(1)
   const [stagePosition, setStagePosition] = useState({ x: 0, y: 0 })
@@ -65,7 +71,7 @@ export default function CanvasEditor () {
           { ...lastLine, points: [...lastLine.points, ...newLine] }
         ]
       })
-    }, 10)
+    }, 5)
   ).current
 
   useEffect(() => {
@@ -78,7 +84,7 @@ export default function CanvasEditor () {
     throttle((dx, dy, pointer) => {
       setStagePosition(pos => ({ x: pos.x + dx, y: pos.y + dy }))
       lastPanPos.current = pointer
-    }, 10) // ~60fps
+    }, 5) // ~60fps
   ).current
 
   useEffect(() => {
@@ -164,10 +170,6 @@ export default function CanvasEditor () {
   const handlePointerDown = e => {
     justLoadedRef.current = false
     const stage = e.target.getStage()
-    //ensure an image was not clicked on.
-    const clickedOnImage = imageRefs.current.some(
-      imageNode => imageNode && imageNode === e.target
-    )
 
     // if the middle mouse was clicked or the canvas was touched.
     if (
@@ -184,6 +186,11 @@ export default function CanvasEditor () {
       lastPanPos.current = stage.getPointerPosition()
       return
     }
+
+        //ensure an image was not clicked on.
+    const clickedOnImage = imageRefs.current.some(
+      imageNode => imageNode && imageNode === e.target
+    )
 
     const transformer = transformerRef.current
 
@@ -371,7 +378,12 @@ export default function CanvasEditor () {
     saveCanvas(canvas_id, lines, images, backgroundColor, lastSaveTimeRef)
   }
 
-  const handleClear = () => {
+  const confirmClearCanvas = () => {
+    setConfirmOpen(true)
+  }
+
+  const handleClearConfirmed = () => {
+    setConfirmOpen(false)
     setLines([])
     setImages([])
     setHistory([])
@@ -419,7 +431,7 @@ export default function CanvasEditor () {
               setImages(parsed.images || [])
               setBackgroundColor(parsed.backgroundColor || '#ffffff')
             }
-          } 
+          }
         }
       } catch (err) {
         console.error('Error checking canvas last update:', err)
@@ -536,7 +548,9 @@ export default function CanvasEditor () {
         <Button onClick={handleRedo} disabled={redoStack.length === 0}>
           Redo
         </Button>
-        <Button onClick={handleClear}>Clear Canvas</Button>
+        <Button onClick={confirmClearCanvas} color='error'>
+          Clear
+        </Button>
         <Button
           onClick={() =>
             navigate(
@@ -617,6 +631,21 @@ export default function CanvasEditor () {
           />
         </Layer>
       </Stage>
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>Clear Canvas?</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to clear the canvas? This action cannot be
+            undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)}>Cancel</Button>
+          <Button onClick={handleClearConfirmed} color='error'>
+            Clear
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   )
 }
