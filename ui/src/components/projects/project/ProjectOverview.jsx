@@ -50,7 +50,7 @@ export default function ProjectOverview () {
           const pages = pageData.message
           if (pages.length > 0) {
             const mostRecentPage = pages.reduce((latest, page) => {
-              return !latest || page.lastEdited > latest.lastEdited
+              return !latest || page.lastEditTime > latest.lastEditTime
                 ? page
                 : latest
             }, null)

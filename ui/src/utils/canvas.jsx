@@ -16,9 +16,10 @@ import useImage from 'use-image'
 
 export const DraggableImage = forwardRef(
   (
-    { id, x, y, scaleX = 1, scaleY = 1, isSelected, onSelect, onChange },
+    { id, x, y, scaleX = 1, scaleY = 1, isSelected, onSelect, onChange, save },
     ref
   ) => {
+    const inputDevice = useRef({type: ""})
     const imageUrl = `/api/images/image?id=${id}`
     const [image] = useImage(imageUrl)
     const shapeRef = useRef()
@@ -27,10 +28,21 @@ export const DraggableImage = forwardRef(
 
     useEffect(() => {
       if (isSelected && shapeRef.current) {
+        if (inputDevice.type === 'touch') return
         shapeRef.current.draggable(true)
       }
     }, [isSelected])
 
+    const handleDragMove = e => {
+      if (inputDevice.type === 'touch') return
+
+      // Otherwise, continue dragging
+      onChange?.({
+        x: e.target.x(),
+        y: e.target.y()
+      })
+    }
+    
     return (
       <KonvaImage
         image={image}
@@ -38,23 +50,21 @@ export const DraggableImage = forwardRef(
         y={y}
         scaleX={scaleX}
         scaleY={scaleY}
-        draggable
+        onPointerDown={e => {
+          const pointerType = e.evt.pointerType
+          inputDevice.type = pointerType
+          if (pointerType === "touch") return
+          onSelect()
+        }}
+        draggable={inputDevice.type !== 'touch'}
         ref={shapeRef}
         onClick={onSelect}
-        onTap={onSelect}
-        onDragEnd={e => {
-          onChange &&
-            onChange({
-              x: e.target.x(),
-              y: e.target.y()
-            })
-        }}
+        onDragMove={handleDragMove}
+        onDragEnd={() => {save()}}
         onTransformEnd={e => {
           const node = shapeRef.current
           const scaleX = node.scaleX()
           const scaleY = node.scaleY()
-
-          console.log('Transform scale', scaleX, scaleY)
 
           node.scaleX(1)
           node.scaleY(1)
@@ -65,6 +75,7 @@ export const DraggableImage = forwardRef(
             scaleX,
             scaleY
           })
+        save()
         }}
       />
     )
@@ -96,22 +107,6 @@ export async function deleteImageFromBackend (imageId) {
   }
 }
 
-export const exportAsImage = stageRef => {
-  const uri = stageRef.current.toDataURL()
-  const link = document.createElement('a')
-  link.download = 'canvas.png'
-  link.href = uri
-  link.click()
-}
-
-export const exportAsPDF = stageRef => {
-  const canvas = stageRef.current.toCanvas()
-  const imgData = canvas.toDataURL('image/png')
-  const pdf = new jsPDF()
-  pdf.addImage(imgData, 'PNG', 0, 0, 210, 297)
-  pdf.save('canvas.pdf')
-}
-
 export async function loadCanvas (
   canvas_id,
   setLines,
@@ -139,7 +134,7 @@ export async function saveCanvas (
   backgroundColor,
   lastSaveTimeRef
 ) {
-  console.log("sent save")
+  console.log('sent save')
   try {
     const payload = {
       canvas_id: Number(canvas_id),
