@@ -4,5 +4,3 @@
 dev_notes/*
 *__pycache__*
 *.vscode/*
-api/app/db.py
-api/config/config.toml
