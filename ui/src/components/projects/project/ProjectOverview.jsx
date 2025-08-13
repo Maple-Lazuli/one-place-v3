@@ -215,54 +215,64 @@ export default function ProjectOverview () {
       )}
 
       {reviewData.length === 0 ? (
-  <Typography variant='body2' color='text.secondary'>
-    No review data available
-  </Typography>
-) : (
-  <Box sx={{ width: '100%', maxWidth: '100%', overflowY: 'hidden', mb: 3 }}>
-    <Divider sx={{ my: 2 }}>Days Since Last Review</Divider>
-
-    {mostStalePage && (
-      <Box sx={{ mb: 1 }}>
-        <Typography variant='body'>
-          Most in need of review:{' '}
-          <MUILink
-            component={RouterLink}
-            to={`/projects/project/${project_id}/pages/page/${mostStalePage.page_id}/`}
-            underline='hover'
-            sx={{ fontWeight: 500 }}
-          >
-            {mostStalePage.name}
-          </MUILink>{' '}
-          ({mostStalePage.days} day{mostStalePage.days !== 1 ? 's' : ''})
+        <Typography variant='body2' color='text.secondary'>
+          No review data available
         </Typography>
-      </Box>
-    )}
+      ) : (
+        <Box
+          sx={{ width: '100%', maxWidth: '100%', overflowY: 'hidden', mb: 3 }}
+        >
+          <Divider sx={{ my: 2 }}>Days Since Last Review</Divider>
 
-    <ResponsiveContainer
-      width='100%'
-      height={Math.max(200, reviewData.length * 50)}
-    >
-      <BarChart
-        data={[...reviewData].sort((a, b) => b.days - a.days)}
-        layout='vertical'
-        margin={{ top: 10, right: 30, left: 100, bottom: 10 }}
-      >
-        <XAxis type='number' />
-        <YAxis type='category' dataKey='name' width={150} />
-        <Tooltip />
-        <Bar dataKey='days' fill='#1976d2'>
-          {reviewData.map((entry, index) => {
-            const intensity = Math.min(1, entry.days / 30)
-            const color = `rgba(25, 118, 210, ${0.4 + 0.6 * intensity})`
-            return <Cell key={`cell-${index}`} fill={color} />
-          })}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
-  </Box>
-)}
+          {mostStalePage && (
+            <Box sx={{ mb: 1 }}>
+              <Typography variant='body'>
+                Most in need of review:{' '}
+                <MUILink
+                  component={RouterLink}
+                  to={`/projects/project/${project_id}/pages/page/${mostStalePage.page_id}/`}
+                  underline='hover'
+                  sx={{ fontWeight: 500 }}
+                >
+                  {mostStalePage.name}
+                </MUILink>{' '}
+                ({mostStalePage.days} day{mostStalePage.days !== 1 ? 's' : ''})
+              </Typography>
+            </Box>
+          )}
 
+          <ResponsiveContainer
+            width='100%'
+            height={Math.max(200, reviewData.length * 50)}
+          >
+            <BarChart
+              data={[...reviewData].sort((a, b) => b.days - a.days)}
+              layout='vertical'
+              margin={{ top: 10, right: 30, left: 100, bottom: 10 }}
+            >
+              <XAxis type='number' />
+              <YAxis type='category' dataKey='name' width={150} />
+              <Tooltip />
+              <Bar
+                dataKey='days'
+                fill='#1976d2'
+                onClick={data => {
+                  const pageId = data.page_id
+                  if (pageId) {
+                    window.location.href = `/projects/project/${project_id}/pages/page/${pageId}/`
+                  } 
+                }}
+              >
+                {reviewData.map((entry, index) => {
+                  const intensity = Math.min(1, entry.days / 30)
+                  const color = `rgba(25, 118, 210, ${0.4 + 0.6 * intensity})`
+                  return <Cell key={`cell-${index}`} fill={color} />
+                })}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </Box>
+      )}
 
       {/* Upcoming/Overdue Todos */}
       <Divider sx={{ my: 2 }}>Upcomming or Overdue Todos</Divider>
