@@ -25,8 +25,8 @@ const typeColors = {
   canvas: '#0288d1',
   files: '#5d4037',
   event: '#007BFF',
-  'Scheduled Todo': '#fbc12dd2',
-  'Completed Todo': '#fbc12d7c'
+  'Scheduled Todo': '#fbc12dad',
+  'Completed Todo': '#fbc12d54'
 }
 
 const toUnixSecondsUTC = date => {
@@ -313,7 +313,7 @@ export default function CalendarView ({
     const baseStyle = {
       backgroundColor: typeColors[event.type] || '#607d8b',
       borderRadius: '4px',
-      color: 'white',
+      color: event.type == 'Scheduled Todo' ? 'black' : 'white',
       border: 'none',
       padding: view === Views.MONTH ? '4px' : '2px 4px',
       fontSize: view === Views.MONTH ? '0.875rem' : '0.75rem',
@@ -397,7 +397,13 @@ export default function CalendarView ({
     >
       <Paper
         elevation={3}
-        sx={{ width: 280, p: 2, borderRadius: 0, overflowY: 'auto' }}
+        sx={{
+          width: 200,
+          flexShrink: 0,
+          p: 2,
+          borderRadius: 0,
+          overflowY: 'auto'
+        }}
       >
         <Typography variant='h6' gutterBottom>
           My Filters
@@ -453,7 +459,7 @@ export default function CalendarView ({
         </Stack>
       </Paper>
 
-      <Box sx={{ flexGrow: 1, p: 2, height: '100%' }}>
+      <Box sx={{ flexGrow: 1, flexBasis: 0, p: 2, height: '100%', minWidth: 0, }}>
         <Calendar
           localizer={localizer}
           events={summarizedEvents}
@@ -475,7 +481,10 @@ export default function CalendarView ({
           max={new Date(1970, 1, 1, 23, 59)} // end at 11:59 PM
           popup
           onSelectEvent={event => {
-            if (event.type === 'Scheduled Todo' || event.type === 'Completed Todo') {
+            if (
+              event.type === 'Scheduled Todo' ||
+              event.type === 'Completed Todo'
+            ) {
               navigate(`/projects/project/${event.ProjectID}/todos`)
             } else if (event.type === 'event') {
               navigate(`/projects/project/${event.ProjectID}/events`)
