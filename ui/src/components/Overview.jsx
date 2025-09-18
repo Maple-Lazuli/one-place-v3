@@ -72,7 +72,7 @@ export default function Overview () {
 
         // 2. Fetch todos
         const todoRes = await fetch(
-          `/api/todo/get_user_todo?start=${startTimestamp}&end=${endTimestamp}`,
+          `/api/todo/get_user_todo?start=0&end=${endTimestamp}`,
           { credentials: 'include' }
         )
         const todoData = await todoRes.json()
