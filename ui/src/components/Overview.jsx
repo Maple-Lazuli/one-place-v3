@@ -50,9 +50,13 @@ export default function Overview () {
         )
         const pageData = await pageRes.json()
         if (pageData.status === 'success') {
+          console.log(pageData.message)
+          setReviewData(pageData.message)
           const pages = pageData.message
           if (pages.length > 0) {
-            const mostRecentPage = pages.reduce((latest, page) => {
+            const mostRecentPage = pages.filter(
+              page => page.lastEditTime !== null && page.lastEditTime !== undefined
+            ).reduce((latest, page) => {
               return !latest || page.lastEditTime > latest.lastEditTime
                 ? page
                 : latest
@@ -61,14 +65,14 @@ export default function Overview () {
           }
         }
 
-        const reviewRes = await fetch(
-          `/api/pages/get_user_pages_review_list`,
-          { credentials: 'include' }
-        )
-        const reviewDataJson = await reviewRes.json()
-        if (reviewDataJson.status === 'success') {
-          setReviewData(reviewDataJson.message)
-        }
+        // const reviewRes = await fetch(
+        //   `/api/pages/get_user_pages_review_list`,
+        //   { credentials: 'include' }
+        // )
+        // const reviewDataJson = await reviewRes.json()
+        // if (reviewDataJson.status === 'success') {
+        //   setReviewData(reviewDataJson.message)
+        // }
 
         // 2. Fetch todos
         const todoRes = await fetch(
@@ -183,7 +187,9 @@ export default function Overview () {
     }
   }
 
-  const mostStalePage = reviewData.reduce(
+  const mostStalePage = reviewData.filter(
+    page => page.days !== null && page.days !== undefined
+  ).reduce(
     (max, page) => (page.days > (max?.days ?? -1) ? page : max),
     null
   )
@@ -200,7 +206,7 @@ export default function Overview () {
             Continue Where You Left Off:{'  '}
             <MUILink
               component={RouterLink}
-              to={`/projects/project/${project_id}/pages/page/${lastEditedPage.PageID}/editor`}
+              to={`/projects/project/${lastEditedPage.ProjectID}/pages/page/${lastEditedPage.PageID}/editor`}
               underline='hover'
               variant='body1'
               sx={{ fontWeight: 500 }}
@@ -228,14 +234,14 @@ export default function Overview () {
           sx={{ width: '100%', maxWidth: '100%', overflowY: 'hidden', mb: 3 }}
         >
           <Divider sx={{ my: 2 }}>Days Since Last Review</Divider>
-
+          {console.log(mostStalePage)}
           {mostStalePage && (
             <Box sx={{ mb: 1 }}>
               <Typography variant='body'>
                 Most in need of review:{' '}
                 <MUILink
                   component={RouterLink}
-                  to={`/projects/project/${project_id}/pages/page/${mostStalePage.page_id}/`}
+                  to={`/projects/project/${mostStalePage.project_id}/pages/page/${mostStalePage.page_id}/`}
                   underline='hover'
                   sx={{ fontWeight: 500 }}
                 >
@@ -263,8 +269,9 @@ export default function Overview () {
                 fill='#1976d2'
                 onClick={data => {
                   const pageId = data.page_id
+                  const projectId = data.project_id
                   if (pageId) {
-                    window.location.href = `/projects/project/${project_id}/pages/page/${pageId}/`
+                    window.location.href = `/projects/project/${projectId}/pages/page/${pageId}/`
                   }
                 }}
               >
