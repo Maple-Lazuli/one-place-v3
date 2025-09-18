@@ -15,7 +15,10 @@ import {
   oneLight
 } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import Cookies from 'js-cookie'
+import { Fullscreen, FullscreenExit } from '@mui/icons-material'
+
 export default function UpdateSnippetForm () {
+  const [fullscreen, setFullscreen] = useState(false)
   const maxNameCharLimit = 64
   const maxLanguageCharLimit = 64
   const maxDescriptionLimit = 255
@@ -135,7 +138,19 @@ export default function UpdateSnippetForm () {
         display: 'flex',
         gap: 4,
         mt: 2,
-        height: '100%'
+        height: '100%',
+        ...(fullscreen && {
+          position: 'fixed',
+          top: 0,
+          backgroundColor: 'background.paper',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 10300, // Above most MUI components
+          borderRadius: 0
+        })
       }}
     >
       {/* Form Section */}
@@ -151,6 +166,15 @@ export default function UpdateSnippetForm () {
           padding: '2em'
         }}
       >
+        <Button
+          variant='outlined'
+          color='primary'
+          startIcon={fullscreen ? <FullscreenExit /> : <Fullscreen />}
+          onClick={() => setFullscreen(prev => !prev)}
+          sx={{ float: 'right' }}
+        >
+          {fullscreen ? 'Exit' : 'Fullscreen'}
+        </Button>
         <Typography variant='h5' component='h2' gutterBottom>
           Update Snippet
         </Typography>

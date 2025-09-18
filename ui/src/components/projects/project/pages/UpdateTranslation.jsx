@@ -13,8 +13,10 @@ import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import 'katex/dist/katex.min.css'
 import { replaceImageHosts } from '../../../../utils/scripts.js'
+import { Fullscreen, FullscreenExit } from '@mui/icons-material'
 
 export default function UpdateTranslation () {
+  const [fullscreen, setFullscreen] = useState(false)
   const [content, setContent] = useState('')
   const [language, setLanguage] = useState('')
   const [error, setError] = useState('')
@@ -234,7 +236,25 @@ export default function UpdateTranslation () {
   }
 
   return (
-    <Box sx={{ p: 1, height: '100%', overflow: 'auto' }}>
+    <Box
+      sx={{
+        p: 1,
+        height: '100%',
+        overflow: 'auto',
+        ...(fullscreen && {
+          position: 'fixed',
+          top: 0,
+          backgroundColor: 'background.paper',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 10300, // Above most MUI components
+          borderRadius: 0
+        })
+      }}
+    >
       <Box
         sx={{
           display: 'flex',
@@ -242,6 +262,15 @@ export default function UpdateTranslation () {
           alignItems: 'center'
         }}
       >
+        <Button
+          variant='outlined'
+          color='primary'
+          startIcon={fullscreen ? <FullscreenExit /> : <Fullscreen />}
+          onClick={() => setFullscreen(prev => !prev)}
+          sx={{ float: 'right' }}
+        >
+          {fullscreen ? 'Exit' : 'Fullscreen'}
+        </Button>
         <Typography variant='h5' component='h2' gutterBottom>
           Updating {language} Translation
         </Typography>
