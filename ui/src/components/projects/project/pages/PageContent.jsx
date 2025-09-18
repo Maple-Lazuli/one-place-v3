@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
-import { Fullscreen, FullscreenExit } from '@mui/icons-material'  // MUI icons
+import { Fullscreen, FullscreenExit } from '@mui/icons-material'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -216,7 +216,7 @@ export default function PageContent () {
             bottom: 0,
             width: '100%',
             height: '100%',
-            zIndex: 1300, // Above most MUI components
+            zIndex: 10300,
             borderRadius: 0
           })
  }}>
@@ -235,6 +235,7 @@ export default function PageContent () {
           color="primary"
           startIcon={fullscreen ? <FullscreenExit /> : <Fullscreen />}
           onClick={() => setFullscreen(prev => !prev)}
+          sx={{ float: 'right' }}
         >
           {fullscreen ? 'Exit' : 'Fullscreen'}
         </Button>

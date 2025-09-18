@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Typography, CircularProgress, Alert, Paper } from '@mui/material'
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  Alert,
+  Paper,
+  Button
+} from '@mui/material'
+import { Fullscreen, FullscreenExit } from '@mui/icons-material'
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -71,7 +79,35 @@ export default function ViewRecipe () {
   }
 
   return (
-    <Box sx={{ maxWidth: '100%', mx: 'auto', mt: 2, height: '100%' }}>
+    <Box
+      sx={{
+        maxWidth: '100%',
+        mx: 'auto',
+        mt: 2,
+        height: '100%',
+        ...(fullscreen && {
+          position: 'fixed',
+          top: 0,
+          backgroundColor: 'background.paper',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 10300, // Above most MUI components
+          borderRadius: 0
+        })
+      }}
+    >
+      <Button
+        variant='outlined'
+        color='primary'
+        startIcon={fullscreen ? <FullscreenExit /> : <Fullscreen />}
+        onClick={() => setFullscreen(prev => !prev)}
+        sx={{ float: 'right' }}
+      >
+        {fullscreen ? 'Exit' : 'Fullscreen'}
+      </Button>
       <Typography variant='h4' gutterBottom>
         {recipe.name}
       </Typography>
@@ -91,48 +127,48 @@ export default function ViewRecipe () {
           paddingBottom: '10em'
         }}
       >
-              <ReactMarkdown
-                children={replaceImageHosts(recipe.content)}
-                remarkPlugins={[remarkMath, remarkGfm]}
-                rehypePlugins={[rehypeKatex]}
-                components={{
-                  code ({ node, inline, className, children, ...props }) {
-                    const match = /language-(\w+)/.exec(className || '')
-                    return !inline && match ? (
-                      <SyntaxHighlighter
-                        language={match[1]}
-                        showLineNumbers
-                        style={coloring}
-                        PreTag='div'
-                        customStyle={{
-                          // background: 'transparent',
-                          margin: 0,
-                          padding: 0,
-                          maxheight: 300,
-                          overflowX: 'auto'
-                        }}
-                        {...props}
-                      >
-                        {String(children).replace(/\n$/, '')}
-                      </SyntaxHighlighter>
-                    ) : (
-                      <code
-                        className={className}
-                        style={{
-                          // backgroundColor: '#eee',
-                          padding: '0.2em 0.4em',
-                          borderRadius: '4px',
-                          fontSize: '0.95em',
-                          fontFamily: 'monospace'
-                        }}
-                        {...props}
-                      >
-                        {children}
-                      </code>
-                    )
-                  }
-                }}
-              />
+        <ReactMarkdown
+          children={replaceImageHosts(recipe.content)}
+          remarkPlugins={[remarkMath, remarkGfm]}
+          rehypePlugins={[rehypeKatex]}
+          components={{
+            code ({ node, inline, className, children, ...props }) {
+              const match = /language-(\w+)/.exec(className || '')
+              return !inline && match ? (
+                <SyntaxHighlighter
+                  language={match[1]}
+                  showLineNumbers
+                  style={coloring}
+                  PreTag='div'
+                  customStyle={{
+                    // background: 'transparent',
+                    margin: 0,
+                    padding: 0,
+                    maxheight: 300,
+                    overflowX: 'auto'
+                  }}
+                  {...props}
+                >
+                  {String(children).replace(/\n$/, '')}
+                </SyntaxHighlighter>
+              ) : (
+                <code
+                  className={className}
+                  style={{
+                    // backgroundColor: '#eee',
+                    padding: '0.2em 0.4em',
+                    borderRadius: '4px',
+                    fontSize: '0.95em',
+                    fontFamily: 'monospace'
+                  }}
+                  {...props}
+                >
+                  {children}
+                </code>
+              )
+            }
+          }}
+        />
       </Paper>
     </Box>
   )

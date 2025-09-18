@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Typography, CircularProgress, Alert, Paper } from '@mui/material'
+import {
+  Box,
+  Typography,
+  CircularProgress,
+  Alert,
+  Paper,
+  Button
+} from '@mui/material'
+import { Fullscreen, FullscreenExit } from '@mui/icons-material'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import {
   oneDark,
@@ -11,6 +19,7 @@ import Cookies from 'js-cookie'
 import 'highlight.js/styles/github.css' // or your preferred highlight theme
 
 export default function ViewSnippet () {
+  const [fullscreen, setFullscreen] = useState(false)
   const { snippet_id } = useParams()
   const [snippet, setSnippet] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -64,7 +73,35 @@ export default function ViewSnippet () {
   }
 
   return (
-    <Box sx={{ maxWidth: '100%', mx: 'right', mt: 2, height: '100%' }}>
+    <Box
+      sx={{
+        maxWidth: '100%',
+        mx: 'right',
+        mt: 2,
+        height: '100%',
+        ...(fullscreen && {
+          position: 'fixed',
+          top: 0,
+          backgroundColor: 'background.paper',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 10300, // Above most MUI components
+          borderRadius: 0
+        })
+      }}
+    >
+              <Button
+          variant="outlined"
+          color="primary"
+          startIcon={fullscreen ? <FullscreenExit /> : <Fullscreen />}
+          onClick={() => setFullscreen(prev => !prev)}
+          sx={{ float: 'right' }}
+        >
+          {fullscreen ? 'Exit' : 'Fullscreen'}
+        </Button>
       <Typography variant='h4' gutterBottom>
         {snippet.name}
       </Typography>
