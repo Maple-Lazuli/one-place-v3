@@ -236,7 +236,7 @@ export default function Overview () {
         </Typography>
       ) : (
         <Box
-          sx={{ width: '100%', maxWidth: '100%', overflowY: 'hidden', mb: 3 }}
+          sx={{ width: '100%', maxWidth: '100%', maxHeight: '50vh', mb: 3, overflowY: 'auto' }}
         >
           <Divider sx={{ my: 2 }}>Days Since Last Review</Divider>
           {mostStalePage && (
