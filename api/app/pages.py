@@ -46,6 +46,30 @@ def get_last_review_by_user_id(user_id):
     return review_deltas
 
 
+def get_last_edit_by_user_id(user_id):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT max(accessTime), pagerequests.pageID, pages.name, pages.projectID FROM pagerequests
+        inner join pages on pages.pageid = pagerequests.pageid
+        inner join projects on projects.projectID = pages.projectID
+        where accessGranted = TRUE AND pagerequests.notes = 'UPDATE' AND projects.UserID = %s
+        group by pagerequests.pageID, pages.name, pages.projectID
+    """, (user_id,))
+    review_deltas = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    conn.close()
+    if review_deltas is not None:
+        review_deltas_list = []
+        for review_delta in review_deltas:
+            review_delta = {k: v for k, v in zip(['lastEditTime', 'page_id', 'name', 'project_id'], review_delta)}
+            review_delta['lastEditTime'] = str(review_delta['lastEditTime'].timestamp())
+            review_deltas_list.append(review_delta)
+        return review_deltas_list
+    return review_deltas
+
+
 def get_last_review_by_project_id(project_id):
     conn = get_db_connection()
     cursor = conn.cursor()
@@ -398,7 +422,6 @@ def get_pages_review_by_project_ep():
         return make_response({'status': 'error', 'message': "Not Authorized To Access Page"}, STATUS.FORBIDDEN)
 
     pages = get_last_review_by_project_id(project_id)
-    print(pages)
     if pages is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
@@ -416,7 +439,23 @@ def get_pages_review_by_user_ep():
         return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
 
     pages = get_last_review_by_user_id(session['UserID'])
-    print(pages)
+    if pages is None:
+        return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
+
+    response = make_response({'status': 'success', 'message': pages}, STATUS.OK)
+    return response
+
+
+@pages_bp.route('/get_user_pages_update_list', methods=['GET'])
+def get_pages_update_by_user_ep():
+    token = request.cookies.get("token")
+
+    valid, session = verify_session_for_access(token)
+
+    if not valid:
+        return make_response({'status': 'error', 'message': "Session is Invalid"}, STATUS.FORBIDDEN)
+
+    pages = get_last_edit_by_user_id(session['UserID'])
     if pages is None:
         return make_response({'status': 'error', 'message': "Does Not Exist"}, STATUS.OK)
 
