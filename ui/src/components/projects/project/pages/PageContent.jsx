@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
+import { Fullscreen, FullscreenExit } from '@mui/icons-material'  // MUI icons
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -30,6 +31,7 @@ import {
 import Cookies from 'js-cookie'
 
 export default function PageContent () {
+  const [fullscreen, setFullscreen] = useState(false)
   const [snackbarOpen, setSnackbarOpen] = useState(false)
 
   const { page_id } = useParams()
@@ -204,7 +206,20 @@ export default function PageContent () {
   }, [])
 
   return (
-<Box sx={{ maxWidth: '100%', mx: 'right', mt: 2, height: '100%' }}>
+<Box sx={{ maxWidth: '100%', mx: 'right', mt: 2, height: '100%',
+            ...(fullscreen && {
+            position: 'fixed',
+            backgroundColor: 'background.paper',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 1300, // Above most MUI components
+            borderRadius: 0
+          })
+ }}>
       <Box
         sx={{
           px: 2,
@@ -215,6 +230,14 @@ export default function PageContent () {
           alignItems: 'center'
         }}
       >
+                <Button
+          variant="outlined"
+          color="primary"
+          startIcon={fullscreen ? <FullscreenExit /> : <Fullscreen />}
+          onClick={() => setFullscreen(prev => !prev)}
+        >
+          {fullscreen ? 'Exit' : 'Fullscreen'}
+        </Button>
         <FormControl size='small'>
           <InputLabel id='translation-select-label'>Language</InputLabel>
           <Select
@@ -255,7 +278,7 @@ export default function PageContent () {
           overflow: 'auto',
           height: '100%',
           paddingBottom: '10em'
-          
+
           // backgroundColor: '#1e1e1e'
         }}
       >
