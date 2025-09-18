@@ -9,7 +9,7 @@ import {
   Alert,
   CircularProgress
 } from '@mui/material'
-
+import { Fullscreen, FullscreenExit } from '@mui/icons-material'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import {
   oneDark,
@@ -17,6 +17,7 @@ import {
 } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import Cookies from 'js-cookie'
 export default function CreateSnippetForm () {
+  const [fullscreen, setFullscreen] = useState(false)
   const maxNameCharLimit = 64
   const maxLanguageCharLimit = 64
   const maxDescriptionLimit = 255
@@ -109,7 +110,19 @@ export default function CreateSnippetForm () {
         display: 'flex',
         gap: 4,
         mt: 2,
-        height: '100%'
+        height: '100%',
+        ...(fullscreen && {
+          position: 'fixed',
+          top: 0,
+          backgroundColor: 'background.paper',
+          left: 0,
+          right: 0,
+          bottom: 0,
+          width: '100%',
+          height: '100%',
+          zIndex: 10300, // Above most MUI components
+          borderRadius: 0
+        })
       }}
     >
       {/* Form Section */}
@@ -125,6 +138,15 @@ export default function CreateSnippetForm () {
           padding: '2em'
         }}
       >
+        <Button
+          variant='outlined'
+          color='primary'
+          startIcon={fullscreen ? <FullscreenExit /> : <Fullscreen />}
+          onClick={() => setFullscreen(prev => !prev)}
+          sx={{ float: 'right' }}
+        >
+          {fullscreen ? 'Exit' : 'Fullscreen'}
+        </Button>
         <Typography variant='h5' component='h2' gutterBottom>
           Create New Snippet
         </Typography>

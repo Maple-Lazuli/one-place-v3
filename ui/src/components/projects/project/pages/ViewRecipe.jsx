@@ -26,6 +26,7 @@ import Cookies from 'js-cookie'
 import './contentImage.css'
 
 export default function ViewRecipe () {
+  const [fullscreen, setFullscreen] = useState(false)
   const { recipe_id } = useParams()
   const [recipe, setRecipes] = useState(null)
   const [loading, setLoading] = useState(true)

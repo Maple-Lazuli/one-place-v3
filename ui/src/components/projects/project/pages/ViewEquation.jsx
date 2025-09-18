@@ -15,6 +15,7 @@ import rehypeKatex from 'rehype-katex'
 import 'highlight.js/styles/github.css' // or your preferred highlight theme
 
 export default function ViewEquation () {
+  const [fullscreen, setFullscreen] = useState(false)
   const { equation_id } = useParams()
   const [equation, setEquations] = useState(null)
   const [loading, setLoading] = useState(true)

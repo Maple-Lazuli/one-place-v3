@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams } from 'react-router-dom'
 import { TextField, Button, Box } from '@mui/material'
+import { Fullscreen, FullscreenExit } from '@mui/icons-material' 
 import ReactMarkdown from 'react-markdown'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
@@ -17,6 +18,8 @@ import {
 import Cookies from 'js-cookie'
 import './editImage.css'
 export default function PageEditor () {
+
+  const [fullscreen, setFullscreen] = useState(false)
   const { page_id } = useParams()
   const [text, setText] = useState('')
   const [saving, setSaving] = useState(false)
@@ -209,7 +212,19 @@ export default function PageEditor () {
         height: '100%',
         boxSizing: 'border-box',
         p: 2,
-        overflow: 'hidden'
+        overflow: 'hidden',
+                  ...(fullscreen && {
+            position: 'fixed',
+            top: 0,
+            backgroundColor: 'background.paper',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 10300, // Above most MUI components
+            borderRadius: 0
+          })
       }}
     >
       <Box
@@ -221,6 +236,15 @@ export default function PageEditor () {
           mb: 2
         }}
       >
+                <Button
+          variant="outlined"
+          color="primary"
+          startIcon={fullscreen ? <FullscreenExit /> : <Fullscreen />}
+          onClick={() => setFullscreen(prev => !prev)}
+          // sx={{ float: 'right' }}
+        >
+          {fullscreen ? 'Exit' : 'Fullscreen'}
+        </Button>
         <Button
           variant='outlined'
           color='primary'
