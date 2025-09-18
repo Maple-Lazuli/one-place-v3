@@ -36,6 +36,13 @@ export default function Overview () {
   const [loading, setLoading] = useState(true)
   const [snackbarOpen, setSnackbarOpen] = useState(false)
 
+  function formatTimestampToLocal(timestamp) {
+  const utcDate = new Date(timestamp * 1000); 
+  const offsetMinutes = utcDate.getTimezoneOffset(); 
+  const localDate = new Date(utcDate.getTime() - offsetMinutes * 60 * 1000);
+  return localDate.toLocaleString();
+}
+
   useEffect(() => {
     async function fetchAllData () {
       setLoading(true)
@@ -45,13 +52,11 @@ export default function Overview () {
         const endTimestamp = Math.floor((now + 7 * 24 * 60 * 60 * 1000) / 1000)
         // 1. Fetch pages
         const pageRes = await fetch(
-          `/api/pages/get_user_pages_review_list`,
+          `/api/pages/get_user_pages_update_list`,
           { credentials: 'include' }
         )
         const pageData = await pageRes.json()
         if (pageData.status === 'success') {
-          console.log(pageData.message)
-          setReviewData(pageData.message)
           const pages = pageData.message
           if (pages.length > 0) {
             const mostRecentPage = pages.filter(
@@ -65,14 +70,14 @@ export default function Overview () {
           }
         }
 
-        // const reviewRes = await fetch(
-        //   `/api/pages/get_user_pages_review_list`,
-        //   { credentials: 'include' }
-        // )
-        // const reviewDataJson = await reviewRes.json()
-        // if (reviewDataJson.status === 'success') {
-        //   setReviewData(reviewDataJson.message)
-        // }
+        const reviewRes = await fetch(
+          `/api/pages/get_user_pages_review_list`,
+          { credentials: 'include' }
+        )
+        const reviewDataJson = await reviewRes.json()
+        if (reviewDataJson.status === 'success') {
+          setReviewData(reviewDataJson.message)
+        }
 
         // 2. Fetch todos
         const todoRes = await fetch(
@@ -206,7 +211,7 @@ export default function Overview () {
             Continue Where You Left Off:{'  '}
             <MUILink
               component={RouterLink}
-              to={`/projects/project/${lastEditedPage.ProjectID}/pages/page/${lastEditedPage.PageID}/editor`}
+              to={`/projects/project/${lastEditedPage.project_id}/pages/page/${lastEditedPage.page_id}/editor`}
               underline='hover'
               variant='body1'
               sx={{ fontWeight: 500 }}
@@ -216,7 +221,7 @@ export default function Overview () {
           </Typography>
           <Typography variant='body2' color='text.secondary'>
             (Last edited:{' '}
-            {new Date(lastEditedPage.lastEditTime * 1000).toLocaleString()})
+            {formatTimestampToLocal(lastEditedPage.lastEditTime).toLocaleString()})
           </Typography>
         </>
       ) : (
@@ -234,7 +239,6 @@ export default function Overview () {
           sx={{ width: '100%', maxWidth: '100%', overflowY: 'hidden', mb: 3 }}
         >
           <Divider sx={{ my: 2 }}>Days Since Last Review</Divider>
-          {console.log(mostStalePage)}
           {mostStalePage && (
             <Box sx={{ mb: 1 }}>
               <Typography variant='body'>
