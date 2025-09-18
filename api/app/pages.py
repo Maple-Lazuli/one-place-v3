@@ -26,11 +26,11 @@ def get_last_review_by_user_id(user_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     cursor.execute("""
-        SELECT %s - max(accessTime), pagerequests.pageID, pages.name FROM pagerequests
+        SELECT %s - max(accessTime), pagerequests.pageID, pages.name, pages.projectID FROM pagerequests
         inner join pages on pages.pageid = pagerequests.pageid
         inner join projects on projects.projectID = pages.projectID
         where accessGranted = TRUE AND pagerequests.notes = 'REVIEW' AND projects.UserID = %s
-        group by pagerequests.pageID, pages.name
+        group by pagerequests.pageID, pages.name, pages.projectID
     """, (datetime.now().astimezone(), user_id))
     review_deltas = cursor.fetchall()
     conn.commit()
@@ -39,7 +39,7 @@ def get_last_review_by_user_id(user_id):
     if review_deltas is not None:
         review_deltas_list = []
         for review_delta in review_deltas:
-            review_delta = {k: v for k, v in zip(['days', 'page_id', 'name'], review_delta)}
+            review_delta = {k: v for k, v in zip(['days', 'page_id', 'name', 'project_id'], review_delta)}
             review_delta['days'] = review_delta['days'].days
             review_deltas_list.append(review_delta)
         return review_deltas_list
