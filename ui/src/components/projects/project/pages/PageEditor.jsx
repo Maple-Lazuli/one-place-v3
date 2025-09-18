@@ -15,7 +15,7 @@ import {
   oneLight
 } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import Cookies from 'js-cookie'
-
+import './editImage.css'
 export default function PageEditor () {
   const { page_id } = useParams()
   const [text, setText] = useState('')

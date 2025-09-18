@@ -20,6 +20,7 @@ import {
 } from '@mui/material'
 import 'katex/dist/katex.min.css'
 import 'highlight.js/styles/github-dark.css'
+import './contentImage.css'
 import { replaceImageHosts } from '../../../../utils/scripts.js'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import {

@@ -1,0 +1,6 @@
+img {
+  max-width: 90vw;   /* restrict to 75% of viewport width */
+  height: auto;      /* keep aspect ratio */
+  display: block;    /* optional: prevents inline spacing issues */
+  margin: 0 auto;    /* optional: center the image */
+}

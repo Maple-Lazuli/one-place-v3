@@ -15,6 +15,7 @@ import {
   oneLight
 } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import Cookies from 'js-cookie'
+import './contentImage.css'
 
 export default function ViewRecipe () {
   const { recipe_id } = useParams()
