@@ -82,7 +82,7 @@ export default function Overview () {
 
           const relevantTodos = todoData.message.filter(
             todo => !todo.completed && todo.dueTime && todo.dueTime <= in7Days
-          )
+          ).sort((a, b) => a.dueTime - b.dueTime)
           setTodos(relevantTodos)
         }
 
@@ -101,7 +101,7 @@ export default function Overview () {
               event.eventTime &&
               event.eventTime >= now &&
               event.eventTime <= in7Days
-          )
+          ).sort((a, b) => a.eventTime - b.eventTime)
           setEvents(upcomingEvents)
         }
       } catch (err) {

@@ -79,7 +79,7 @@ export default function ProjectOverview () {
 
           const relevantTodos = todoData.message.filter(
             todo => !todo.completed && todo.dueTime && todo.dueTime <= in7Days
-          )
+          ).sort((a, b) => a.dueTime - b.dueTime)
           setTodos(relevantTodos)
         }
         const eventRes = await fetch(
@@ -96,7 +96,7 @@ export default function ProjectOverview () {
               event.eventTime &&
               event.eventTime >= now &&
               event.eventTime <= in7Days
-          )
+          ).sort((a, b) => a.eventTime - b.eventTime)
           setEvents(upcomingEvents)
         }
       } catch (err) {
