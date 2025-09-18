@@ -73,7 +73,6 @@ def get_equation_by_id(equation_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM equations where EquationID = %s;", (equation_id,))
     equation = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if equation is not None:
@@ -87,7 +86,6 @@ def get_equations_by_page(page_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM equations where PageID = %s;", (page_id,))
     equations = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if equations is not None:
@@ -109,7 +107,6 @@ def get_equations_by_project(project_ID):
     where pages.projectID = %s;
     """, (project_ID,))
     equations = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if equations is not None:

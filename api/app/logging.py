@@ -19,7 +19,6 @@ def authorized_page_access(token, page_id):
     where token = %s and pages.PageID = %s
     """, (token, page_id))
     result = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
 
@@ -34,7 +33,6 @@ def authorized_project_access(token, project_id):
     where token = %s and ProjectID = %s
     """, (token, project_id))
     result = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
 
@@ -66,7 +64,6 @@ def get_project_access_requests():
     JOIN sessions on sessions.sessionID = projectRequests.sessionID
     """)
     requests = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     return requests
@@ -93,7 +90,6 @@ def get_page_access_requests():
     JOIN sessions on sessions.sessionID = pageRequests.sessionID
     """)
     requests = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     return requests
@@ -107,7 +103,6 @@ def get_page_last_review(page_id):
     where pageRequests.PageID = %s AND accessGranted = TRUE AND notes = 'REVIEW' 
     """, (page_id,))
     last_review = cursor.fetchone()[0]
-    conn.commit()
     cursor.close()
     conn.close()
     if last_review is not None:

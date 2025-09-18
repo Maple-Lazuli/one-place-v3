@@ -41,7 +41,6 @@ def get_file_by_id(file_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM files where fileID = %s;", (file_id,))
     file = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if file is not None:
@@ -55,7 +54,6 @@ def get_files_by_page(page_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM files where PageID = %s;", (page_id,))
     files = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if files is not None:
@@ -77,7 +75,6 @@ def get_files_by_project(project_id):
     where pages.projectID = %s;
     """, (project_id,))
     files = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if files is not None:

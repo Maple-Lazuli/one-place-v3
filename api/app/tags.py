@@ -32,7 +32,6 @@ def get_tags_by_user(user_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM tags where UserID = %s;", (user_id,))
     tags = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if tags is not None:
@@ -55,7 +54,6 @@ def get_tags_by_project(project_id):
     ORDER BY tags.tag;
     """, (project_id,))
     tags = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if tags is not None:
@@ -72,7 +70,6 @@ def get_tag_by_id(tag_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM tags where TagID = %s", (tag_id,))
     tag = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if tag is not None:

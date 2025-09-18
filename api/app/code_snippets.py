@@ -73,7 +73,6 @@ def get_snippet_by_id(snippet_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM CodeSnippets where CodeID = %s;", (snippet_id,))
     snippet = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if snippet is not None:
@@ -87,7 +86,6 @@ def get_snippets_by_page(page_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM CodeSnippets where PageID = %s;", (page_id,))
     snippets = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if snippets is not None:
@@ -108,7 +106,6 @@ def get_snippets_by_project(project_id):
      where pages.projectID = %s;
      """, (project_id,))
     snippets = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if snippets is not None:

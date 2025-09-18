@@ -73,7 +73,6 @@ def get_recipe_by_id(recipe_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM recipes where RecipeID = %s;", (recipe_id,))
     recipe = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if recipe is not None:
@@ -87,7 +86,6 @@ def get_recipes_by_page(page_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM recipes where PageID = %s;", (page_id,))
     recipes = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if recipes is not None:
@@ -109,7 +107,6 @@ def get_recipes_by_project(project_id):
     where pages.projectID = %s;
     """, (project_id,))
     recipes = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if recipes is not None:

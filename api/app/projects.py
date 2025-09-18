@@ -28,7 +28,6 @@ def get_tags_for_projects(project_ids):
     """, (project_ids,))
 
     rows = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
 
@@ -50,7 +49,6 @@ def get_tags_by_project(project_id):
     where projectID = %s order by Tag;
     """, (project_id,))
     tags = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if tags is not None:
@@ -146,7 +144,6 @@ def get_projects_with_token(token):
       lastAccessed DESC;
     """, (token, datetime.now()))
     results = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
 
@@ -181,7 +178,6 @@ def authorized_project_access(token, project_id):
     where token = %s and ProjectID = %s
     """, (token, project_id))
     result = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
 

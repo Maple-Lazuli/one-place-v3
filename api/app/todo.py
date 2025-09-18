@@ -58,7 +58,6 @@ def get_all_todo(project_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM todo where projectID = %s", (project_id,))
     todos = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if todos is not None:
@@ -81,7 +80,6 @@ def get_all_user_todo(user_id, start_time, end_time):
     AND (dueTime BETWEEN %s AND %s OR timeCompleted BETWEEN %s AND %s)
     """, (user_id, start_time, end_time, start_time, end_time))
     todos = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if todos is not None:
@@ -99,7 +97,6 @@ def get_todo_by_id(todo_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM todo where TodoID = %s", (todo_id,))
     todo = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if todo is not None:

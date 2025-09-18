@@ -43,7 +43,6 @@ def verify_session(token, user_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM sessions where token = %s;", (token,))
     session = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if session is None:
@@ -65,7 +64,6 @@ def verify_session_for_access(token):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM sessions where token = %s;", (token,))
     session = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if session is None:

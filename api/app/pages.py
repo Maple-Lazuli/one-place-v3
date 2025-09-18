@@ -33,7 +33,6 @@ def get_last_review_by_user_id(user_id):
         group by pagerequests.pageID, pages.name, pages.projectID
     """, (datetime.now().astimezone(), user_id))
     review_deltas = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if review_deltas is not None:
@@ -57,7 +56,6 @@ def get_last_edit_by_user_id(user_id):
         group by pagerequests.pageID, pages.name, pages.projectID
     """, (user_id,))
     review_deltas = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if review_deltas is not None:
@@ -80,7 +78,6 @@ def get_last_review_by_project_id(project_id):
         group by pagerequests.pageID, pages.name
     """, (datetime.now().astimezone(), project_id,))
     review_deltas = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if review_deltas is not None:
@@ -117,7 +114,6 @@ def authorized_page_access(token, page_id):
     where token = %s and pages.PageID = %s
     """, (token, page_id))
     result = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
 
@@ -151,7 +147,6 @@ def get_page_by_id(page_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM pages where pageID = %s;", (page_id,))
     page = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if page is not None:
@@ -165,7 +160,6 @@ def get_pages_by_project(project_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM pages where projectID = %s;", (project_id,))
     pages = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if pages is not None:

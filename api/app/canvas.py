@@ -86,7 +86,6 @@ def get_canvas_by_id(canvas_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM canvas where CanvasID = %s;", (canvas_id,))
     canvas = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if canvas is not None:
@@ -100,7 +99,6 @@ def get_canvas_by_page(page_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM canvas where PageID = %s;", (page_id,))
     canvases = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if canvases is not None:
@@ -122,7 +120,6 @@ def get_canvas_by_project(project_id):
     where pages.projectID = %s
     """, (project_id,))
     canvases = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if canvases is not None:

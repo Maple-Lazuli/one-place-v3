@@ -82,7 +82,6 @@ def get_event_by_id(event_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM events where EventID = %s", (event_id,))
     event = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if event is not None:
@@ -120,7 +119,6 @@ def get_all_events_by_user(user_id, start_time, end_time):
     AND startTime BETWEEN %s AND %s 
     """, (user_id, start_time, end_time))
     events = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if events is not None:

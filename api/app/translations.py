@@ -72,7 +72,6 @@ def get_translation_by_id(translation_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM Translations where TranslationID = %s;", (translation_id,))
     translation = cursor.fetchone()
-    conn.commit()
     cursor.close()
     conn.close()
     if translation is not None:
@@ -86,7 +85,6 @@ def get_translations_by_page(page_id):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM Translations where PageID = %s;", (page_id,))
     translations = cursor.fetchall()
-    conn.commit()
     cursor.close()
     conn.close()
     if translations is not None:

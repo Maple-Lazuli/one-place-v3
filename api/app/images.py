@@ -32,7 +32,6 @@ def get_image(user_id, image_id):
         "SELECT content FROM images WHERE UserID = %s AND ImageID = %s;",
         (user_id, image_id))
     image_bytes = cursor.fetchone()[0]
-    conn.commit()
     cursor.close()
     conn.close()
     return image_bytes
